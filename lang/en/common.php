@@ -28,4 +28,10 @@ return [
         'githubLinkText' => 'GitHub',
         'emailLinkText' => 'Email',
     ],
+    'equations' => [
+        'formulaAriaLabel' => 'Equation in mathematical notation',
+        'symbolHeading' => 'Symbol',
+        'descriptionHeading' => 'Description',
+        'unitHeading' => 'Unit',
+    ],
 ];
