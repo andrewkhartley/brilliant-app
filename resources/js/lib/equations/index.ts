@@ -12,11 +12,13 @@ export type { Equation, EquationVariable } from './types';
 
 import { circleArea } from './circle-area';
 import { rectangleArea } from './rectangle-area';
+import { relativisticSpeed } from './relativistic-speed';
 import type { Equation } from './types';
 
-export { circleArea, rectangleArea };
+export { circleArea, rectangleArea, relativisticSpeed };
 
 export const allEquations: readonly Equation[] = [
     circleArea,
     rectangleArea,
+    relativisticSpeed,
 ] as const;
