@@ -124,6 +124,69 @@ describe('computeMotion — parallaxStrength multiplier', () => {
     });
 });
 
+describe('computeMotion — travel="viewportAnchored"', () => {
+    test('nearest full layer stays locked to the viewport', () => {
+        const start = computeMotion(
+            baseInputs({
+                depth: 0,
+                progress: 0,
+                travel: 'viewportAnchored',
+            }),
+        );
+        const end = computeMotion(
+            baseInputs({
+                depth: 0,
+                progress: 1,
+                travel: 'viewportAnchored',
+            }),
+        );
+
+        expect(start.y).toBe(0);
+        expect(end.y).toBe(0);
+    });
+
+    test('far full layer lags behind the viewport more than near full layer', () => {
+        const near = computeMotion(
+            baseInputs({
+                depth: 0.08,
+                progress: 1,
+                travel: 'viewportAnchored',
+            }),
+        );
+        const far = computeMotion(
+            baseInputs({
+                depth: 0.74,
+                progress: 1,
+                travel: 'viewportAnchored',
+            }),
+        );
+
+        expect(Math.abs(far.y)).toBeGreaterThan(Math.abs(near.y));
+    });
+
+    test('top and bottom edge layers both move upward as progress increases', () => {
+        const top = computeMotion(
+            baseInputs({
+                position: 'top',
+                depth: 0.05,
+                progress: 1,
+                travel: 'viewportAnchored',
+            }),
+        );
+        const bottom = computeMotion(
+            baseInputs({
+                position: 'bottom',
+                depth: 0.05,
+                progress: 1,
+                travel: 'viewportAnchored',
+            }),
+        );
+
+        expect(top.y).toBe(-41);
+        expect(bottom.y).toBe(-41);
+    });
+});
+
 describe('computeMotion — depth clamping', () => {
     test('depth=1.5 is clamped to 1 (zero motion)', () => {
         const { y } = computeMotion(baseInputs({ depth: 1.5, progress: 0 }));

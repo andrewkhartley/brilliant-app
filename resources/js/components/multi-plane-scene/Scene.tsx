@@ -1,89 +1,81 @@
 import { createContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import { useScrollTrigger } from '@/hooks/useScrollTrigger';
-import { useViewportGate } from '@/hooks/useViewportGate';
-
 import type { SceneContextValue, SceneProps } from './types';
 
-/**
- * SceneContext exposes the current scroll progress + scene metadata to
- * descendant Layer and Caption components without prop drilling. Lives
- * inside the Scene component file; consumed via useContext in Layer/Caption.
- */
 export const SceneContext = createContext<SceneContextValue | null>(null);
 
 /**
- * Top-level wrapper for a multi-plane scene. Owns the IntersectionObserver
- * + GSAP ScrollTrigger lifecycle; passes scroll progress to Layer/Caption
- * children via context.
+ * Native sticky-scroll prototype for the MultiPlaneScene API.
  *
- * Per the per-instance lifecycle in spec § "Component lifecycle":
- * - mount → IntersectionObserver registers; ScrollTrigger NOT created yet
- * - first IO entry → ScrollTrigger spins up; layers receive scroll progress
- * - IO exit → ScrollTrigger killed (idempotent, cheap); layers freeze at last pose
- * - unmount → all observers + triggers torn down
- *
- * Reduced-motion: when prefers-reduced-motion: reduce, ScrollTrigger is
- * never created. Layers render at progress=0.5 (mid-scroll pose) statically.
- * This is the spec's reduced-motion fallback strategy.
- *
- * No-SSR caveat: scroll progress updates happen via GSAP, which only runs
- * client-side. The first paint renders with progress=0; React hydration
- * + IO entry update it on the next tick.
+ * This intentionally avoids GSAP and image assets while the visual behavior is
+ * being dialed in. A tall section creates scroll distance; a sticky frame stays
+ * in view; child layers receive normalized progress through context.
  */
 export function Scene(props: SceneProps) {
     const {
         children,
         height,
         aspectLock,
-        rootMargin = '50%',
         parallaxStrength = 1,
         atmosphere = false,
         onEnter,
     } = props;
 
     const sectionRef = useRef<HTMLElement | null>(null);
+    const hasEnteredRef = useRef(false);
     const reducedMotion = useReducedMotion();
-
-    const isInViewport = useViewportGate(sectionRef, { rootMargin });
-    const enableScrollTrigger = isInViewport && !reducedMotion;
-
     const [progress, setProgress] = useState(reducedMotion ? 0.5 : 0);
     const [sectionHeight, setSectionHeight] = useState(0);
 
-    // Observe section's actual rendered height for accurate motion math.
     useEffect(() => {
-        const section = sectionRef.current;
-
-        if (!section) {
+        if (reducedMotion) {
             return;
         }
 
-        const updateHeight = () =>
-            setSectionHeight(section.getBoundingClientRect().height);
+        let frame = 0;
 
-        updateHeight();
+        const updateProgress = () => {
+            const section = sectionRef.current;
 
-        const resizeObserver = new ResizeObserver(updateHeight);
+            if (!section) {
+                return;
+            }
 
-        resizeObserver.observe(section);
+            const rect = section.getBoundingClientRect();
+            const viewportHeight = window.innerHeight || 1;
+            const travelDistance = Math.max(rect.height + viewportHeight, 1);
+            const nextProgress = clamp(
+                (viewportHeight - rect.top) / travelDistance,
+                0,
+                1,
+            );
+            const isNearViewport = rect.top < viewportHeight && rect.bottom > 0;
 
-        return () => resizeObserver.disconnect();
-    }, []);
+            setProgress(nextProgress);
+            setSectionHeight(rect.height);
 
-    useScrollTrigger({
-        enabled: enableScrollTrigger,
-        vars: {
-            trigger: sectionRef,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: true,
-            pin: true,
-            onUpdate: (self) => setProgress(self.progress),
-            onEnter: onEnter,
-        },
-    });
+            if (isNearViewport && !hasEnteredRef.current) {
+                hasEnteredRef.current = true;
+                onEnter?.();
+            }
+        };
+
+        const queueUpdate = () => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(updateProgress);
+        };
+
+        updateProgress();
+        window.addEventListener('scroll', queueUpdate, { passive: true });
+        window.addEventListener('resize', queueUpdate);
+
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener('scroll', queueUpdate);
+            window.removeEventListener('resize', queueUpdate);
+        };
+    }, [onEnter, reducedMotion]);
 
     const contextValue = useMemo<SceneContextValue>(
         () => ({
@@ -98,44 +90,51 @@ export function Scene(props: SceneProps) {
 
     const sectionStyle: CSSProperties = {
         height,
-        contentVisibility: 'auto',
-        containIntrinsicSize: height,
         position: 'relative',
+        background: '#0f172a',
+    };
+
+    const frameStyle: CSSProperties = {
+        position: 'sticky',
+        top: 0,
+        minHeight: '100vh',
         overflow: 'hidden',
+        isolation: 'isolate',
         ...(aspectLock ? { aspectRatio: aspectLock.replace(':', '/') } : {}),
     };
 
     return (
         <SceneContext.Provider value={contextValue}>
             <section ref={sectionRef} style={sectionStyle}>
-                {children}
+                <div style={frameStyle}>{children}</div>
             </section>
         </SceneContext.Provider>
     );
 }
 
-/**
- * Hook reading the user's prefers-reduced-motion preference.
- * SSR-safe: returns false on the server; first browser paint reads the
- * media query and updates state on the next tick.
- */
 function useReducedMotion(): boolean {
     const [reduced, setReduced] = useState(false);
 
     useEffect(() => {
-        const mq = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)');
+        const mediaQuery = globalThis.matchMedia?.(
+            '(prefers-reduced-motion: reduce)',
+        );
 
-        if (!mq) {
+        if (!mediaQuery) {
             return;
         }
 
-        const update = () => setReduced(mq.matches);
+        const update = () => setReduced(mediaQuery.matches);
 
         update();
-        mq.addEventListener('change', update);
+        mediaQuery.addEventListener('change', update);
 
-        return () => mq.removeEventListener('change', update);
+        return () => mediaQuery.removeEventListener('change', update);
     }, []);
 
     return reduced;
+}
+
+function clamp(value: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, value));
 }
