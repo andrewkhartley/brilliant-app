@@ -5,8 +5,8 @@ export default defineConfig({
     test: {
         environment: 'node',
         include: [
-            'resources/js/**/*.{test,spec}.ts',
-            'resources/js/**/__tests__/**/*.ts',
+            'resources/js/**/*.{test,spec}.{ts,tsx}',
+            'resources/js/**/__tests__/**/*.{ts,tsx}',
         ],
         globals: false,
     },

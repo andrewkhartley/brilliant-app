@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 
 import type { ReactNode } from 'react';
 
+import { Nav } from '@/components/Nav';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface AppLayoutProps {
@@ -56,23 +57,8 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
             </a>
 
             <div className="flex min-h-screen flex-col">
-                <header className="border-b border-neutral-200">
-                    <nav
-                        aria-label={t('common.primaryNav')}
-                        className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3"
-                    >
-                        <a href="/" className="text-lg font-semibold">
-                            {t('common.siteName')}
-                        </a>
-                        <ul className="flex gap-6">
-                            <li>
-                                <a href="/playground">{t('nav.playground')}</a>
-                            </li>
-                            <li>
-                                <a href="/about">{t('nav.about')}</a>
-                            </li>
-                        </ul>
-                    </nav>
+                <header>
+                    <Nav />
                 </header>
 
                 <main
