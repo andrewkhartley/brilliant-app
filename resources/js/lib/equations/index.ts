@@ -12,6 +12,7 @@ export type { Equation, EquationVariable } from './types';
 
 import { accelerationDuration } from './acceleration-duration';
 import { circleArea } from './circle-area';
+import { cylinderSurfaceArea } from './cylinder-surface-area';
 import { orbitalPeriod } from './orbital-period';
 import { orbitalVelocity } from './orbital-velocity';
 import { rectangleArea } from './rectangle-area';
@@ -21,6 +22,7 @@ import type { Equation } from './types';
 export {
     accelerationDuration,
     circleArea,
+    cylinderSurfaceArea,
     orbitalPeriod,
     orbitalVelocity,
     rectangleArea,
@@ -30,6 +32,7 @@ export {
 export const allEquations: readonly Equation[] = [
     accelerationDuration,
     circleArea,
+    cylinderSurfaceArea,
     orbitalPeriod,
     orbitalVelocity,
     rectangleArea,
