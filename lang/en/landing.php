@@ -22,8 +22,19 @@ return [
     'pageDescription' => 'Multi-plane scenes + interactive equations + the craft behind the application.',
 
     'hero' => [
-        'placeholderTitle' => 'Hero',
-        'placeholderNote' => 'Coming in P7.T2 — title card + multi-plane scene (cosmic foreground + nebula + JWST sky, camera tracks forward through observation deck rail).',
+        'title' => 'Take the math, and make it move.',
+        'subtitle' => 'Andrew Hartley',
+        'pitch' => 'A Brilliant.org application built as the application itself — interactive math, multi-plane camera, every line of source visible.',
+        'layers' => [
+            'sky' => 'JWST sky placeholder',
+            'distantNebula' => 'Distant nebula placeholder',
+            'nearNebula' => 'Near nebula veil placeholder',
+            'horizon' => 'Horizon band placeholder',
+            'rail' => 'Observation deck rail placeholder',
+        ],
+        'caption' => [
+            'subtitle' => 'A Brilliant.org application built as the application itself.',
+        ],
     ],
 
     'covidOrigin' => [
