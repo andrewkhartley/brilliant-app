@@ -84,3 +84,27 @@ export interface SceneContextValue {
     /** Whether the user prefers reduced motion (renders static mid-scroll pose). */
     reducedMotion: boolean;
 }
+
+export interface LayerProps {
+    /**
+     * Image source path under public/. Two modes:
+     * - With extension (e.g. '/assets/img/bg/cylinder.jpg'): rendered as
+     *   plain <img> with the explicit format.
+     * - Without extension (e.g. '/assets/scenes/hero/foreground'):
+     *   rendered as <picture> with AVIF/WebP/PNG sources from the same
+     *   base path. Used when scene art exists in multiple formats.
+     */
+    src: string;
+    /** Layer anchoring (top/bottom/full). See Position type. */
+    position: Position;
+    /** Layer depth 0..1 (continuous; decimals encouraged). */
+    depth: number;
+    /** Motion mode (track/drift/static). Default 'track'. */
+    motion?: Motion;
+    /** Optional override of layer's start/end translation in % of section height. */
+    offset?: { from?: number; to?: number };
+    /** Optional cross-fade opacity. */
+    opacity?: { from?: number; to?: number };
+    /** Optional alt text for screen readers. Decorative layers can use empty string. */
+    alt?: string;
+}
