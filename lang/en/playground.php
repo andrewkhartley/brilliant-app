@@ -53,9 +53,23 @@ return [
             'sliderLabel' => 'Circle radius',
             'resultLabel' => 'Area:',
         ],
-        'experienceCardPlaceholder' => [
+        'experienceCardSection' => [
             'title' => 'ExperienceCard',
-            'note' => 'Coming in P6.T6. Section will demonstrate the reusable card linking to Phase 8/10/11 experiences (Interstellar, Cruise, Habitat).',
+            'intro' => 'Reusable clickable card for linking to a playground experience. Entire card is the click target (whole rectangle is interactive). Used by Phase 7 (Landing) "what else" section and Phase 9 (Playground hub). Verify: clicking anywhere on a card issues an Inertia visit; hover gives subtle elevation feedback; focus-visible shows the outline ring; cards stack on narrow viewports and grid out at larger widths. Card destinations 404 in v1 — controllers ship in Phases 8/10/11.',
+            'cards' => [
+                'interstellar' => [
+                    'title' => 'Interstellar',
+                    'description' => 'Relativistic travel demo. Drag the velocity slider; watch time dilation play out against the live Lorentz factor.',
+                ],
+                'cruise' => [
+                    'title' => 'Cruise',
+                    'description' => 'Orbital mechanics with live NASA Horizons data. Pick a destination; watch the orbital-period and orbital-velocity equations resolve.',
+                ],
+                'habitat' => [
+                    'title' => 'Habitat',
+                    'description' => 'Cylinder world surface area + composedFrom registry metadata. See how the equation registry composes equations to derive new ones.',
+                ],
+            ],
         ],
     ],
 ];

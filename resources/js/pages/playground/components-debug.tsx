@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { EquationCard } from '@/components/equations/EquationCard';
 import { LiveResult } from '@/components/equations/LiveResult';
 import { SliderInput } from '@/components/equations/SliderInput';
+import { ExperienceCard } from '@/components/ExperienceCard';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
 import { circleArea } from '@/lib/equations/circle-area';
@@ -120,14 +121,43 @@ export default function ComponentsDebug() {
             <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-8">
                 <h2 className="text-2xl font-semibold">
                     {t(
-                        'playground.componentsDebug.experienceCardPlaceholder.title',
+                        'playground.componentsDebug.experienceCardSection.title',
                     )}
                 </h2>
                 <p className="mt-3 text-neutral-700">
                     {t(
-                        'playground.componentsDebug.experienceCardPlaceholder.note',
+                        'playground.componentsDebug.experienceCardSection.intro',
                     )}
                 </p>
+                <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <ExperienceCard
+                        href="/playground/interstellar"
+                        title={t(
+                            'playground.componentsDebug.experienceCardSection.cards.interstellar.title',
+                        )}
+                        description={t(
+                            'playground.componentsDebug.experienceCardSection.cards.interstellar.description',
+                        )}
+                    />
+                    <ExperienceCard
+                        href="/playground/cruise"
+                        title={t(
+                            'playground.componentsDebug.experienceCardSection.cards.cruise.title',
+                        )}
+                        description={t(
+                            'playground.componentsDebug.experienceCardSection.cards.cruise.description',
+                        )}
+                    />
+                    <ExperienceCard
+                        href="/playground/habitat"
+                        title={t(
+                            'playground.componentsDebug.experienceCardSection.cards.habitat.title',
+                        )}
+                        description={t(
+                            'playground.componentsDebug.experienceCardSection.cards.habitat.description',
+                        )}
+                    />
+                </div>
             </section>
         </AppLayout>
     );
