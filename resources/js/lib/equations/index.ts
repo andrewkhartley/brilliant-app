@@ -12,15 +12,23 @@ export type { Equation, EquationVariable } from './types';
 
 import { circleArea } from './circle-area';
 import { orbitalPeriod } from './orbital-period';
+import { orbitalVelocity } from './orbital-velocity';
 import { rectangleArea } from './rectangle-area';
 import { relativisticSpeed } from './relativistic-speed';
 import type { Equation } from './types';
 
-export { circleArea, orbitalPeriod, rectangleArea, relativisticSpeed };
+export {
+    circleArea,
+    orbitalPeriod,
+    orbitalVelocity,
+    rectangleArea,
+    relativisticSpeed,
+};
 
 export const allEquations: readonly Equation[] = [
     circleArea,
     orbitalPeriod,
+    orbitalVelocity,
     rectangleArea,
     relativisticSpeed,
 ] as const;
