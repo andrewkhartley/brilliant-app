@@ -15,4 +15,7 @@ return [
     'close' => 'Close',
     'siteName' => 'Brilliant',
     'siteTagline' => 'Andrew Hartley — Brilliant application',
+    'copyright' => '©',
+    'separator' => ' — ',
+    'attribution' => 'Andrew Hartley',
 ];

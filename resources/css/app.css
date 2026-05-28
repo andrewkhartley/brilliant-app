@@ -9,3 +9,19 @@
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 }
+
+/* Phase 4 T4 — focus-visible base styles for AppLayout's a11y baseline. */
+@layer base {
+    *:focus-visible {
+        outline: 2px solid theme('colors.blue.500');
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+
+    /* Suppress the focus outline on <main> when it receives programmatic
+     * focus from the skip link (the skip link itself is the user-visible
+     * focus indicator at that moment). */
+    main:focus-visible {
+        outline: none;
+    }
+}
