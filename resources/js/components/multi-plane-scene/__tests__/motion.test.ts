@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { computeMotion } from '../motion';
-import type {MotionInputs} from '../types';
+import type { MotionInputs } from '../types';
 
 function baseInputs(overrides: Partial<MotionInputs> = {}): MotionInputs {
     return {

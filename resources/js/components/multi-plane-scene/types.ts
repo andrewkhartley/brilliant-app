@@ -5,6 +5,8 @@
  * Internal-only types stay un-exported from index.ts.
  */
 
+import type { ReactNode } from 'react';
+
 /**
  * Layer anchoring within the scene's shadowbox frame.
  * - 'top': anchors to the top edge (e.g., ceiling beams, sky)
@@ -48,4 +50,37 @@ export interface MotionInputs {
     parallaxStrength: number;
     /** Motion mode. 'static' returns y=0 regardless of inputs. */
     motion: Motion;
+}
+
+export interface SceneProps {
+    children: ReactNode;
+    /** Section height, e.g. '200vh' (longer = more scroll "track" room). */
+    height: string;
+    /** Optional aspect-ratio lock for the visible frame (e.g. '16:9', '4:3'). */
+    aspectLock?: string;
+    /** Pre-warm distance for IntersectionObserver (default '50%'). */
+    rootMargin?: string;
+    /** Global parallax multiplier 0..1.5 (default 1). */
+    parallaxStrength?: number;
+    /** When true, layers with depth > 0.7 receive auto blur+saturate (atmospheric haze). */
+    atmosphere?: boolean;
+    /** Optional analytics/audio-cue hook fired when the scene first enters viewport. */
+    onEnter?: () => void;
+}
+
+/**
+ * Internal context: Layer + Caption components read these values from the
+ * surrounding Scene to compute their own positioning + visibility.
+ */
+export interface SceneContextValue {
+    /** Current scroll progress 0..1 (0 when reduced-motion forces static pose). */
+    progress: number;
+    /** Section height in pixels (for motion math). */
+    sectionHeight: number;
+    /** Global parallax multiplier from Scene props. */
+    parallaxStrength: number;
+    /** Atmospheric haze flag from Scene props. */
+    atmosphere: boolean;
+    /** Whether the user prefers reduced motion (renders static mid-scroll pose). */
+    reducedMotion: boolean;
 }
