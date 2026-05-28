@@ -49,6 +49,8 @@ class Destination extends Model
 
     /**
      * Retrieve all solar system facts with caching.
+     *
+     * @return Collection<int, self>
      */
     public static function getCachedFacts(): Collection
     {
