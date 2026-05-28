@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 
 import type { ReactNode } from 'react';
 
+import { Footer } from '@/components/Footer';
 import { Nav } from '@/components/Nav';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -23,7 +24,8 @@ interface AppLayoutProps {
  * - Skip-to-main link (sr-only by default; focusable for keyboard users)
  * - <header> with primary <nav>
  * - <main id="main"> as the skip-link target; receives the page's children
- * - <footer> with year + credit + tagline
+ * - <footer> wrapping the <Footer /> component (semantic landmark in this
+ *   layout; content composed by Footer — same pattern as <header> + <Nav />)
  *
  * Uses logical Tailwind classes only (ms-/me-/ps-/pe-/start-/end-) so RTL
  * locales flip correctly without per-rule CSS changes.
@@ -43,7 +45,6 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
     const { t } = useTranslation();
     const siteName = t('common.siteName');
     const fullTitle = pageTitle ? `${pageTitle} — ${siteName}` : siteName;
-    const currentYear = new Date().getFullYear();
 
     return (
         <>
@@ -70,14 +71,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                 </main>
 
                 <footer className="border-t border-neutral-200">
-                    <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-neutral-600">
-                        {t('common.copyright')} {currentYear}{' '}
-                        <a href="/about" className="underline">
-                            {t('common.attribution')}
-                        </a>
-                        {t('common.separator')}
-                        {t('common.siteTagline')}
-                    </div>
+                    <Footer />
                 </footer>
             </div>
         </>

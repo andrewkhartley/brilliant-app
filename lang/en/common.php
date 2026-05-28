@@ -18,4 +18,14 @@ return [
     'copyright' => '©',
     'separator' => ' — ',
     'attribution' => 'Andrew Hartley',
+    'footer' => [
+        'sourceAvailable' => 'Source available on GitHub.',
+        'sourceAttribution' => 'Cited code retains original attribution.',
+        'githubAriaLabel' => 'View source on GitHub',
+        'emailAriaLabel' => 'Email Andrew',
+        'githubUrl' => 'https://github.com/andrewkhartley/brilliant-app',
+        'email' => 'ahartley@gmail.com',
+        'githubLinkText' => 'GitHub',
+        'emailLinkText' => 'Email',
+    ],
 ];
