@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\HorizonController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\Playground\ComponentsDebugController;
 use App\Http\Controllers\Playground\SceneDebugController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,3 +13,6 @@ Route::get('/api/horizon/query', [HorizonController::class, 'queryHorizon'])
 
 Route::get('/playground/scene-debug', SceneDebugController::class)
     ->name('playground.scene-debug');
+
+Route::get('/playground/components-debug', ComponentsDebugController::class)
+    ->name('playground.components-debug');

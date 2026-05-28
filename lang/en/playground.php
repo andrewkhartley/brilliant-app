@@ -30,4 +30,30 @@ return [
         'reducedMotionNote' => 'If you have prefers-reduced-motion enabled, layers stay at their mid-scroll pose and captions remain fully visible.',
         'outro' => 'This prototype uses color blocks instead of artwork so the motion model can be judged on its own.',
     ],
+
+    'componentsDebug' => [
+        'title' => 'Phase 6 shared UI components — debug view',
+        'intro' => 'Each shipped component is rendered here in isolation so its real-browser behavior can be verified. Sections grow as new components land; placeholders mark the components still in flight.',
+        'chromeSection' => [
+            'title' => 'Chrome — Nav + Footer',
+            'note' => 'The sticky header at the top of this page is Nav.tsx; the centered footer at the bottom is Footer.tsx. Both are composed by AppLayout, so they appear on every page in the app. Verify: sticky behavior on scroll, two primary links, copyright + license text, GitHub + Email contact links.',
+        ],
+        'equationsSection' => [
+            'title' => 'EquationCard',
+            'intro' => 'KaTeX-rendered formula + variable legend table. Each card pulls from the Phase 3 equation registry. Verify: equation name renders, formula displays correctly (block-display style, centered), legend table shows symbol + description + unit per variable, MathML element is present in the DOM (open DevTools Elements panel and search for <math>).',
+        ],
+        'sliderSection' => [
+            'title' => 'SliderInput',
+            'intro' => 'Accessible controlled range input with live value display. Verify: arrow keys step by 1, PageUp/PageDown step by 10, Home/End jump to min/max, aria-valuetext updates on every change (inspect with DevTools or a screen reader), value display reflects the current value.',
+            'sliderLabel' => 'Demo slider — adjust to verify keyboard behavior',
+        ],
+        'liveResultPlaceholder' => [
+            'title' => 'LiveResult',
+            'note' => 'Coming in P6.T5. Section will demonstrate aria-live="polite" announcement of a slider-driven computed value.',
+        ],
+        'experienceCardPlaceholder' => [
+            'title' => 'ExperienceCard',
+            'note' => 'Coming in P6.T6. Section will demonstrate the reusable card linking to Phase 8/10/11 experiences (Interstellar, Cruise, Habitat).',
+        ],
+    ],
 ];
