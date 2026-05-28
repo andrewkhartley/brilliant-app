@@ -108,3 +108,15 @@ export interface LayerProps {
     /** Optional alt text for screen readers. Decorative layers can use empty string. */
     alt?: string;
 }
+
+export interface CaptionProps {
+    children: ReactNode;
+    /** Scroll progress 0..1 at which this caption is fully visible. */
+    at: number;
+    /** Width of the fade-in/out window (default 0.15 — caption visible across ~15% of scroll). */
+    fadeWindow?: number;
+    /**
+     * Optional text alignment override. Default: 'start' (LTR → left, RTL → right).
+     */
+    align?: 'start' | 'center' | 'end';
+}
