@@ -41,14 +41,13 @@ export default [
             'react/react-in-jsx-scope': 'off',
             'react/prop-types': 'off',
             'react/no-unescaped-entities': 'off',
-            // i18n discipline: every user-facing string must flow through a translation
-            // function (Laravel lang + Inertia share + useTranslation hook, wired up in
-            // Phase 4). Warning-level for now so the starter kit's residual English
-            // strings on welcome.tsx don't break lint; flips to 'error' in Phase 4 once
-            // t() is in place. allowedStrings covers non-content glyphs (brand mark,
-            // separators, arrows) that read as visual elements, not translatable text.
+            // i18n discipline: every user-facing string MUST flow through useTranslation()'s
+            // t() function (Laravel lang + Inertia share + useTranslation hook from Phase 4).
+            // Rule is at 'error' as of Phase 4 T5 — a fresh literal anywhere in JSX fails lint.
+            // allowedStrings covers non-content glyphs (brand mark, separators, arrows) that
+            // read as visual elements, not translatable text.
             'react/jsx-no-literals': [
-                'warn',
+                'error',
                 {
                     noStrings: false,
                     allowedStrings: [

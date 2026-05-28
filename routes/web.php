@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\API\HorizonController;
+use App\Http\Controllers\LandingController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('home');
+Route::get('/', LandingController::class)->name('home');
 
-Route::get('/api/horizon/query', [HorizonController::class, 'queryHorizon'])->name('horizon.query');
+Route::get('/api/horizon/query', [HorizonController::class, 'queryHorizon'])
+    ->name('horizon.query');
