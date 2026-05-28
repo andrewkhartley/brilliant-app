@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { EquationCard } from '@/components/equations/EquationCard';
+import { LiveResult } from '@/components/equations/LiveResult';
 import { SliderInput } from '@/components/equations/SliderInput';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
@@ -24,6 +25,8 @@ import { relativisticSpeed } from '@/lib/equations/relativistic-speed';
 export default function ComponentsDebug() {
     const { t } = useTranslation();
     const [demoValue, setDemoValue] = useState(50);
+    const [radius, setRadius] = useState(10);
+    const area = Math.PI * radius * radius;
 
     return (
         <AppLayout pageTitle={t('playground.componentsDebug.title')}>
@@ -85,13 +88,33 @@ export default function ComponentsDebug() {
 
             <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-8">
                 <h2 className="text-2xl font-semibold">
-                    {t(
-                        'playground.componentsDebug.liveResultPlaceholder.title',
-                    )}
+                    {t('playground.componentsDebug.liveResultSection.title')}
                 </h2>
                 <p className="mt-3 text-neutral-700">
-                    {t('playground.componentsDebug.liveResultPlaceholder.note')}
+                    {t('playground.componentsDebug.liveResultSection.intro')}
                 </p>
+                <div className="mt-6 space-y-4 rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
+                    <SliderInput
+                        id="radius-slider"
+                        label={t(
+                            'playground.componentsDebug.liveResultSection.sliderLabel',
+                        )}
+                        min={1}
+                        max={100}
+                        step={1}
+                        value={radius}
+                        onChange={setRadius}
+                        formatValue={(v) => `${v} m`}
+                        formatAriaValueText={(v) => `${v} meters`}
+                    />
+                    <LiveResult
+                        label={t(
+                            'playground.componentsDebug.liveResultSection.resultLabel',
+                        )}
+                    >
+                        {`${area.toFixed(2)} m²`}
+                    </LiveResult>
+                </div>
             </section>
 
             <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-8">

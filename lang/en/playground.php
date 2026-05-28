@@ -47,9 +47,11 @@ return [
             'intro' => 'Accessible controlled range input with live value display. Verify: arrow keys step by 1, PageUp/PageDown step by 10, Home/End jump to min/max, aria-valuetext updates on every change (inspect with DevTools or a screen reader), value display reflects the current value.',
             'sliderLabel' => 'Demo slider — adjust to verify keyboard behavior',
         ],
-        'liveResultPlaceholder' => [
+        'liveResultSection' => [
             'title' => 'LiveResult',
-            'note' => 'Coming in P6.T5. Section will demonstrate aria-live="polite" announcement of a slider-driven computed value.',
+            'intro' => 'aria-live="polite" + aria-atomic="true" region that announces a computed value when its content changes. The demo composes SliderInput driving a radius-to-area computation, with LiveResult announcing the area in square meters. Verify: changing the slider updates the area display visually; with DevTools Elements → inspect the region you see role="status" + aria-live="polite" + aria-atomic="true"; with a screen reader (NVDA / VoiceOver) the area announces politely when the slider stops moving.',
+            'sliderLabel' => 'Circle radius',
+            'resultLabel' => 'Area:',
         ],
         'experienceCardPlaceholder' => [
             'title' => 'ExperienceCard',
