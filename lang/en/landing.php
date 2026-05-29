@@ -60,8 +60,11 @@ return [
     ],
 
     'tryOne' => [
-        'placeholderTitle' => 'TryOne',
-        'placeholderNote' => 'Coming in P7.T5 — inline Interstellar relativity demo. EquationCard + SliderInput + LiveResult around relativisticSpeed.',
+        'heading' => 'Try one yourself',
+        'intro' => 'The full Interstellar travel agency lives at /playground/interstellar. Here\'s a taste — drag the slider to set a constant proper acceleration sustained for one year of coordinate time, and watch the relativistic speed approach the speed of light.',
+        'sliderLabel' => 'Acceleration',
+        'resultLabel' => 'Peak velocity:',
+        'fullLink' => 'Open the full Interstellar experience →',
     ],
 
     'whatElse' => [
