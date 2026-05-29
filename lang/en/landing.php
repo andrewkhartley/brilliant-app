@@ -53,8 +53,10 @@ return [
     ],
 
     'whyInteractive' => [
-        'placeholderTitle' => 'WhyInteractive',
-        'placeholderNote' => 'Coming in P7.T4 — philosophy prose. Brilliant\'s "feel the math" + Disney\'s multi-plane camera as compass points. No scene; intentional rest after two scrolly sections.',
+        'heading' => 'Why interactive',
+        'feelTheMath' => 'Brilliant calls it "feel the math." A problem isn\'t something you read about — it\'s something you can pull on, push back from, watch respond. That direct sense of cause and effect is the difference between knowing-about and knowing.',
+        'multiPlaneCamera' => 'Disney called it the multi-plane camera, 1937. Layers of glass at different depths, photographed through a vertical column. When the camera moved, parallax did the rest — depth and atmosphere emerging from flat paint.',
+        'synthesis' => 'Both inventions answer the same question: how do you make an idea feel like a place? This site is one application of that question to math, animation, and engineering — built as the cover letter for a Brilliant role.',
     ],
 
     'tryOne' => [
