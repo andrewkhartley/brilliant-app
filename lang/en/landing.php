@@ -68,8 +68,18 @@ return [
     ],
 
     'whatElse' => [
-        'placeholderTitle' => 'WhatElse',
-        'placeholderNote' => 'Coming in P7.T6 — ExperienceCard grid pointing to /playground/cruise and /playground/habitat.',
+        'heading' => 'What else I built',
+        'intro' => 'Two more experiences in the playground — built on the same engine and equation registry.',
+        'cards' => [
+            'cruise' => [
+                'title' => 'Cruise',
+                'description' => 'Planet-hopping trip builder with live NASA Horizons data. Pick destinations, pick a profile, get the relativistic itinerary.',
+            ],
+            'habitat' => [
+                'title' => 'Habitat',
+                'description' => 'O\'Neill Cylinder interior with the multi-plane camera as a shadowbox window. Interactive sliders for radius, length → 1g spin rate, surface area, population at given density.',
+            ],
+        ],
     ],
 
     'closingScene' => [
