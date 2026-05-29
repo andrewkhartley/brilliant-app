@@ -97,7 +97,17 @@ return [
     ],
 
     'contactFooter' => [
-        'placeholderTitle' => 'ContactFooter',
-        'placeholderNote' => 'Coming in P7.T8 — page-specific CTA close above AppLayout\'s chrome Footer. Email + GitHub + LinkedIn + CV links.',
+        'heading' => 'Let\'s talk',
+        'pitch' => 'I built this site as my application for a role at Brilliant. If you\'d like to chat about it, or about anything else — I\'m easy to reach.',
+        'links' => [
+            'email' => 'Email',
+            'emailHref' => 'mailto:ahartley@gmail.com',
+            'github' => 'GitHub',
+            'githubHref' => 'https://github.com/andrewkhartley/brilliant-app',
+            'linkedin' => 'LinkedIn',
+            'linkedinHref' => 'https://www.linkedin.com/in/andrewkhartley',
+            'cv' => 'CV (PDF)',
+            'cvHref' => '/cv.pdf',
+        ],
     ],
 ];
