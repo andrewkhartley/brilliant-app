@@ -38,8 +38,18 @@ return [
     ],
 
     'covidOrigin' => [
-        'placeholderTitle' => 'CovidOrigin',
-        'placeholderNote' => 'Coming in P7.T3 — March 2020 lecture hall scrollytelling, multi-plane dollies toward glowing slide deck.',
+        'heading' => 'The Covid origin',
+        'intro' => 'It\'s March 2020. The Zoom invite has 47 people on it.',
+        'layers' => [
+            'lectureHall' => 'Darkened lecture hall placeholder',
+            'seats' => 'Zoom panel grid placeholder',
+            'slideDeck' => 'Glowing slide deck placeholder',
+        ],
+        'caption' => [
+            'opening' => 'It\'s March 2020. The Zoom invite has 47 people on it.',
+            'midReveal' => 'And every face is asking the same question through different eyes.',
+            'close' => 'That talk became a pattern: explain it, then let them touch it.',
+        ],
     ],
 
     'whyInteractive' => [
