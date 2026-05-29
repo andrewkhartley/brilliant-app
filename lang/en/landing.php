@@ -83,8 +83,17 @@ return [
     ],
 
     'closingScene' => [
-        'placeholderTitle' => 'ClosingScene',
-        'placeholderNote' => 'Coming in P7.T7 — final multi-plane scene. Dawn inside an O\'Neill Cylinder, the sun-line catching the curved horizon.',
+        'heading' => 'Closing scene',
+        'layers' => [
+            'cylinderHorizon' => 'O\'Neill cylinder curved horizon placeholder',
+            'sunLine' => 'Dawn sun-line atmospheric haze placeholder',
+            'frame' => 'Cylinder structural frame placeholder',
+        ],
+        'caption' => [
+            'opening' => 'Dawn inside an O\'Neill Cylinder. The sun-line catches the curved horizon.',
+            'midReflection' => 'A place — not a problem, not a chart. Made of geometry, paint, and patience.',
+            'close' => 'Brilliant\'s craft. Disney\'s craft. The same answer to "how do you make an idea feel like a place?"',
+        ],
     ],
 
     'contactFooter' => [
