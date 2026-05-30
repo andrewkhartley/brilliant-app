@@ -4,6 +4,7 @@ use App\Http\Controllers\AboutController;
 use App\Http\Controllers\API\HorizonController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Playground\ComponentsDebugController;
+use App\Http\Controllers\Playground\EquationsDebugController;
 use App\Http\Controllers\Playground\InterstellarController;
 use App\Http\Controllers\Playground\SceneDebugController;
 use App\Http\Controllers\PlaygroundController;
@@ -24,6 +25,9 @@ Route::get('/playground/scene-debug', SceneDebugController::class)
 
 Route::get('/playground/components-debug', ComponentsDebugController::class)
     ->name('playground.components-debug');
+
+Route::get('/playground/equations-debug', EquationsDebugController::class)
+    ->name('playground.equations-debug');
 
 Route::get('/playground/interstellar', InterstellarController::class)
     ->name('playground.interstellar');

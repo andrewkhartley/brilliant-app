@@ -45,6 +45,24 @@ return [
         'outro' => 'This prototype uses color blocks instead of artwork so the motion model can be judged on its own.',
     ],
 
+    'equationsDebug' => [
+        'pageTitle' => 'Equations debug — Brilliant',
+        'heading' => 'Equations debug',
+        'intro' => 'Live PHP-vs-TypeScript parity verification for the equation registry. Each case shows the inputs, the PHP-computed value from the fixture, the TypeScript-computed value at runtime, the difference, and pass/fail status.',
+        'fixturePathLabel' => 'Fixture source',
+        'columnInputs' => 'Inputs',
+        'columnPhpExpected' => 'PHP (expected)',
+        'columnTsComputed' => 'TypeScript (computed)',
+        'columnDiff' => 'Diff',
+        'columnStatus' => 'Status',
+        'statusPass' => 'Pass',
+        'statusFail' => 'Fail',
+        'infinityLabel' => '∞',
+        'totalCasesFormat' => ':count total cases across :equations equations',
+        'passingFormat' => ':count passing',
+        'failingFormat' => ':count failing',
+    ],
+
     'componentsDebug' => [
         'title' => 'Phase 6 shared UI components — debug view',
         'intro' => 'Each shipped component is rendered here in isolation so its real-browser behavior can be verified. Sections grow as new components land; placeholders mark the components still in flight.',
