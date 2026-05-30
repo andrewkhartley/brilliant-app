@@ -11,6 +11,20 @@ return [
     'hub' => [
         'title' => 'Playground',
         'intro' => 'Three interactive experiences exploring physics, space travel, and habitat design.',
+        'cards' => [
+            'interstellar' => [
+                'title' => 'Interstellar',
+                'description' => 'A relativity travel agency. Set acceleration, pick a destination, watch time dilation play out — Earth time, traveler time, fuel-equivalents, the equation itself.',
+            ],
+            'cruise' => [
+                'title' => 'Cruise',
+                'description' => 'A planet trip builder with live NASA Horizons data. Pick destinations, set a date, get an itinerary with orbital periods + transit times.',
+            ],
+            'habitat' => [
+                'title' => 'Habitat',
+                'description' => 'An O\'Neill Cylinder explored as a shadowbox window. Multi-plane camera moves through the cylinder interior with interactive cylinder math (radius, length, spin rate for 1g, surface area, population at density).',
+            ],
+        ],
     ],
 
     'sceneDebug' => [
