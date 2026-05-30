@@ -52,6 +52,13 @@ export interface Equation {
      * return the LHS value. Inputs not listed in `variables[1..]` are
      * ignored. Inputs whose values are missing cause undefined behavior
      * by design (no defensive guards in v1; caller's responsibility).
+     *
+     * Inputs are typed as `number`; equations that conceptually take a
+     * boolean flag (e.g. the `stop` parameter on the interstellar
+     * trip-duration equations) accept `0` / `1` (or any value coerced
+     * via `Boolean(...)` inside the compute function) instead. Keeping
+     * the registry-wide signature numeric preserves clean arithmetic
+     * across all the pure-math equations.
      */
     compute(vars: Record<string, number>): number;
 }

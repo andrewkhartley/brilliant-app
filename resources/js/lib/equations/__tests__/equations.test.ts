@@ -4,9 +4,17 @@ import {
     accelerationDuration,
     circleArea,
     cylinderSurfaceArea,
+    interstellarAccelerationDistance,
+    interstellarAccelerationDuration,
     interstellarEarthTime,
+    interstellarEffectiveExhaustVelocity,
+    interstellarFuelMassRatio,
     interstellarFuelRatio,
     interstellarProperTime,
+    interstellarProperTimeAcceleration,
+    interstellarProperTimeCruise,
+    interstellarTripDuration,
+    interstellarTripDurationDilation,
     orbitalPeriod,
     orbitalVelocity,
     rectangleArea,
@@ -17,54 +25,215 @@ import fixture from '../../../../../tests/fixtures/equations-parity.json';
 // The Phase 2 legacy equations have purely-numeric inputs and outputs.
 // The Phase 8 T4.6 additions (interstellar-trip-*, fuel-mass-ratio)
 // introduce boolean inputs (e.g. `stop`) and a "Infinity" string
-// sentinel on output (JSON can't encode ±Infinity natively). Phase 8
-// T4.7 will add the TS twins and dedicated parity tests for those
-// cases; for now we only consume the strictly-numeric subset here.
-type ParityCase = { inputs: Record<string, number>; expected: number };
-type ParityFixture = Record<
-    string,
-    Array<{
-        inputs: Record<string, number | boolean>;
-        expected: number | string;
-    }>
->;
+// sentinel on output (JSON can't encode ±Infinity natively). The TS
+// twin signatures keep inputs strictly `number` (booleans round-trip
+// as 0 / 1 through `Boolean(...)`); the parity test below normalises
+// both directions at the boundary.
+type RawParityCase = {
+    inputs: Record<string, number | boolean>;
+    expected: number | string;
+};
+type ParityFixture = Record<string, RawParityCase[]>;
 
 const fParity = fixture as ParityFixture;
-const f: Record<string, ParityCase[]> = {
-    'relativistic-speed': fParity['relativistic-speed'] as ParityCase[],
-    'orbital-period': fParity['orbital-period'] as ParityCase[],
-    'orbital-velocity': fParity['orbital-velocity'] as ParityCase[],
-    'acceleration-duration': fParity['acceleration-duration'] as ParityCase[],
-};
+
+/**
+ * Deserialise the JSON "Infinity" sentinel back to a native float.
+ * The PHP `artisan equations:dump` command serialises PHP's `INF` as
+ * the string `"Infinity"` because JSON cannot encode ±∞. We swap it
+ * back here so `.toBe(Infinity)` and `.toBeCloseTo()` both work.
+ */
+function deserialiseExpected(expected: number | string): number {
+    if (expected === 'Infinity') {
+        return Number.POSITIVE_INFINITY;
+    }
+
+    if (expected === '-Infinity') {
+        return Number.NEGATIVE_INFINITY;
+    }
+
+    return expected as number;
+}
+
+/**
+ * Normalise a fixture input record into the strictly-numeric record
+ * the Equation.compute signature expects. JSON booleans round-trip
+ * as 0 (false) / 1 (true); the trip-duration equations coerce these
+ * back to bool via `Boolean(...)` inside compute, matching PHP's
+ * `(bool) $stop` cast on the parity-test boundary.
+ */
+function normaliseInputs(
+    inputs: Record<string, number | boolean>,
+): Record<string, number> {
+    const out: Record<string, number> = {};
+
+    for (const [key, value] of Object.entries(inputs)) {
+        out[key] = typeof value === 'boolean' ? (value ? 1 : 0) : value;
+    }
+
+    return out;
+}
+
+/**
+ * Assert that a TS compute matches a fixture expected value. Uses
+ * `toBe` for ±Infinity (exact identity) and `toBeCloseTo` with 6
+ * decimal places for finite values — matching the existing
+ * Phase 2 parity discipline.
+ */
+function expectParity(actual: number, expected: number): void {
+    if (!Number.isFinite(expected)) {
+        expect(actual).toBe(expected);
+
+        return;
+    }
+
+    // Magnitude-aware tolerance: `toBeCloseTo(expected, 6)` checks
+    // |actual − expected| < 5e-7, which is too strict for large
+    // magnitudes (e.g. trip durations of ~6e8 seconds where the
+    // last bits of mantissa already diverge from PHP's float64).
+    // We fall back to a 1e-9 relative tolerance for those, which
+    // is well under the 6-decimal precision floor for small values
+    // and matches the artisan equations:dump round-trip precision.
+    const magnitude = Math.max(Math.abs(actual), Math.abs(expected));
+
+    if (magnitude > 1) {
+        expect(Math.abs(actual - expected) / magnitude).toBeLessThan(1e-9);
+
+        return;
+    }
+
+    expect(actual).toBeCloseTo(expected, 6);
+}
 
 describe('PHP-twin parity (TS compute matches PHP calc to 6 decimal places)', () => {
-    test.each(f['relativistic-speed'])(
+    test.each(fParity['relativistic-speed'])(
         'relativistic-speed: $inputs',
         ({ inputs, expected }) => {
-            expect(relativisticSpeed.compute(inputs)).toBeCloseTo(expected, 6);
+            expectParity(
+                relativisticSpeed.compute(normaliseInputs(inputs)),
+                deserialiseExpected(expected),
+            );
         },
     );
 
-    test.each(f['orbital-period'])(
+    test.each(fParity['orbital-period'])(
         'orbital-period: $inputs',
         ({ inputs, expected }) => {
-            expect(orbitalPeriod.compute(inputs)).toBeCloseTo(expected, 6);
+            expectParity(
+                orbitalPeriod.compute(normaliseInputs(inputs)),
+                deserialiseExpected(expected),
+            );
         },
     );
 
-    test.each(f['orbital-velocity'])(
+    test.each(fParity['orbital-velocity'])(
         'orbital-velocity: $inputs',
         ({ inputs, expected }) => {
-            expect(orbitalVelocity.compute(inputs)).toBeCloseTo(expected, 6);
+            expectParity(
+                orbitalVelocity.compute(normaliseInputs(inputs)),
+                deserialiseExpected(expected),
+            );
         },
     );
 
-    test.each(f['acceleration-duration'])(
+    test.each(fParity['acceleration-duration'])(
         'acceleration-duration: $inputs',
         ({ inputs, expected }) => {
-            expect(accelerationDuration.compute(inputs)).toBeCloseTo(
-                expected,
-                6,
+            expectParity(
+                accelerationDuration.compute(normaliseInputs(inputs)),
+                deserialiseExpected(expected),
+            );
+        },
+    );
+});
+
+describe('PHP-twin parity — Phase 8 interstellar additions (T4.7)', () => {
+    test.each(fParity['interstellar-acceleration-duration'])(
+        'interstellar-acceleration-duration: $inputs',
+        ({ inputs, expected }) => {
+            expectParity(
+                interstellarAccelerationDuration.compute(
+                    normaliseInputs(inputs),
+                ),
+                deserialiseExpected(expected),
+            );
+        },
+    );
+
+    test.each(fParity['interstellar-acceleration-distance'])(
+        'interstellar-acceleration-distance: $inputs',
+        ({ inputs, expected }) => {
+            expectParity(
+                interstellarAccelerationDistance.compute(
+                    normaliseInputs(inputs),
+                ),
+                deserialiseExpected(expected),
+            );
+        },
+    );
+
+    test.each(fParity['interstellar-proper-time-acceleration'])(
+        'interstellar-proper-time-acceleration: $inputs',
+        ({ inputs, expected }) => {
+            expectParity(
+                interstellarProperTimeAcceleration.compute(
+                    normaliseInputs(inputs),
+                ),
+                deserialiseExpected(expected),
+            );
+        },
+    );
+
+    test.each(fParity['interstellar-proper-time-cruise'])(
+        'interstellar-proper-time-cruise: $inputs',
+        ({ inputs, expected }) => {
+            expectParity(
+                interstellarProperTimeCruise.compute(normaliseInputs(inputs)),
+                deserialiseExpected(expected),
+            );
+        },
+    );
+
+    test.each(fParity['interstellar-trip-duration'])(
+        'interstellar-trip-duration: $inputs',
+        ({ inputs, expected }) => {
+            expectParity(
+                interstellarTripDuration.compute(normaliseInputs(inputs)),
+                deserialiseExpected(expected),
+            );
+        },
+    );
+
+    test.each(fParity['interstellar-trip-duration-dilation'])(
+        'interstellar-trip-duration-dilation: $inputs',
+        ({ inputs, expected }) => {
+            expectParity(
+                interstellarTripDurationDilation.compute(
+                    normaliseInputs(inputs),
+                ),
+                deserialiseExpected(expected),
+            );
+        },
+    );
+
+    test.each(fParity['interstellar-effective-exhaust-velocity'])(
+        'interstellar-effective-exhaust-velocity: $inputs',
+        ({ inputs, expected }) => {
+            expectParity(
+                interstellarEffectiveExhaustVelocity.compute(
+                    normaliseInputs(inputs),
+                ),
+                deserialiseExpected(expected),
+            );
+        },
+    );
+
+    test.each(fParity['interstellar-fuel-mass-ratio'])(
+        'interstellar-fuel-mass-ratio: $inputs',
+        ({ inputs, expected }) => {
+            expectParity(
+                interstellarFuelMassRatio.compute(normaliseInputs(inputs)),
+                deserialiseExpected(expected),
             );
         },
     );
