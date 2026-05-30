@@ -6,22 +6,62 @@ interface DurationToggleProps {
 }
 
 /**
- * DurationToggle stub. Real toggle lands in P8.T3 (form + result
- * stubs promoted to real interactive components).
+ * DurationToggle — picks which clock is highlighted as primary in the
+ * ResultPanel (subjective/traveler time vs Earth/coordinate time).
  *
- * In production: a two-state toggle that highlights which clock
- * (subjective/proper time aboard the ship, or Earth/coordinate
- * time) is treated as the primary result in the ResultPanel.
+ * Both clocks render in the panel regardless of toggle state; this
+ * control only governs the visual treatment that marks one as the
+ * headline. Implemented as a true ARIA radio group rather than two
+ * buttons so AT users understand it as a single bi-state choice
+ * (vs. two independent toggles).
+ *
+ * Logical Tailwind classes only — no ml-/mr-/pl-/pr-/left-/right-.
  */
 export function DurationToggle({ mode, onChange }: DurationToggleProps) {
     const { t } = useTranslation();
-    // Props captured for type-checking; stub renders placeholder only.
-    void mode;
-    void onChange;
+    const subjectiveSelected = mode === 'subjective';
+    const earthSelected = mode === 'earth';
 
     return (
-        <div className="rounded border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-500">
-            {t('interstellar.durationToggle.placeholderNote')}
+        <div className="space-y-2">
+            <p className="text-sm font-medium text-neutral-700">
+                {t('interstellar.durationToggle.label')}
+            </p>
+            <div
+                role="radiogroup"
+                aria-label={t('interstellar.durationToggle.label')}
+                className="inline-flex rounded-md border border-neutral-300 bg-white p-1"
+            >
+                <button
+                    type="button"
+                    role="radio"
+                    aria-checked={subjectiveSelected}
+                    onClick={() => onChange('subjective')}
+                    className={`rounded px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+                        subjectiveSelected
+                            ? 'bg-blue-600 text-white'
+                            : 'text-neutral-700 hover:bg-neutral-100'
+                    }`}
+                >
+                    {t('interstellar.durationToggle.subjectiveLabel')}
+                </button>
+                <button
+                    type="button"
+                    role="radio"
+                    aria-checked={earthSelected}
+                    onClick={() => onChange('earth')}
+                    className={`rounded px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+                        earthSelected
+                            ? 'bg-blue-600 text-white'
+                            : 'text-neutral-700 hover:bg-neutral-100'
+                    }`}
+                >
+                    {t('interstellar.durationToggle.earthLabel')}
+                </button>
+            </div>
+            <p className="text-xs text-neutral-500">
+                {t('interstellar.durationToggle.hint')}
+            </p>
         </div>
     );
 }
