@@ -4,6 +4,7 @@ use App\Http\Controllers\AboutController;
 use App\Http\Controllers\API\HorizonController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Playground\ComponentsDebugController;
+use App\Http\Controllers\Playground\CruiseController;
 use App\Http\Controllers\Playground\EquationsDebugController;
 use App\Http\Controllers\Playground\InterstellarController;
 use App\Http\Controllers\Playground\SceneDebugController;
@@ -31,3 +32,6 @@ Route::get('/playground/equations-debug', EquationsDebugController::class)
 
 Route::get('/playground/interstellar', InterstellarController::class)
     ->name('playground.interstellar');
+
+Route::get('/playground/cruise', [CruiseController::class, 'create'])
+    ->name('playground.cruise');

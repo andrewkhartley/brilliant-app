@@ -126,11 +126,16 @@ return [
     |--------------------------------------------------------------------------
     |
     | This value determines the classes that can be unserialized from cache
-    | storage. By default, no PHP classes will be unserialized from your
-    | cache to prevent gadget chain attacks if your APP_KEY is leaked.
+    | storage. Laravel 12+ defaults this to false to prevent unserialize
+    | gadget chain attacks if your APP_KEY is leaked. We set it to true so
+    | that the lifted Cruise services (Phase 2) can cache Eloquent
+    | Collections per their original Undaunted-app design (see
+    | App\Models\Experiences\Cruise\Destination::getCachedFacts). This
+    | site has no user-controlled cache write surface, so the gadget chain
+    | threat does not apply.
     |
     */
 
-    'serializable_classes' => false,
+    'serializable_classes' => true,
 
 ];

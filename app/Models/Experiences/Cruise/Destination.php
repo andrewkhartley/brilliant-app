@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Cache;
 
 class Destination extends Model
 {
-    // Data Mapping
-    protected $connection = 'scales-systems';
-
+    // Data Mapping — uses the default SQLite connection (Phase 10 T1
+    // dropped the legacy `scales-systems` named connection; this is
+    // the first DB-backed domain table in the Brilliant v1 build).
     protected $table = 'solar_system_facts';
 
     // Mass assignable attributes
