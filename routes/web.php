@@ -35,3 +35,6 @@ Route::get('/playground/interstellar', InterstellarController::class)
 
 Route::get('/playground/cruise', [CruiseController::class, 'create'])
     ->name('playground.cruise');
+
+Route::post('/playground/cruise', [CruiseController::class, 'store'])
+    ->name('playground.cruise.store');

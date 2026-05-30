@@ -40,5 +40,18 @@ return [
             'hint' => 'Pick any date from today through five years out — that\'s the window Horizons covers comfortably.',
             'ariaLabel' => 'Trip departure date',
         ],
+
+        'errors' => [
+            'summaryHeading' => 'Please fix these before planning your trip:',
+            'destinations' => [
+                'min' => 'Pick at least one destination.',
+                'max' => 'Eight destinations is the cruise-trip cap.',
+                'invalid' => 'One or more destinations isn\'t recognized.',
+            ],
+            'tripStart' => [
+                'required' => 'A departure date is required.',
+                'past' => 'Pick a departure date today or later.',
+            ],
+        ],
     ],
 ];

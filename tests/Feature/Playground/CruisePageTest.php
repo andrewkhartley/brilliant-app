@@ -7,6 +7,7 @@ use Database\Seeders\SolarSystemFactsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 
 uses(RefreshDatabase::class);
 
@@ -42,4 +43,62 @@ it('shares the cruise translation namespace for the form labels', function () {
             ->where('translations.cruise.form.destinations.label', 'Destinations')
             ->where('translations.cruise.form.date.label', 'Departure date')
     );
+});
+
+/*
+ * Phase 10 T4 — POST /playground/cruise (StoreCruiseRequest + store action).
+ *
+ * The store action flashes the validated payload under the `cruise`
+ * session key and redirects to /playground/cruise/review (T5's GET
+ * route — not registered yet, by design). These tests assert the
+ * validation surface + the flash + the redirect target.
+ */
+
+it('accepts a valid trip submission and flashes the payload to the review URL', function () {
+    $response = post('/playground/cruise', [
+        'destinations' => ['mer', 'ven'],
+        'tripStart' => now()->addDays(7)->toDateString(),
+    ]);
+
+    $response->assertRedirect('/playground/cruise/review');
+    $response->assertSessionHas('cruise', [
+        'destinations' => ['mer', 'ven'],
+        'tripStart' => now()->addDays(7)->toDateString(),
+    ]);
+});
+
+it('rejects an empty destinations list with a 302 + error bag', function () {
+    $response = post('/playground/cruise', [
+        'destinations' => [],
+        'tripStart' => now()->addDays(7)->toDateString(),
+    ]);
+
+    $response->assertSessionHasErrors(['destinations']);
+});
+
+it('rejects more than 8 destinations', function () {
+    $response = post('/playground/cruise', [
+        'destinations' => ['mer', 'ven', 'ear', 'mar', 'jup', 'sat', 'ura', 'nep', 'plu'],
+        'tripStart' => now()->addDays(7)->toDateString(),
+    ]);
+
+    $response->assertSessionHasErrors(['destinations']);
+});
+
+it('rejects a past trip-start date', function () {
+    $response = post('/playground/cruise', [
+        'destinations' => ['mer'],
+        'tripStart' => now()->subDay()->toDateString(),
+    ]);
+
+    $response->assertSessionHasErrors(['tripStart']);
+});
+
+it('rejects a destination code that is not in the catalog', function () {
+    $response = post('/playground/cruise', [
+        'destinations' => ['not-a-real-place'],
+        'tripStart' => now()->addDays(7)->toDateString(),
+    ]);
+
+    $response->assertSessionHasErrors(['destinations.0']);
 });
