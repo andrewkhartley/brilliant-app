@@ -97,5 +97,240 @@
             },
             "expected": 1.4142135623730951
         }
+    ],
+    "interstellar-acceleration-duration": [
+        {
+            "inputs": {
+                "v": 74948114,
+                "a": 0.980665
+            },
+            "expected": 78932234.00381182
+        },
+        {
+            "inputs": {
+                "v": 149896229,
+                "a": 9.80665
+            },
+            "expected": 17649784.21044083
+        },
+        {
+            "inputs": {
+                "v": 1000,
+                "a": 1
+            },
+            "expected": 1000.0000000055632
+        }
+    ],
+    "interstellar-acceleration-distance": [
+        {
+            "inputs": {
+                "a": 9.80665,
+                "t": 10
+            },
+            "expected": 490.4310952206224
+        },
+        {
+            "inputs": {
+                "a": 0.980665,
+                "t": 249500000
+            },
+            "expected": 26648892597335910
+        },
+        {
+            "inputs": {
+                "a": 9.80665,
+                "t": 31536000
+            },
+            "expected": 4002465390286558
+        }
+    ],
+    "interstellar-proper-time-acceleration": [
+        {
+            "inputs": {
+                "a": 9.80665,
+                "t": 31536000
+            },
+            "expected": 27621348.223394606
+        },
+        {
+            "inputs": {
+                "a": 0.980665,
+                "t": 249500000
+            },
+            "expected": 227819356.8581861
+        },
+        {
+            "inputs": {
+                "a": 1,
+                "t": 1000
+            },
+            "expected": 999.9999999981457
+        }
+    ],
+    "interstellar-proper-time-cruise": [
+        {
+            "inputs": {
+                "d": 9461000000000000,
+                "v": 74948114
+            },
+            "expected": 122225542.10892189
+        },
+        {
+            "inputs": {
+                "d": 9461000000000000,
+                "v": 269813212
+            },
+            "expected": 15284478.7434496
+        },
+        {
+            "inputs": {
+                "d": 1000000,
+                "v": 1000
+            },
+            "expected": 999.9999999944366
+        }
+    ],
+    "interstellar-trip-duration": [
+        {
+            "inputs": {
+                "d": 40208104508468400,
+                "a": 0.980665,
+                "vMax": 74948114,
+                "stop": true
+            },
+            "expected": 614138005.687877
+        },
+        {
+            "inputs": {
+                "d": 40208104508468400,
+                "a": 0.980665,
+                "vMax": 74948114,
+                "stop": false
+            },
+            "expected": 575308604.6334405
+        },
+        {
+            "inputs": {
+                "d": 40114000000000000,
+                "a": 9.80665,
+                "vMax": 149896229,
+                "stop": true
+            },
+            "expected": 283994389.0133703
+        },
+        {
+            "inputs": {
+                "d": 1000000000000,
+                "a": 9.80665,
+                "vMax": 250000000,
+                "stop": true
+            },
+            "expected": 638668.6243207285
+        }
+    ],
+    "interstellar-trip-duration-dilation": [
+        {
+            "inputs": {
+                "d": 40208104508468400,
+                "a": 0.980665,
+                "vMax": 74948114,
+                "stop": true
+            },
+            "expected": 597945995.4235296
+        },
+        {
+            "inputs": {
+                "d": 40208104508468400,
+                "a": 0.980665,
+                "vMax": 74948114,
+                "stop": false
+            },
+            "expected": 558694875.4582893
+        },
+        {
+            "inputs": {
+                "d": 40114000000000000,
+                "a": 9.80665,
+                "vMax": 149896229,
+                "stop": true
+            },
+            "expected": 248960964.93369013
+        },
+        {
+            "inputs": {
+                "d": 1000000000000,
+                "a": 9.80665,
+                "vMax": 250000000,
+                "stop": true
+            },
+            "expected": 638657.0099917545
+        }
+    ],
+    "interstellar-effective-exhaust-velocity": [
+        {
+            "inputs": {
+                "specificEnergy": 89875517874000000,
+                "efficiency": 1
+            },
+            "expected": 259627884.4911326
+        },
+        {
+            "inputs": {
+                "specificEnergy": 89875517874000000,
+                "efficiency": 0.5
+            },
+            "expected": 223452105.07679453
+        },
+        {
+            "inputs": {
+                "specificEnergy": 338000000000000,
+                "efficiency": 1
+            },
+            "expected": 25926928.558120906
+        },
+        {
+            "inputs": {
+                "specificEnergy": 144000000000000,
+                "efficiency": 1
+            },
+            "expected": 16950201.129925545
+        },
+        {
+            "inputs": {
+                "specificEnergy": 89875517874000000,
+                "efficiency": 0
+            },
+            "expected": 0
+        }
+    ],
+    "interstellar-fuel-mass-ratio": [
+        {
+            "inputs": {
+                "deltaV": 74948114,
+                "effectiveExhaustVelocity": 259624000
+            },
+            "expected": 1.3430319697751927
+        },
+        {
+            "inputs": {
+                "deltaV": 149896229,
+                "effectiveExhaustVelocity": 259624000
+            },
+            "expected": 1.8856896022740655
+        },
+        {
+            "inputs": {
+                "deltaV": 1000,
+                "effectiveExhaustVelocity": 4500
+            },
+            "expected": 1.2488488689961226
+        },
+        {
+            "inputs": {
+                "deltaV": 300000000,
+                "effectiveExhaustVelocity": 259624000
+            },
+            "expected": "Infinity"
+        }
     ]
 }

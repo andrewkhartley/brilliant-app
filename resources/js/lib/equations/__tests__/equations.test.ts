@@ -14,10 +14,28 @@ import {
 } from '@/lib/equations';
 import fixture from '../../../../../tests/fixtures/equations-parity.json';
 
+// The Phase 2 legacy equations have purely-numeric inputs and outputs.
+// The Phase 8 T4.6 additions (interstellar-trip-*, fuel-mass-ratio)
+// introduce boolean inputs (e.g. `stop`) and a "Infinity" string
+// sentinel on output (JSON can't encode ±Infinity natively). Phase 8
+// T4.7 will add the TS twins and dedicated parity tests for those
+// cases; for now we only consume the strictly-numeric subset here.
 type ParityCase = { inputs: Record<string, number>; expected: number };
-type ParityFixture = Record<string, ParityCase[]>;
+type ParityFixture = Record<
+    string,
+    Array<{
+        inputs: Record<string, number | boolean>;
+        expected: number | string;
+    }>
+>;
 
-const f = fixture as ParityFixture;
+const fParity = fixture as ParityFixture;
+const f: Record<string, ParityCase[]> = {
+    'relativistic-speed': fParity['relativistic-speed'] as ParityCase[],
+    'orbital-period': fParity['orbital-period'] as ParityCase[],
+    'orbital-velocity': fParity['orbital-velocity'] as ParityCase[],
+    'acceleration-duration': fParity['acceleration-duration'] as ParityCase[],
+};
 
 describe('PHP-twin parity (TS compute matches PHP calc to 6 decimal places)', () => {
     test.each(f['relativistic-speed'])(
