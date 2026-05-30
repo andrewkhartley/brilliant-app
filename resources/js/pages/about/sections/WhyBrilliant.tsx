@@ -1,24 +1,28 @@
 import { useTranslation } from '@/hooks/useTranslation';
 
 /**
- * WhyBrilliant section stub. Real content lands in P12.T2.
+ * Why Brilliant section — synthesis + why this application is built
+ * as itself.
  *
- * This stub renders only a section heading + a "coming in P12.T2" note
- * so the About page's overall composition is visible end-to-end during
- * the section arc. P12.T2 swaps for real Why Brilliant content
- * (heading + 3 paragraphs).
+ * Three paragraphs: Brilliant's "feel the math" engineering principle,
+ * the argument-is-the-artifact framing for this application, and the
+ * close that leads into the Contact section.
+ *
+ * Copy is placeholder; Andrew refines.
  */
 export function WhyBrilliant() {
     const { t } = useTranslation();
 
     return (
-        <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-16">
-            <h2 className="text-2xl font-semibold">
-                {t('about.whyBrilliant.placeholderTitle')}
+        <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-20">
+            <h2 className="text-3xl font-semibold tracking-tight">
+                {t('about.whyBrilliant.heading')}
             </h2>
-            <p className="mt-3 text-neutral-700">
-                {t('about.whyBrilliant.placeholderNote')}
-            </p>
+            <div className="mt-8 space-y-6 text-lg leading-relaxed text-neutral-700">
+                <p>{t('about.whyBrilliant.paragraph1')}</p>
+                <p>{t('about.whyBrilliant.paragraph2')}</p>
+                <p>{t('about.whyBrilliant.paragraph3')}</p>
+            </div>
         </section>
     );
 }

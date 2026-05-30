@@ -1,24 +1,28 @@
 import { useTranslation } from '@/hooks/useTranslation';
 
 /**
- * Disney section stub. Real content lands in P12.T2.
+ * Disney chapter section — craft lineage.
  *
- * This stub renders only a section heading + a "coming in P12.T2" note
- * so the About page's overall composition is visible end-to-end during
- * the section arc. P12.T2 swaps for real Disney chapter content
- * (heading + 3 paragraphs).
+ * Three paragraphs about Andrew's Disney Cast Member background and
+ * how the multi-plane sensibility was inherited from that environment.
+ * Concrete details ground the section; the abstract "craft lineage"
+ * framing comes through specifics.
+ *
+ * Copy is placeholder; Andrew refines.
  */
 export function Disney() {
     const { t } = useTranslation();
 
     return (
-        <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-16">
-            <h2 className="text-2xl font-semibold">
-                {t('about.disney.placeholderTitle')}
+        <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-20">
+            <h2 className="text-3xl font-semibold tracking-tight">
+                {t('about.disney.heading')}
             </h2>
-            <p className="mt-3 text-neutral-700">
-                {t('about.disney.placeholderNote')}
-            </p>
+            <div className="mt-8 space-y-6 text-lg leading-relaxed text-neutral-700">
+                <p>{t('about.disney.paragraph1')}</p>
+                <p>{t('about.disney.paragraph2')}</p>
+                <p>{t('about.disney.paragraph3')}</p>
+            </div>
         </section>
     );
 }

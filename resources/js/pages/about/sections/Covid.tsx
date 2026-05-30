@@ -1,24 +1,28 @@
 import { useTranslation } from '@/hooks/useTranslation';
 
 /**
- * Covid section stub. Real content lands in P12.T2.
+ * Covid talks section — the 2020 pivot.
  *
- * This stub renders only a section heading + a "coming in P12.T2" note
- * so the About page's overall composition is visible end-to-end during
- * the section arc. P12.T2 swaps for real Covid talks content
- * (heading + 3 paragraphs).
+ * Three paragraphs covering the March 2020 47-person Zoom, the
+ * overnight rebuild from explanation-mode to lever-pulling, and the
+ * pattern that surfaced across the year — the discovery this site
+ * is built around.
+ *
+ * Copy is placeholder; Andrew refines.
  */
 export function Covid() {
     const { t } = useTranslation();
 
     return (
-        <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-16">
-            <h2 className="text-2xl font-semibold">
-                {t('about.covid.placeholderTitle')}
+        <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-20">
+            <h2 className="text-3xl font-semibold tracking-tight">
+                {t('about.covid.heading')}
             </h2>
-            <p className="mt-3 text-neutral-700">
-                {t('about.covid.placeholderNote')}
-            </p>
+            <div className="mt-8 space-y-6 text-lg leading-relaxed text-neutral-700">
+                <p>{t('about.covid.paragraph1')}</p>
+                <p>{t('about.covid.paragraph2')}</p>
+                <p>{t('about.covid.paragraph3')}</p>
+            </div>
         </section>
     );
 }
