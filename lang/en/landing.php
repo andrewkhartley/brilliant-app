@@ -70,6 +70,7 @@ return [
     'whatElse' => [
         'heading' => 'What else I built',
         'intro' => 'Two more experiences in the playground — built on the same engine and equation registry.',
+        'undauntedLogoAlt' => 'Undaunted',
         'cards' => [
             'cruise' => [
                 'title' => 'Cruise',

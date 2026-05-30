@@ -14,6 +14,35 @@ import { useTranslation } from '@/hooks/useTranslation';
  * upstream in the TryOne section. WhatElse is the "what ELSE I built"
  * beat — the two experiences beyond the inline demo.
  *
+ * Undaunted brand first-mention (P7.T9):
+ * - The Undaunted icon mark renders inline at the head of the intro
+ *   paragraph, sized small (h-6) to read as part of the reading flow
+ *   rather than as a brand drop. This is the first visual surfacing of
+ *   the Undaunted name on the landing.
+ * - Placement rationale: of the three options considered (wordmark
+ *   above heading; icon inline with intro; wordmark below cards as
+ *   attribution), the inline-icon option lets visitors *discover* the
+ *   Undaunted attribution as part of reading the section's setup
+ *   sentence rather than seeing the brand drop before the content —
+ *   matches the landing's demonstrative-not-declarative posture. The
+ *   wordmark (788x100 aspect) is reserved for future contexts where a
+ *   wider banner placement makes sense; the icon (100x100) is the
+ *   right shape inline with body text.
+ * - Asset path: /assets/brand/undaunted/logo-on-light.svg — the icon
+ *   variant designed for light backgrounds (darker, more saturated
+ *   sky-blue and amber tones). The original /assets/brand/undaunted/
+ *   logo.svg uses the brand's brighter sky-blue + golden-yellow
+ *   gradients designed for dark backgrounds (used in dark scenes if
+ *   they need branding later). Both icon and wordmark variants live
+ *   side-by-side: logo.svg + logo-text.svg are the dark-bg defaults;
+ *   logo-on-light.svg + logo-text-on-light.svg are the light-bg
+ *   variants. Pick the variant matching the section's background tone.
+ * - Accessibility: alt text "Undaunted" flows through t() so the
+ *   image carries the brand name for AT users even if the placeholder
+ *   intro copy doesn't yet mention Undaunted by name. When Andrew's
+ *   weekend copy names Undaunted explicitly in the intro, this alt
+ *   can be flipped to "" (decorative) to avoid double-announcement.
+ *
  * Copy is placeholder; Andrew refines over the weekend with full landing
  * arc visible end-to-end.
  */
@@ -25,8 +54,13 @@ export function WhatElse() {
             <h2 className="text-3xl font-semibold tracking-tight">
                 {t('landing.whatElse.heading')}
             </h2>
-            <p className="mt-4 text-lg text-neutral-700">
-                {t('landing.whatElse.intro')}
+            <p className="mt-4 flex items-center gap-3 text-lg text-neutral-700">
+                <img
+                    src="/assets/brand/undaunted/logo-on-light.svg"
+                    alt={t('landing.whatElse.undauntedLogoAlt')}
+                    className="h-6 w-auto shrink-0"
+                />
+                <span>{t('landing.whatElse.intro')}</span>
             </p>
 
             <div className="mt-10 grid gap-6 md:grid-cols-2">
