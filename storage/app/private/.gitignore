@@ -1,2 +1,4 @@
 *
 !.gitignore
+!horizons-cache/
+!horizons-cache/.gitignore

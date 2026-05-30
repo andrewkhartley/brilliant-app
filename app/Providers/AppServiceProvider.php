@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\API\HorizonCache;
+use App\Services\API\HorizonService;
+use App\Services\Sessions\SessionManager;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +18,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Transparently wrap the API HorizonService with a persistent file
+        // cache. Every consumer that typehints HorizonService (TripBuilderService,
+        // Cruise\HorizonService, HorizonController) receives the cache; the cache
+        // itself takes a non-cache HorizonService as its upstream, resolved here
+        // explicitly to break the recursive binding.
+        $this->app->when(HorizonCache::class)
+            ->needs(HorizonService::class)
+            ->give(fn ($app) => new HorizonService($app->make(SessionManager::class)));
+
+        $this->app->bind(HorizonService::class, HorizonCache::class);
     }
 
     /**
