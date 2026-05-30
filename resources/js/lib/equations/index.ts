@@ -13,6 +13,9 @@ export type { Equation, EquationVariable } from './types';
 import { accelerationDuration } from './acceleration-duration';
 import { circleArea } from './circle-area';
 import { cylinderSurfaceArea } from './cylinder-surface-area';
+import { interstellarEarthTime } from './interstellar-earth-time';
+import { interstellarFuelRatio } from './interstellar-fuel-ratio';
+import { interstellarProperTime } from './interstellar-proper-time';
 import { orbitalPeriod } from './orbital-period';
 import { orbitalVelocity } from './orbital-velocity';
 import { rectangleArea } from './rectangle-area';
@@ -23,6 +26,9 @@ export {
     accelerationDuration,
     circleArea,
     cylinderSurfaceArea,
+    interstellarEarthTime,
+    interstellarFuelRatio,
+    interstellarProperTime,
     orbitalPeriod,
     orbitalVelocity,
     rectangleArea,
@@ -33,6 +39,9 @@ export const allEquations: readonly Equation[] = [
     accelerationDuration,
     circleArea,
     cylinderSurfaceArea,
+    interstellarEarthTime,
+    interstellarFuelRatio,
+    interstellarProperTime,
     orbitalPeriod,
     orbitalVelocity,
     rectangleArea,
