@@ -21,8 +21,11 @@ return [
     'intro' => 'A relativity travel agency. Pick a destination, set your acceleration, and watch time dilation reshape the trip.',
 
     'modeToggle' => [
-        'placeholderTitle' => 'ModeToggle',
-        'placeholderNote' => 'Coming in P8.T4 — Beginner vs Just the math toggle.',
+        'label' => 'Interface mode',
+        'ariaLabel' => 'Choose interface mode',
+        'beginnerLabel' => 'Beginner',
+        'mathLabel' => 'Just the math',
+        'hint' => 'Beginner mode hides the equation. Just the math reveals it.',
     ],
 
     'destinationSelect' => [
