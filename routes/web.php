@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AboutController;
 use App\Http\Controllers\API\HorizonController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Playground\ComponentsDebugController;
@@ -8,6 +9,8 @@ use App\Http\Controllers\PlaygroundController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
+
+Route::get('/about', AboutController::class)->name('about.index');
 
 Route::get('/api/horizon/query', [HorizonController::class, 'queryHorizon'])
     ->name('horizon.query');
