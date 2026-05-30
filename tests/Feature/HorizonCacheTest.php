@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection — HorizonService::horizonQuery declares @throws GuzzleException; in these tests the upstream is always Mockery-mocked so the exception is never actually thrown. PHPStorm's static analysis can't see through the mock. */
+
 use App\Services\API\HorizonCache;
 use App\Services\API\HorizonService;
 use App\Services\Sessions\SessionManager;
@@ -101,7 +103,7 @@ it('preserves nested array shapes through the JSON roundtrip on cache hit', func
     $cache = new HorizonCache(app(SessionManager::class), $upstream);
     $result = $cache->horizonQuery('599', 1735689600, 1440, 86400);
 
-    expect($result)->toBe($cached);
-    expect($result['data'])->toHaveCount(2);
-    expect($result['data'][0]['x'])->toBe('7.43e+8');
+    expect($result)->toBe($cached)
+        ->and($result['data'])->toHaveCount(2)
+        ->and($result['data'][0]['x'])->toBe('7.43e+8');
 });
