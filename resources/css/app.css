@@ -26,3 +26,48 @@
         outline: none;
     }
 }
+
+/*
+ * Phase 10 T5.5 — Cruise review per-leg reveal animation.
+ *
+ * Each <LegRow> on the review page fades-in + slides-up with a
+ * staggered delay (set inline via `style={{ animationDelay }}` in
+ * cruise-review.tsx). The initial state holds the card at opacity:0
+ * + translateY(1rem) so the cascade has somewhere to animate FROM;
+ * `animation-fill-mode: both` means the from-state is applied
+ * BEFORE the delay elapses (avoids a flash-of-fully-opaque content
+ * during the delay window) and the end state sticks AFTER the
+ * animation finishes. Using opacity + transform — NOT display —
+ * means each card occupies its final layout slot from first paint
+ * (no reflow on reveal).
+ *
+ * Tailwind v4 ships `animate-fade-in` but not a combined fade+slide,
+ * and arbitrary `@keyframes` aren't expressible in utility class
+ * syntax. Defining the keyframes here + a `.cruise-leg-reveal`
+ * utility class keeps the cascade declarative on the JSX side
+ * (className + inline delay) without pulling in an animation
+ * library.
+ *
+ * Accessibility: gated behind `@media (prefers-reduced-motion: no-preference)`.
+ * Users who request reduced motion see the cards instantly, with no
+ * animation overhead and no perceived penalty — the JSX still
+ * applies the class, but the media query short-circuits the
+ * keyframes entirely (matches Tailwind's own `motion-safe:`
+ * semantics).
+ */
+@keyframes cruise-leg-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(1rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .cruise-leg-reveal {
+        animation: cruise-leg-reveal 400ms ease-out both;
+    }
+}

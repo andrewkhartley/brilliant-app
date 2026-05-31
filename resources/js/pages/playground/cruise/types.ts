@@ -13,6 +13,20 @@
  * fallback view ships.
  */
 
+/**
+ * 3D position triplet — solar-system coordinates in kilometers,
+ * rounded to the nearest km server-side (sub-meter precision is
+ * noise at this scale). `null` when the leg's calculator output
+ * didn't expose a coordinate for that endpoint (defensive — every
+ * leg in the lifted service does produce both, but the controller's
+ * `presentCoordinates()` guards against partial shapes anyway).
+ */
+export interface Coordinates {
+    x: number;
+    y: number;
+    z: number;
+}
+
 export interface Leg {
     /** 1-based leg ordinal — surfaces in the "Leg N" heading. */
     leg: number;
@@ -42,6 +56,12 @@ export interface Leg {
     burnDurationFormatted: string;
     /** Pre-formatted cruise (coast) duration. */
     cruiseDurationFormatted: string;
+    /** Pre-formatted relativistic time dilation across the leg. */
+    dilationFormatted: string;
+    /** 3D departure position in km at leg-start (null when missing). */
+    depCoordinates: Coordinates | null;
+    /** 3D arrival position in km at leg-end (null when missing). */
+    arrCoordinates: Coordinates | null;
 }
 
 export interface Trip {
@@ -51,6 +71,10 @@ export interface Trip {
     arrivalTime: string | null;
     /** Pre-formatted total trip duration ("11d 6h"). */
     finalDuration: string | null;
+    /** Pre-formatted cumulative orbit/layover time across all legs. */
+    totalOrbDurFormatted: string | null;
+    /** Pre-formatted cumulative time dilation across all legs. */
+    totalDilationFormatted: string | null;
     /** Ordered list of leg breakdowns (Earth → ... → Earth). */
     legs: Leg[];
 }

@@ -28,6 +28,8 @@ return [
             'arrivalLabel' => 'Arrival',
             'durationLabel' => 'Total duration',
             'legsLabel' => 'Legs',
+            'orbitDurationLabel' => 'Total orbit time',
+            'dilationLabel' => 'Time dilation',
         ],
         'itinerary' => [
             'heading' => 'Itinerary',
@@ -46,6 +48,18 @@ return [
             'maxSpeed' => [
                 'label' => 'Top speed',
                 'units' => 'm/s',
+            ],
+            'details' => [
+                'show' => 'Show details',
+                'hide' => 'Hide details',
+                'burnLabel' => 'Burn time',
+                'cruiseLabel' => 'Cruise time',
+                'dilationLabel' => 'Time dilation',
+                'coordinatesLabel' => 'Coordinates',
+                'coordinatesUnits' => 'km',
+                'departureCoordinates' => 'Departure: :x, :y, :z km',
+                'arrivalCoordinates' => 'Arrival: :x, :y, :z km',
+                'coordinatesUnavailable' => 'Unavailable',
             ],
         ],
         'horizonsError' => [

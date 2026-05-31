@@ -196,11 +196,21 @@ class CruiseController extends Controller
      * helper itself is lifted code we don't want to touch, so the
      * strip happens here at the Inertia boundary.
      *
-     * Each leg surfaces what the UI cares about:
-     *  - departure/arrival codes (asset selection)
-     *  - departureTime / arrivalTime (display)
-     *  - legDistance + cruise/burn breakdowns
-     *  - depDetails + arrDetails name/code (leg headline)
+     * Each leg surfaces the prominent stats (distance, duration, max
+     * speed) PLUS a secondary detail block the UI hides behind a
+     * disclosure: burn time, cruise time, time dilation, and the 3D
+     * departure/arrival coordinates. The depth here is intentional —
+     * the math computes ~25 fields per leg and Andrew wants users to
+     * see the shape of what's actually being solved, not just the
+     * top-line trio.
+     *
+     * Trip totals expose the same depth at the trip level: total
+     * orbit (layover) duration and total relativistic time dilation
+     * across all legs come from `CumulativeService::calc()`, which
+     * `tripBuild()` assigns to `$trip['total']`. The raw totals
+     * (`totalOrbDur`, `totalDilation`) are floats in seconds; we
+     * pass them through `secondsToDuration()` here so the formatting
+     * matches the per-leg duration strings.
      *
      * @param  array<string, mixed>  $computedTrip
      * @return array<string, mixed>
@@ -224,8 +234,13 @@ class CruiseController extends Controller
                 'maxSpeedFormatted' => strip_tags((string) ($leg['finalLegDetails']['legMaxSpeedFormatted'] ?? '0')),
                 'burnDurationFormatted' => strip_tags((string) ($leg['finalLegDetails']['burnDurationFormatted'] ?? '')),
                 'cruiseDurationFormatted' => strip_tags((string) ($leg['finalLegDetails']['cruiseDurationFormatted'] ?? '')),
+                'dilationFormatted' => strip_tags((string) ($leg['finalLegDetails']['legDilationFormatted'] ?? '')),
+                'depCoordinates' => $this->presentCoordinates($leg['depCoordinates'] ?? []),
+                'arrCoordinates' => $this->presentCoordinates($leg['arrCoordinates'] ?? []),
             ])
             ->all();
+
+        $totals = $computedTrip['total'] ?? [];
 
         return [
             'departureTime' => $computedTrip['departureTime'] === null
@@ -237,7 +252,37 @@ class CruiseController extends Controller
             'finalDuration' => $computedTrip['finalDuration'] === null
                 ? null
                 : strip_tags((string) $computedTrip['finalDuration']),
+            'totalOrbDurFormatted' => isset($totals['totalOrbDur'])
+                ? strip_tags(secondsToDuration((int) round((float) $totals['totalOrbDur'])))
+                : null,
+            'totalDilationFormatted' => isset($totals['totalDilation'])
+                ? strip_tags(secondsToDuration((int) round((float) $totals['totalDilation'])))
+                : null,
             'legs' => $legs,
+        ];
+    }
+
+    /**
+     * Normalize a coordinate triplet from the calculator output into a
+     * compact `{x, y, z}` shape. `coordBuild()` returns the same keys
+     * but with extra intermediate fields in some code paths; pinning
+     * the wire shape here keeps the JS type stable. Values are rounded
+     * to the nearest km — the underlying floats carry sub-meter
+     * precision that's noise at solar-system scale.
+     *
+     * @param  array<string, mixed>  $coordinates
+     * @return array{x: int, y: int, z: int}|null
+     */
+    private function presentCoordinates(array $coordinates): ?array
+    {
+        if (! isset($coordinates['x'], $coordinates['y'], $coordinates['z'])) {
+            return null;
+        }
+
+        return [
+            'x' => (int) round((float) $coordinates['x']),
+            'y' => (int) round((float) $coordinates['y']),
+            'z' => (int) round((float) $coordinates['z']),
         ];
     }
 }

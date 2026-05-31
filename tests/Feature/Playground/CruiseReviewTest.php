@@ -130,6 +130,37 @@ it('flows from form submission through to a rendered review page', function () {
     );
 });
 
+it('surfaces per-leg depth (coordinates, dilation, burn/cruise) and trip totals in the inertia payload', function () {
+    stubHorizonService();
+
+    $tripStart = now()->addDays(10)->toDateString();
+
+    $response = withSession([
+        'cruise' => [
+            'destinations' => ['mer'],
+            'tripStart' => $tripStart,
+        ],
+    ])->get('/playground/cruise/review');
+
+    $response->assertOk();
+    $response->assertInertia(
+        fn ($page) => $page
+            // Trip-level totals from CumulativeService::calc().
+            ->has('trip.totalOrbDurFormatted')
+            ->has('trip.totalDilationFormatted')
+            // Per-leg secondary detail surface.
+            ->has('trip.legs.0.dilationFormatted')
+            ->has('trip.legs.0.burnDurationFormatted')
+            ->has('trip.legs.0.cruiseDurationFormatted')
+            ->has('trip.legs.0.depCoordinates.x')
+            ->has('trip.legs.0.depCoordinates.y')
+            ->has('trip.legs.0.depCoordinates.z')
+            ->has('trip.legs.0.arrCoordinates.x')
+            ->has('trip.legs.0.arrCoordinates.y')
+            ->has('trip.legs.0.arrCoordinates.z')
+    );
+});
+
 it('renders the horizons-error placeholder when the upstream API throws', function () {
     $stub = Mockery::mock(HorizonService::class);
     $stub->shouldReceive('horizonQuery')

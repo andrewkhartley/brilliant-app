@@ -4,7 +4,18 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
 import { cruise as cruiseRoute } from '@/routes/playground';
 
-import type { CruiseInput, Leg, Trip } from './cruise/types';
+import type { Coordinates, CruiseInput, Leg, Trip } from './cruise/types';
+
+/**
+ * Per-leg stagger delay (ms) for the review-page reveal cascade.
+ * A 3-leg trip finishes in ~640ms (0 + 120 + 240 + 400ms animation
+ * tail); an 8-leg trip lands at ~1.24s, still inside the "snappy"
+ * window for a one-time entrance. CSS-only via the
+ * `.cruise-leg-reveal` utility in `resources/css/app.css`; gated
+ * behind `prefers-reduced-motion: no-preference` so reduced-motion
+ * users get the data instantly.
+ */
+const LEG_REVEAL_STAGGER_MS = 120;
 
 interface CruiseReviewPageProps {
     /** Original form submission (destinations + tripStart). */
@@ -94,7 +105,7 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
                 <h2 className="text-xl font-semibold text-neutral-900">
                     {t('cruise.review.summary.heading')}
                 </h2>
-                <dl className="mt-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+                <dl className="mt-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
                     <SummaryItem
                         label={t('cruise.review.summary.legsLabel')}
                         value={String(trip.legs.length)}
@@ -111,6 +122,14 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
                         label={t('cruise.review.summary.durationLabel')}
                         value={trip.finalDuration ?? '—'}
                     />
+                    <SummaryItem
+                        label={t('cruise.review.summary.orbitDurationLabel')}
+                        value={trip.totalOrbDurFormatted ?? '—'}
+                    />
+                    <SummaryItem
+                        label={t('cruise.review.summary.dilationLabel')}
+                        value={trip.totalDilationFormatted ?? '—'}
+                    />
                 </dl>
             </section>
 
@@ -121,10 +140,11 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
                 <h2 className="text-xl font-semibold text-neutral-900">
                     {t('cruise.review.itinerary.heading')}
                 </h2>
-                {trip.legs.map((leg) => (
+                {trip.legs.map((leg, index) => (
                     <LegRow
                         key={`${leg.leg}-${leg.departure}-${leg.arrival}`}
                         leg={leg}
+                        index={index}
                     />
                 ))}
             </section>
@@ -139,6 +159,14 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
 
 interface LegRowProps {
     leg: Leg;
+    /**
+     * Zero-based position in the itinerary. Multiplied by
+     * `LEG_REVEAL_STAGGER_MS` to set each card's `animation-delay`,
+     * producing the cascade on first paint. Reduced-motion users
+     * never observe the delay because the underlying CSS keyframes
+     * are gated behind `@media (prefers-reduced-motion: no-preference)`.
+     */
+    index: number;
 }
 
 /**
@@ -146,19 +174,29 @@ interface LegRowProps {
  * icons, the leg name, and the departure/arrival timestamps. The
  * three numbers (distance, travel time, top speed) live in an
  * inline grid below the header — same rhythm whether the trip is
- * three legs or eight.
+ * three legs or eight. A `<details>` disclosure below the primary
+ * stats reveals the deeper math: burn/cruise/dilation breakdowns
+ * and the 3D departure/arrival coordinates the trip-builder solved
+ * for. Disclosure stays collapsed by default so the scannable rhythm
+ * of the primary row isn't compromised.
  *
  * Planet icons use `/assets/img/destinations/{code}.png` at 48×48
  * with `object-contain` so circular planets (Saturn's rings, for
  * instance) don't get clipped by a rounded crop.
+ *
+ * Reveal animation: `cruise-leg-reveal` utility (defined in app.css)
+ * fades + slides each card in on first paint, staggered by index.
+ * The inline `animationDelay` is harmless for reduced-motion users
+ * because the underlying keyframes never trigger.
  */
-function LegRow({ leg }: LegRowProps) {
+function LegRow({ leg, index }: LegRowProps) {
     const { t } = useTranslation();
 
     return (
         <article
             aria-labelledby={`leg-${leg.leg}-heading`}
-            className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm"
+            className="cruise-leg-reveal rounded-lg border border-neutral-200 bg-white p-6 shadow-sm"
+            style={{ animationDelay: `${index * LEG_REVEAL_STAGGER_MS}ms` }}
         >
             <header className="flex flex-wrap items-center gap-4">
                 <PlanetIcon code={leg.departure} name={leg.departureName} />
@@ -201,7 +239,129 @@ function LegRow({ leg }: LegRowProps) {
                     units={t('cruise.review.leg.maxSpeed.units')}
                 />
             </dl>
+            <LegDetailsDisclosure leg={leg} />
         </article>
+    );
+}
+
+interface LegDetailsDisclosureProps {
+    leg: Leg;
+}
+
+/**
+ * Secondary detail surface for a single leg, collapsed by default.
+ * Reveals the burn/cruise breakdown that adds up to the headline
+ * "Travel time", the relativistic time dilation across the leg, and
+ * the 3D departure/arrival coordinates the calculator solved for —
+ * the same numbers the underlying `tripBuild()` service uses to
+ * place the spacecraft in the solar system.
+ *
+ * Native `<details>` chosen over a custom toggle to inherit
+ * keyboard support, screen-reader semantics, and "find in page"
+ * text search for free. The summary text swaps between
+ * `details.show` / `details.hide` so the affordance reads the same
+ * whether expanded or not.
+ */
+function LegDetailsDisclosure({ leg }: LegDetailsDisclosureProps) {
+    const { t } = useTranslation();
+
+    return (
+        <details className="group mt-5 border-t border-neutral-100 pt-4">
+            <summary className="cursor-pointer text-sm font-medium text-neutral-600 hover:text-neutral-900">
+                <span className="group-open:hidden">
+                    {t('cruise.review.leg.details.show')}
+                </span>
+                <span className="hidden group-open:inline">
+                    {t('cruise.review.leg.details.hide')}
+                </span>
+            </summary>
+            <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+                <DetailItem
+                    label={t('cruise.review.leg.details.burnLabel')}
+                    value={leg.burnDurationFormatted}
+                />
+                <DetailItem
+                    label={t('cruise.review.leg.details.cruiseLabel')}
+                    value={leg.cruiseDurationFormatted}
+                />
+                <DetailItem
+                    label={t('cruise.review.leg.details.dilationLabel')}
+                    value={leg.dilationFormatted}
+                />
+            </dl>
+            <div className="mt-4">
+                <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
+                    {t('cruise.review.leg.details.coordinatesLabel')}
+                </p>
+                <p className="mt-2 font-mono text-xs leading-relaxed text-neutral-700">
+                    <CoordinateLine
+                        translationKey="cruise.review.leg.details.departureCoordinates"
+                        coordinates={leg.depCoordinates}
+                    />
+                    <span aria-hidden="true" className="mx-2 text-neutral-400">
+                        {'·'}
+                    </span>
+                    <CoordinateLine
+                        translationKey="cruise.review.leg.details.arrivalCoordinates"
+                        coordinates={leg.arrCoordinates}
+                    />
+                </p>
+            </div>
+        </details>
+    );
+}
+
+interface CoordinateLineProps {
+    /** Translation key carrying the "Label: :x, :y, :z km" template. */
+    translationKey: string;
+    coordinates: Coordinates | null;
+}
+
+/**
+ * Localized "Departure/Arrival: x, y, z km" line. The label, units,
+ * comma separators, AND glyph order all live in the lang file so RTL
+ * locales (Phase 11) can reorder the template without touching JSX.
+ * `Intl.NumberFormat` handles the per-locale thousands separator
+ * (`1.000.000` vs `1,000,000`) — the lang template just supplies
+ * the rendered string back via Laravel's `:placeholder` syntax.
+ *
+ * Falls back to a localized "unavailable" string when the calculator
+ * didn't expose coordinates for that endpoint (defensive — every
+ * leg in the lifted service does produce both).
+ */
+function CoordinateLine({ translationKey, coordinates }: CoordinateLineProps) {
+    const { t } = useTranslation();
+
+    if (coordinates === null) {
+        return <>{t('cruise.review.leg.details.coordinatesUnavailable')}</>;
+    }
+
+    const formatter = new Intl.NumberFormat();
+
+    return (
+        <>
+            {t(translationKey, {
+                x: formatter.format(coordinates.x),
+                y: formatter.format(coordinates.y),
+                z: formatter.format(coordinates.z),
+            })}
+        </>
+    );
+}
+
+interface DetailItemProps {
+    label: string;
+    value: string;
+}
+
+function DetailItem({ label, value }: DetailItemProps) {
+    return (
+        <div>
+            <dt className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
+                {label}
+            </dt>
+            <dd className="mt-1 text-neutral-800">{value}</dd>
+        </div>
     );
 }
 
