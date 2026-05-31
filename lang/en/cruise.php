@@ -64,8 +64,14 @@ return [
         ],
         'horizonsError' => [
             'heading' => 'Out of contact',
-            'body' => "NASA's Horizons service didn't answer in time. The trip-builder needs live planetary positions, so the per-leg breakdown can't render right now.",
+            'body' => "NASA's Horizons service didn't answer in time. The trip-builder needs live planetary positions to plot your route — the planets often answer on the second knock.",
             'retry' => 'Try again',
+            'iconAriaLabel' => 'A planet drifting just out of reach',
+            'attemptedHeading' => 'The trip you picked',
+            'attemptedDestinationsLabel' => 'Destinations',
+            'attemptedDateLabel' => 'Departure date',
+            'attemptedDestinationsSeparator' => ' → ',
+            'ctaLabel' => 'Plan your trip again',
         ],
     ],
 

@@ -104,6 +104,7 @@ it('renders the review page with leg data when the flash payload is present', fu
             ->where('cruise.tripStart', $tripStart)
             ->where('cruise.destinations', ['mer'])
             ->where('horizonsError', false)
+            ->where('attemptedDestinationNames', [])
             ->has('trip.legs')
             ->where('trip.legs.0.departure', 'ear')
             ->where('trip.legs.0.arrival', 'mer')
@@ -164,7 +165,7 @@ it('surfaces per-leg depth (coordinates, dilation, burn/cruise) and trip totals 
     );
 });
 
-it('renders the horizons-error placeholder when the upstream API throws', function () {
+it('renders the friendly horizons-error panel with the attempted trip when the upstream API throws', function () {
     $stub = Mockery::mock(HorizonService::class);
     $stub->shouldReceive('horizonQuery')
         ->andThrow(new ConnectException(
@@ -177,17 +178,25 @@ it('renders the horizons-error placeholder when the upstream API throws', functi
 
     $response = withSession([
         'cruise' => [
-            'destinations' => ['jup'],
-            'layovers' => [5],
+            'destinations' => ['jup', 'mar'],
+            'layovers' => [5, 5],
             'tripStart' => $tripStart,
         ],
     ])->get('/playground/cruise/review');
 
+    // T6 — the error branch now also resolves destination codes to
+    // human names via the cached catalog so the `<HorizonsError />`
+    // component can render "Jupiter → Mars" instead of "jup → mar".
+    // The success branch leaves `attemptedDestinationNames` empty
+    // (names there come through `trip.legs[].departureName`).
     $response->assertOk();
     $response->assertInertia(
         fn ($page) => $page
             ->component('playground/cruise-review')
             ->where('horizonsError', true)
             ->where('trip', null)
+            ->where('cruise.destinations', ['jup', 'mar'])
+            ->where('cruise.tripStart', $tripStart)
+            ->where('attemptedDestinationNames', ['Jupiter', 'Mars'])
     );
 });

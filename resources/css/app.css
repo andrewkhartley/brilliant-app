@@ -110,3 +110,42 @@
         animation: cruise-plot-pulse 1.6s ease-in-out infinite;
     }
 }
+
+/*
+ * Phase 10 T6 — Cruise Horizons-error decorative drift.
+ *
+ * Surface: the planet icon inside the `<HorizonsError />` panel header
+ * drifts slowly side-to-side, suggesting "the planet is just out of
+ * reach right now" instead of "the page is broken". 6s period is
+ * deliberately slow — the panel is an error state, and a faster drift
+ * would read as agitation. The translateX amplitude (0.5rem) is small
+ * enough that the icon stays inside its 48px square; no clipping
+ * inside the rounded panel.
+ *
+ * Same accessibility contract as `cruise-leg-reveal` and
+ * `cruise-plot-pulse`: gated behind
+ * `@media (prefers-reduced-motion: no-preference)` so users who
+ * request reduced motion see a still icon (the alert semantics are
+ * carried by `role="alert"` + the heading, not the motion).
+ *
+ * Pairs with `cruise-leg-reveal` on the panel itself — the panel
+ * fades + slides in on first paint, then the icon's drift loops
+ * indefinitely while the panel sits on screen. The two animations
+ * are independent (different durations, different fill modes) so
+ * neither steps on the other.
+ */
+@keyframes cruise-error-drift {
+    0%,
+    100% {
+        transform: translateX(-0.25rem);
+    }
+    50% {
+        transform: translateX(0.25rem);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .cruise-error-drift {
+        animation: cruise-error-drift 6s ease-in-out infinite;
+    }
+}

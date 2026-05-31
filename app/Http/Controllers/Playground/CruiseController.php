@@ -137,12 +137,25 @@ class CruiseController extends Controller
                 'tripStart' => $cruise['tripStart'],
             ]);
 
-            // T6 will replace `null` payload + the placeholder client
-            // rendering with the proper `<HorizonsError />` component.
+            // T6 — render the friendly `<HorizonsError />` panel.
+            // Resolve destination codes to human names so the panel can
+            // tell users what trip they were trying to plot. The success
+            // path gets names via `presentTrip()` (from depDetails/arrDetails);
+            // the error path never reaches the trip-builder, so we pull
+            // the names directly from the cached destination catalog here.
+            // Codes that don't resolve fall back to the raw code, matching
+            // `buildDestinationsInput()`'s defensive behavior.
+            $catalog = Destination::getCachedFacts()->keyBy('destination_code');
+            $attemptedDestinationNames = collect($cruise['destinations'])
+                ->map(fn (string $code): string => $catalog->get($code)?->destination ?? $code)
+                ->values()
+                ->all();
+
             return Inertia::render('playground/cruise-review', [
                 'cruise' => $cruise,
                 'trip' => null,
                 'horizonsError' => true,
+                'attemptedDestinationNames' => $attemptedDestinationNames,
                 'translations' => translations(['cruise']),
             ]);
         }
@@ -151,6 +164,7 @@ class CruiseController extends Controller
             'cruise' => $cruise,
             'trip' => $this->presentTrip($computedTrip),
             'horizonsError' => false,
+            'attemptedDestinationNames' => [],
             'translations' => translations(['cruise']),
         ]);
     }

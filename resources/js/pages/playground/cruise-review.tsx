@@ -4,6 +4,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
 import { cruise as cruiseRoute } from '@/routes/playground';
 
+import { HorizonsError } from './cruise/HorizonsError';
 import type { Coordinates, CruiseInput, Leg, Trip } from './cruise/types';
 
 /**
@@ -22,15 +23,23 @@ interface CruiseReviewPageProps {
     cruise: CruiseInput;
     /**
      * Server-computed trip data — null on the Horizons-error path so
-     * the (T6) `<HorizonsError />` fallback can render in its place.
+     * the `<HorizonsError />` fallback (T6) can render in its place.
      */
     trip: Trip | null;
     /**
      * `true` when the controller caught a `GuzzleException` from the
-     * Horizons call chain. T5 ships a placeholder error block; T6
-     * replaces it with the proper friendly fallback panel.
+     * Horizons call chain. T6 wires this to the `<HorizonsError />`
+     * panel, which tells the user what trip they were attempting and
+     * offers a prominent retry CTA.
      */
     horizonsError: boolean;
+    /**
+     * Destination names parallel to `cruise.destinations` (codes),
+     * resolved from the cached destination catalog by the controller's
+     * error branch. The success path leaves this empty — names there
+     * come through `trip.legs[].departureName` / `arrivalName`.
+     */
+    attemptedDestinationNames: string[];
 }
 
 /**
@@ -58,6 +67,7 @@ export default function CruiseReviewPage({
     cruise,
     trip,
     horizonsError,
+    attemptedDestinationNames,
 }: CruiseReviewPageProps) {
     const { t } = useTranslation();
 
@@ -80,7 +90,10 @@ export default function CruiseReviewPage({
                 </p>
 
                 {horizonsError ? (
-                    <HorizonsErrorPlaceholder />
+                    <HorizonsError
+                        cruise={cruise}
+                        attemptedDestinationNames={attemptedDestinationNames}
+                    />
                 ) : (
                     trip !== null && (
                         <ComputedTripView cruise={cruise} trip={trip} />
@@ -414,36 +427,6 @@ function Stat({ label, value, units }: StatProps) {
                     </span>
                 )}
             </dd>
-        </div>
-    );
-}
-
-/**
- * T5 placeholder for the (T6) `<HorizonsError />` component.
- * Renders the friendly-fallback copy so the page is intelligible if
- * Horizons fails today, but with no decorative chrome — T6 replaces
- * this with the proper panel + retry visuals.
- */
-function HorizonsErrorPlaceholder() {
-    const { t } = useTranslation();
-
-    return (
-        <div
-            role="alert"
-            className="mt-10 rounded border border-amber-300 bg-amber-50 p-6"
-        >
-            <h2 className="text-xl font-semibold text-amber-900">
-                {t('cruise.review.horizonsError.heading')}
-            </h2>
-            <p className="mt-2 text-amber-900">
-                {t('cruise.review.horizonsError.body')}
-            </p>
-            <Link
-                href={cruiseRoute.url()}
-                className="mt-4 inline-block text-sm font-medium text-amber-900 underline hover:text-amber-700"
-            >
-                {t('cruise.review.horizonsError.retry')}
-            </Link>
         </div>
     );
 }
