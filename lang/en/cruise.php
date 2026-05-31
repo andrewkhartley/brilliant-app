@@ -70,12 +70,16 @@ return [
     ],
 
     'form' => [
-        'submit' => 'Plan trip',
+        'submit' => [
+            'idle' => 'Plan trip',
+            'plotting' => 'Plotting trajectory…',
+        ],
         'submitDisabledHint' => 'Pick at least one destination and a departure date to plan a trip.',
+        'plottingAriaLabel' => 'Plotting your trip — please wait',
 
         'destinations' => [
             'label' => 'Destinations',
-            'hint' => 'Order matters. Drag to reorder, or use the keyboard: Tab to focus, Space to grab, ↑/↓ to move, Space to drop.',
+            'hint' => 'Order matters. Drag to reorder, or use the keyboard: Tab to focus, Space to grab, ↑/↓ to move, Space to drop. Pick the same planet twice if you want two layovers there.',
             'emptyState' => 'No destinations picked yet. Add one from the list below.',
             'selectedAriaLabel' => 'Selected destinations, in order',
             'availableLabel' => 'Available destinations',
@@ -84,6 +88,9 @@ return [
             'positionLabel' => ':position.',
             'removeLabel' => 'Remove',
             'removeAriaLabel' => 'Remove :name from the itinerary',
+            'layoverLabel' => 'Days at :name',
+            'layoverInputAriaLabel' => 'Days at :name',
+            'layoverUnitLabel' => 'days',
         ],
 
         'date' => [
@@ -102,6 +109,11 @@ return [
             'tripStart' => [
                 'required' => 'A departure date is required.',
                 'past' => 'Pick a departure date today or later.',
+            ],
+            'layovers' => [
+                'size' => 'Layover counts must match destination count.',
+                'range' => 'Layovers must be between 1 and 90 days.',
+                'required' => 'Set a layover for every destination.',
             ],
         ],
     ],

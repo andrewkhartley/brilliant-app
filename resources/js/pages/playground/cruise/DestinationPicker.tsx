@@ -1,13 +1,12 @@
 import {
     DndContext,
-    
     KeyboardSensor,
     PointerSensor,
     closestCenter,
     useSensor,
-    useSensors
+    useSensors,
 } from '@dnd-kit/core';
-import type {DragEndEvent} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
     SortableContext,
     arrayMove,
@@ -16,6 +15,7 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import type { ChangeEvent } from 'react';
 
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -24,35 +24,57 @@ export interface Destination {
     name: string;
 }
 
+/**
+ * One row in the selected-destinations list. The `slotId` is a stable
+ * per-selection identifier (NOT the destination code) — it's what
+ * dnd-kit's SortableContext keys items by, which is what unblocks
+ * picking the same planet twice (two slots with code='mer' but
+ * different slotIds reorder + remove independently). Generated at
+ * "Add" time via `crypto.randomUUID()`; the `Date.now()`+`Math.random()`
+ * fallback handles environments without Web Crypto (Vitest jsdom, old
+ * Safari) without an extra polyfill.
+ */
+export interface SelectedSlot {
+    slotId: string;
+    code: string;
+    layoverDays: number;
+}
+
 interface DestinationPickerProps {
     /** Full destination catalog from the controller. */
     destinations: Destination[];
-    /** Ordered list of selected destination codes (controlled by parent). */
-    selected: string[];
+    /** Ordered list of selected slots (controlled by parent). */
+    selected: SelectedSlot[];
     /** Bubble the next ordered selection up to the page. */
-    onChange: (next: string[]) => void;
+    onChange: (next: SelectedSlot[]) => void;
 }
+
+/** Default days at a freshly-added stop. Matches the lifted-form initial value
+ *  and the PHP `DEFAULT_LAYOVER_DAYS` fallback. Kept module-local so the
+ *  client can override without a round-trip to the server. */
+const DEFAULT_LAYOVER_DAYS = 5;
+
+/** Layover bounds — kept in lock-step with the zod schema + PHP rules
+ *  (`layovers.*: integer min:1 max:90`). Native number inputs clamp UX,
+ *  but the schema is still the authority on the wire. */
+const MIN_LAYOVER_DAYS = 1;
+const MAX_LAYOVER_DAYS = 90;
 
 /**
  * DestinationPicker — dnd-kit Sortable list + add-button rail.
  *
  * Two visual zones make the form's affordances explicit:
  *  - "Selected" — the ordered itinerary, drag-or-keyboard reorderable;
- *    each row has a Remove button that lifts the destination back to
- *    the available rail
- *  - "Available" — the remaining catalog as add-buttons; clicking one
- *    appends it to the end of the selection
+ *    each row has a per-stop "days at X" input + a Remove button.
+ *  - "Available" — the full catalog as add-buttons; clicking one
+ *    appends a new slot. Picking the same destination twice creates
+ *    two independent slots (T5.6 — was filtered-out pre-T5.6).
  *
  * Keyboard reorder UX (dnd-kit's built-in pattern, used as-is):
  *  - Tab to a selected item → focus-visible ring on the row
  *  - Space → grab the item (ARIA-live announces "Picked up <name>")
  *  - ↑ / ↓ → move one position; ARIA-live announces the new spot
  *  - Space → drop; Escape cancels
- *
- * Phase 10 T3 ships the UI scaffold only. T4 adds zod validation +
- * Inertia.post so this picker's selection actually flows to the
- * server-side trip builder. Copy is PLACEHOLDER — Andrew refines
- * over the weekend; the keys are what's load-bearing.
  *
  * Logical Tailwind classes only — no ml-/mr-/pl-/pr-/left-/right-.
  */
@@ -70,19 +92,44 @@ export function DestinationPicker({
         }),
     );
 
-    // Resolve ordered selection to full destination shape; filter
-    // out any code that no longer exists (defensive — should never
-    // happen in normal flows but keeps the render pure).
-    const selectedItems = selected
-        .map((code) => destinations.find((d) => d.code === code))
-        .filter((d): d is Destination => Boolean(d));
+    // Map slotId -> sort index for the dnd-end handler. dnd-kit's
+    // `active.id` / `over.id` are the same opaque IDs we passed to
+    // `SortableContext` (slotIds), so the lookup is symmetric.
+    const slotIds = selected.map((slot) => slot.slotId);
 
-    const available = destinations.filter((d) => !selected.includes(d.code));
+    function handleAdd(destination: Destination) {
+        const newSlot: SelectedSlot = {
+            slotId: mintSlotId(),
+            code: destination.code,
+            layoverDays: DEFAULT_LAYOVER_DAYS,
+        };
+
+        onChange([...selected, newSlot]);
+    }
+
+    function handleRemove(slotId: string) {
+        onChange(selected.filter((slot) => slot.slotId !== slotId));
+    }
+
+    function handleLayoverChange(slotId: string, nextDays: number) {
+        // The native <input type="number"> can hand us NaN if the user
+        // clears the field; treat that as "intent to retype" and hold
+        // the bounded value at MIN so the wire payload stays valid.
+        const clamped = clampLayover(nextDays);
+
+        onChange(
+            selected.map((slot) =>
+                slot.slotId === slotId
+                    ? { ...slot, layoverDays: clamped }
+                    : slot,
+            ),
+        );
+    }
 
     function handleDragEnd(event: DragEndEvent) {
         if (event.over && event.active.id !== event.over.id) {
-            const oldIndex = selected.indexOf(String(event.active.id));
-            const newIndex = selected.indexOf(String(event.over.id));
+            const oldIndex = slotIds.indexOf(String(event.active.id));
+            const newIndex = slotIds.indexOf(String(event.over.id));
 
             if (oldIndex !== -1 && newIndex !== -1) {
                 onChange(arrayMove(selected, oldIndex, newIndex));
@@ -101,7 +148,7 @@ export function DestinationPicker({
                 </p>
             </div>
 
-            {selectedItems.length === 0 ? (
+            {selected.length === 0 ? (
                 <p className="rounded border border-dashed border-neutral-300 bg-neutral-50 px-3 py-4 text-sm text-neutral-500">
                     {t('cruise.form.destinations.emptyState')}
                 </p>
@@ -112,7 +159,7 @@ export function DestinationPicker({
                     onDragEnd={handleDragEnd}
                 >
                     <SortableContext
-                        items={selected}
+                        items={slotIds}
                         strategy={verticalListSortingStrategy}
                     >
                         <ol
@@ -121,20 +168,33 @@ export function DestinationPicker({
                                 'cruise.form.destinations.selectedAriaLabel',
                             )}
                         >
-                            {selectedItems.map((destination, index) => (
-                                <SortableItem
-                                    key={destination.code}
-                                    destination={destination}
-                                    position={index + 1}
-                                    onRemove={() =>
-                                        onChange(
-                                            selected.filter(
-                                                (c) => c !== destination.code,
-                                            ),
-                                        )
-                                    }
-                                />
-                            ))}
+                            {selected.map((slot, index) => {
+                                const destination = destinations.find(
+                                    (d) => d.code === slot.code,
+                                );
+
+                                if (!destination) {
+                                    return null;
+                                }
+
+                                return (
+                                    <SortableItem
+                                        key={slot.slotId}
+                                        slot={slot}
+                                        destination={destination}
+                                        position={index + 1}
+                                        onRemove={() =>
+                                            handleRemove(slot.slotId)
+                                        }
+                                        onLayoverChange={(next) =>
+                                            handleLayoverChange(
+                                                slot.slotId,
+                                                next,
+                                            )
+                                        }
+                                    />
+                                );
+                            })}
                         </ol>
                     </SortableContext>
                 </DndContext>
@@ -144,54 +204,53 @@ export function DestinationPicker({
                 <h4 className="text-sm font-medium text-neutral-700">
                     {t('cruise.form.destinations.availableLabel')}
                 </h4>
-                {available.length === 0 ? (
-                    <p className="mt-2 text-sm text-neutral-500">
-                        {t('cruise.form.destinations.allAddedState')}
-                    </p>
-                ) : (
-                    <ul className="mt-2 flex flex-wrap gap-2">
-                        {available.map((destination) => (
-                            <li key={destination.code}>
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        onChange([
-                                            ...selected,
-                                            destination.code,
-                                        ])
-                                    }
-                                    className="rounded border border-neutral-300 bg-white px-3 py-1 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                                >
-                                    {t('cruise.form.destinations.add', {
-                                        name: destination.name,
-                                    })}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                <ul className="mt-2 flex flex-wrap gap-2">
+                    {destinations.map((destination) => (
+                        <li key={destination.code}>
+                            <button
+                                type="button"
+                                onClick={() => handleAdd(destination)}
+                                className="rounded border border-neutral-300 bg-white px-3 py-1 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                            >
+                                {t('cruise.form.destinations.add', {
+                                    name: destination.name,
+                                })}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );
 }
 
 interface SortableItemProps {
+    slot: SelectedSlot;
     destination: Destination;
     /** 1-based ordinal for the ARIA label. */
     position: number;
     onRemove: () => void;
+    onLayoverChange: (nextDays: number) => void;
 }
 
 /**
  * SortableItem — single row in the ordered selection list.
  *
- * The whole row is the drag handle (spreads `listeners` + `attributes`
- * onto the <li>) so pointer-drag works anywhere on the row. The
- * Remove button stops propagation via type="button" + its own
- * onClick — dnd-kit's PointerSensor ignores button presses by
- * default, so the Remove click doesn't trigger a drag.
+ * The row is the drag handle (spreads `listeners` + `attributes`
+ * onto the <li>) so pointer-drag works anywhere on the row that
+ * isn't an interactive child. The layover <input> and Remove button
+ * both stop pointer propagation so dragging the row doesn't fire
+ * when the user is editing days or clicking remove — dnd-kit's
+ * PointerSensor ignores native button presses by default but
+ * <input> elements need the explicit guard.
  */
-function SortableItem({ destination, position, onRemove }: SortableItemProps) {
+function SortableItem({
+    slot,
+    destination,
+    position,
+    onRemove,
+    onLayoverChange,
+}: SortableItemProps) {
     const { t } = useTranslation();
     const {
         attributes,
@@ -200,13 +259,20 @@ function SortableItem({ destination, position, onRemove }: SortableItemProps) {
         transform,
         transition,
         isDragging,
-    } = useSortable({ id: destination.code });
+    } = useSortable({ id: slot.slotId });
 
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.5 : 1,
     };
+
+    function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+        const parsed = Number(event.target.value);
+        onLayoverChange(Number.isFinite(parsed) ? parsed : MIN_LAYOVER_DAYS);
+    }
+
+    const layoverInputId = `layover-${slot.slotId}`;
 
     return (
         <li
@@ -225,6 +291,34 @@ function SortableItem({ destination, position, onRemove }: SortableItemProps) {
                 })}
             </span>
             <span className="flex-1 text-neutral-900">{destination.name}</span>
+            <label
+                htmlFor={layoverInputId}
+                className="text-xs text-neutral-500"
+            >
+                {t('cruise.form.destinations.layoverLabel', {
+                    name: destination.name,
+                })}
+            </label>
+            <input
+                id={layoverInputId}
+                type="number"
+                inputMode="numeric"
+                min={MIN_LAYOVER_DAYS}
+                max={MAX_LAYOVER_DAYS}
+                step={1}
+                value={slot.layoverDays}
+                onChange={handleInputChange}
+                onPointerDown={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+                aria-label={t(
+                    'cruise.form.destinations.layoverInputAriaLabel',
+                    { name: destination.name },
+                )}
+                className="w-16 rounded border border-neutral-300 px-2 py-1 text-sm text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            />
+            <span aria-hidden="true" className="text-xs text-neutral-500">
+                {t('cruise.form.destinations.layoverUnitLabel')}
+            </span>
             <button
                 type="button"
                 onClick={onRemove}
@@ -238,4 +332,47 @@ function SortableItem({ destination, position, onRemove }: SortableItemProps) {
             </button>
         </li>
     );
+}
+
+/**
+ * Build a stable per-slot identifier. Prefers `crypto.randomUUID()`
+ * (available in all modern browsers + the test environment when
+ * jsdom enables it), falls back to a timestamp+random pair for the
+ * narrow edge cases where Web Crypto isn't reachable. The fallback
+ * isn't cryptographically strong but it doesn't need to be — slotId
+ * is purely a UI key, never written to the server or storage.
+ */
+function mintSlotId(): string {
+    if (
+        typeof crypto !== 'undefined' &&
+        typeof crypto.randomUUID === 'function'
+    ) {
+        return crypto.randomUUID();
+    }
+
+    return `slot-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/**
+ * Clamp a (possibly NaN, possibly fractional) layover input to the
+ * inclusive [MIN, MAX] window of integer days. The native number
+ * input's `min`/`max` attributes constrain UI affordances but the
+ * user can still type 500 and we want the form state to stay valid.
+ */
+function clampLayover(value: number): number {
+    if (!Number.isFinite(value)) {
+        return MIN_LAYOVER_DAYS;
+    }
+
+    const integer = Math.round(value);
+
+    if (integer < MIN_LAYOVER_DAYS) {
+        return MIN_LAYOVER_DAYS;
+    }
+
+    if (integer > MAX_LAYOVER_DAYS) {
+        return MAX_LAYOVER_DAYS;
+    }
+
+    return integer;
 }

@@ -34,9 +34,14 @@ class CruiseController extends Controller
 {
     /**
      * Default layover at each stop, in days. Matches the initial value
-     * the lifted Undaunted Cruise form set per destination. Pinned as
-     * a constant so the per-stop form (future) can override on a
-     * per-leg basis without touching the service signature.
+     * the lifted Undaunted Cruise form set per destination, and serves
+     * two roles since T5.6:
+     *  - Client-side: the form's initial-state default for a freshly
+     *    added slot (the per-stop `<input type="number">` boots to
+     *    this value).
+     *  - Server-side: a defensive fallback inside
+     *    `buildDestinationsInput()` for the (now impossible after both
+     *    validators run) case where a layover index is missing.
      */
     private const int DEFAULT_LAYOVER_DAYS = 5;
 
@@ -104,11 +109,14 @@ class CruiseController extends Controller
         // Refreshing the review page works because Inertia re-flashes
         // the payload on the redirect-to-review, but a cold visit to
         // this URL has nothing to render.
-        if (! is_array($cruise) || ! isset($cruise['destinations'], $cruise['tripStart'])) {
+        if (! is_array($cruise) || ! isset($cruise['destinations'], $cruise['tripStart'], $cruise['layovers'])) {
             return redirect()->route('playground.cruise');
         }
 
-        $destinationsInput = $this->buildDestinationsInput($cruise['destinations']);
+        $destinationsInput = $this->buildDestinationsInput(
+            $cruise['destinations'],
+            $cruise['layovers'],
+        );
         $tripStartTimestamp = strtotime($cruise['tripStart']);
 
         $tripData = [
@@ -154,27 +162,32 @@ class CruiseController extends Controller
      * Each entry pairs the code (consumed by Horizons + CalculatorService
      * as the canonical body identifier) with the human name (so the
      * review page can label legs without a second DB lookup). `dur` and
-     * `durType` carry layover defaults (5 days at each stop) that
+     * `durType` carry the per-stop layover that
      * `TripBuilderService::legSegment()` reads when computing the next
      * leg's start time. Earth is NOT prepended/appended here — that's
      * `prependAndAppendEarth()`'s job inside the service.
      *
-     * Layover defaults match the lifted Undaunted form's initial values
-     * (5 days per body); future enhancements can let the form override
-     * these per-stop without touching the service signature.
+     * T5.6 — `$layovers` is a parallel array (same length as
+     * `$destinationCodes`), enforced by both StoreCruiseRequest's
+     * `withValidator()` cross-check and the client-side zod
+     * `.refine()`. Missing-index fallback to `DEFAULT_LAYOVER_DAYS`
+     * is defensive: if both validators ran cleanly the index always
+     * exists, but a malformed manual session-write or a future
+     * refactor that bypasses the request layer shouldn't crash here.
      *
      * @param  array<int, string>  $destinationCodes
+     * @param  array<int, int>  $layovers
      * @return array<int, array{destination: string, name: string, dur: int, durType: string}>
      */
-    private function buildDestinationsInput(array $destinationCodes): array
+    private function buildDestinationsInput(array $destinationCodes, array $layovers): array
     {
         $catalog = Destination::getCachedFacts()->keyBy('destination_code');
 
         return collect($destinationCodes)
-            ->map(fn (string $code): array => [
+            ->map(fn (string $code, int $index): array => [
                 'destination' => $code,
                 'name' => $catalog->get($code)?->destination ?? $code,
-                'dur' => self::DEFAULT_LAYOVER_DAYS,
+                'dur' => (int) ($layovers[$index] ?? self::DEFAULT_LAYOVER_DAYS),
                 'durType' => 'day',
             ])
             ->values()

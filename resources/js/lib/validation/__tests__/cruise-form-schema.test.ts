@@ -28,9 +28,10 @@ function daysFromNow(offsetDays: number): Date {
 }
 
 describe('cruiseFormSchema', () => {
-    it('accepts a valid trip — non-empty destinations and a future date', () => {
+    it('accepts a valid trip — non-empty destinations, matching layovers, and a future date', () => {
         const result = cruiseFormSchema.safeParse({
             destinations: ['mer', 'ven', 'mar'],
+            layovers: [5, 5, 5],
             tripStart: daysFromNow(7),
         });
 
@@ -40,6 +41,7 @@ describe('cruiseFormSchema', () => {
     it('rejects an empty destinations list (min 1)', () => {
         const result = cruiseFormSchema.safeParse({
             destinations: [],
+            layovers: [],
             tripStart: daysFromNow(7),
         });
 
@@ -65,6 +67,7 @@ describe('cruiseFormSchema', () => {
                 'nep',
                 'plu',
             ],
+            layovers: [5, 5, 5, 5, 5, 5, 5, 5, 5],
             tripStart: daysFromNow(7),
         });
 
@@ -80,6 +83,7 @@ describe('cruiseFormSchema', () => {
     it('rejects a past trip-start date', () => {
         const result = cruiseFormSchema.safeParse({
             destinations: ['mer'],
+            layovers: [5],
             tripStart: daysFromNow(-1),
         });
 
@@ -95,7 +99,85 @@ describe('cruiseFormSchema', () => {
     it('accepts a trip starting at midnight today (boundary case)', () => {
         const result = cruiseFormSchema.safeParse({
             destinations: ['mer'],
+            layovers: [5],
             tripStart: today(),
+        });
+
+        expect(result.success).toBe(true);
+    });
+
+    // T5.6 — layovers parallel array.
+
+    it('rejects layovers with a length that does not match destinations', () => {
+        const result = cruiseFormSchema.safeParse({
+            destinations: ['mer', 'ven'],
+            layovers: [5],
+            tripStart: daysFromNow(7),
+        });
+
+        expect(result.success).toBe(false);
+
+        if (!result.success) {
+            expect(
+                result.error.issues.some((i) => i.path[0] === 'layovers'),
+            ).toBe(true);
+        }
+    });
+
+    it('rejects a layover at 0 days (below min)', () => {
+        const result = cruiseFormSchema.safeParse({
+            destinations: ['mer'],
+            layovers: [0],
+            tripStart: daysFromNow(7),
+        });
+
+        expect(result.success).toBe(false);
+
+        if (!result.success) {
+            expect(
+                result.error.issues.some((i) => i.path[0] === 'layovers'),
+            ).toBe(true);
+        }
+    });
+
+    it('rejects a layover at 91 days (above max)', () => {
+        const result = cruiseFormSchema.safeParse({
+            destinations: ['mer'],
+            layovers: [91],
+            tripStart: daysFromNow(7),
+        });
+
+        expect(result.success).toBe(false);
+
+        if (!result.success) {
+            expect(
+                result.error.issues.some((i) => i.path[0] === 'layovers'),
+            ).toBe(true);
+        }
+    });
+
+    it('rejects missing layovers entirely', () => {
+        const result = cruiseFormSchema.safeParse({
+            destinations: ['mer'],
+            tripStart: daysFromNow(7),
+        });
+
+        expect(result.success).toBe(false);
+
+        if (!result.success) {
+            expect(
+                result.error.issues.some((i) => i.path[0] === 'layovers'),
+            ).toBe(true);
+        }
+    });
+
+    it('accepts duplicate destination codes when layovers match length', () => {
+        // T5.6 — picking Mercury twice is supported. Two slots, two
+        // (independently editable) layovers; the schema must not block it.
+        const result = cruiseFormSchema.safeParse({
+            destinations: ['mer', 'mer'],
+            layovers: [3, 10],
+            tripStart: daysFromNow(7),
         });
 
         expect(result.success).toBe(true);

@@ -71,3 +71,42 @@
         animation: cruise-leg-reveal 400ms ease-out both;
     }
 }
+
+/*
+ * Phase 10 T5.6 — Cruise submit "Plotting trajectory…" pulse.
+ *
+ * Surface: a 2-rem dot inside the submit button pulses while
+ * Inertia is round-tripping to `/playground/cruise/store` and on to
+ * the review page. The Horizons-bound branch is ~2s cold and ~200ms
+ * cached; even on the cached path the user briefly sees the dot,
+ * which sells the "the form is doing math" affordance instead of a
+ * silent jump to the next page.
+ *
+ * Same accessibility contract as `cruise-leg-reveal`: the keyframes
+ * are gated behind `prefers-reduced-motion: no-preference`, so users
+ * who request reduced motion see a static dot + the "Plotting
+ * trajectory…" label with no animation. The label change carries the
+ * status semantics; the pulse is decorative.
+ *
+ * Geometric pulse (scale + opacity) over a single keyframe pair so
+ * the dot looks like it's breathing rather than blinking. 1.6s
+ * period matches the upper bound of the cold round-trip, so a single
+ * pulse cycle reads as "in progress" without feeling impatient.
+ */
+@keyframes cruise-plot-pulse {
+    0%,
+    100% {
+        opacity: 0.45;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.4);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .cruise-plot-pulse {
+        animation: cruise-plot-pulse 1.6s ease-in-out infinite;
+    }
+}

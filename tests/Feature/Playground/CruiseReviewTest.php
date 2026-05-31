@@ -92,6 +92,7 @@ it('renders the review page with leg data when the flash payload is present', fu
     $response = withSession([
         'cruise' => [
             'destinations' => ['mer'],
+            'layovers' => [5],
             'tripStart' => $tripStart,
         ],
     ])->get('/playground/cruise/review');
@@ -118,6 +119,7 @@ it('flows from form submission through to a rendered review page', function () {
 
     $response = followingRedirects()->post('/playground/cruise', [
         'destinations' => ['ven', 'mar'],
+        'layovers' => [5, 5],
         'tripStart' => $tripStart,
     ]);
 
@@ -138,6 +140,7 @@ it('surfaces per-leg depth (coordinates, dilation, burn/cruise) and trip totals 
     $response = withSession([
         'cruise' => [
             'destinations' => ['mer'],
+            'layovers' => [5],
             'tripStart' => $tripStart,
         ],
     ])->get('/playground/cruise/review');
@@ -175,6 +178,7 @@ it('renders the horizons-error placeholder when the upstream API throws', functi
     $response = withSession([
         'cruise' => [
             'destinations' => ['jup'],
+            'layovers' => [5],
             'tripStart' => $tripStart,
         ],
     ])->get('/playground/cruise/review');

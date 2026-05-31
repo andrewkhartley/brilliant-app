@@ -10,7 +10,7 @@ import cruiseRoutes from '@/routes/playground/cruise';
 
 import { DatePicker } from './cruise/DatePicker';
 import { DestinationPicker } from './cruise/DestinationPicker';
-import type { Destination } from './cruise/DestinationPicker';
+import type { Destination, SelectedSlot } from './cruise/DestinationPicker';
 
 interface CruisePageProps {
     /**
@@ -38,36 +38,41 @@ type CruiseFormPayload = Omit<CruiseFormValues, 'tripStart'> & {
 /**
  * /playground/cruise — Andrew's interplanetary trip planner.
  *
- * T3 made the form interactive (state + visible UI); T4 wires the
- * data path:
- *  1. zod validates the local form state on submit; failures populate
- *     the `errors` map and short-circuit before any HTTP request.
+ * T3 made the form interactive; T4 added validation + Inertia.post;
+ * T5 wired the review page; T5.6 reshapes the form state from a flat
+ * `string[]` of codes into `SelectedSlot[]` so each row can carry its
+ * own layover-in-days AND so the same destination can appear twice
+ * (dnd-kit keys by `slotId`, not code).
+ *
+ *  1. zod validates `destinations`, the parallel `layovers` array,
+ *     and `tripStart`. The schema enforces matching lengths via a
+ *     `.refine()`, so a slot-array mismatch surfaces client-side
+ *     before any HTTP round-trip.
  *  2. On a clean parse, the validated payload (with `tripStart`
  *     stringified to YYYY-MM-DD) flies via `router.post` to the named
- *     `playground.cruise.store` route.
- *  3. Server-side `StoreCruiseRequest` re-validates (defense in depth).
- *     On failure, Inertia returns 302 with an error bag; `onError`
- *     mirrors those into the same `errors` map the zod path uses.
- *  4. On success, the controller redirects to `/playground/cruise/review`
- *     (T5's territory — currently 404s by design).
- *
- * Error display surface: per-field inline messages below each
- * picker, plus a summary block above the submit button so screen
- * readers find the failure announcement first.
- *
- * Copy is PLACEHOLDER — Andrew refines over the weekend; the
- * translation key structure is what's load-bearing.
+ *     `playground.cruise.store` route. `onStart` / `onFinish` toggle
+ *     `isPlotting` so the submit button shows "Plotting trajectory…"
+ *     during the Inertia round-trip — that's a 200 ms cached path and
+ *     up to 2 s cold (Horizons-bound), so the indicator earns its
+ *     keep even on the fast case.
+ *  3. Server-side `StoreCruiseRequest` re-validates with a parallel
+ *     `layovers` rule plus a cross-field length-match in
+ *     `withValidator()`. On failure, Inertia returns 302 with an
+ *     error bag; `onError` mirrors those into the same `errors` map
+ *     the zod path uses.
+ *  4. On success, the controller redirects to /playground/cruise/review.
  */
 export default function CruisePage({ destinations }: CruisePageProps) {
     const { t } = useTranslation();
     // `usePage().props.errors` is auto-shared by Inertia v3 after any
     // 302-with-error-bag response. Typed as `Errors & ErrorBag` upstream.
     const page = usePage();
-    const [selected, setSelected] = useState<string[]>([]);
+    const [selected, setSelected] = useState<SelectedSlot[]>([]);
     const [tripStart, setTripStart] = useState<Date | undefined>(undefined);
     const [clientErrors, setClientErrors] = useState<Record<string, string>>(
         {},
     );
+    const [isPlotting, setIsPlotting] = useState<boolean>(false);
 
     // Server-side errors come in via Inertia's shared `errors` prop
     // (Inertia v3 auto-shares them after a 302-with-errors). Merge
@@ -91,8 +96,16 @@ export default function CruisePage({ destinations }: CruisePageProps) {
     function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
+        // Block double-submits while a round-trip is in flight. Inertia
+        // calls `onFinish` even on error, so this gate releases for the
+        // retry-after-failure case too.
+        if (isPlotting) {
+            return;
+        }
+
         const parsed = cruiseFormSchema.safeParse({
-            destinations: selected,
+            destinations: selected.map((slot) => slot.code),
+            layovers: selected.map((slot) => slot.layoverDays),
             tripStart,
         });
 
@@ -116,16 +129,20 @@ export default function CruisePage({ destinations }: CruisePageProps) {
 
         const payload: CruiseFormPayload = {
             destinations: parsed.data.destinations,
+            layovers: parsed.data.layovers,
             tripStart: toISODate(parsed.data.tripStart),
         };
 
         router.post(cruiseRoutes.store().url, payload, {
+            onStart: () => setIsPlotting(true),
             onError: (serverErrors) => setClientErrors(serverErrors),
             onSuccess: () => setClientErrors({}),
+            onFinish: () => setIsPlotting(false),
         });
     }
 
-    const canSubmit = selected.length > 0 && tripStart !== undefined;
+    const canSubmit =
+        selected.length > 0 && tripStart !== undefined && !isPlotting;
     const hasErrors = Object.keys(errors).length > 0;
 
     return (
@@ -151,6 +168,14 @@ export default function CruisePage({ destinations }: CruisePageProps) {
                                 className="mt-2 text-sm text-red-700"
                             >
                                 {displayError('destinations')}
+                            </p>
+                        )}
+                        {displayError('layovers') && (
+                            <p
+                                role="alert"
+                                className="mt-2 text-sm text-red-700"
+                            >
+                                {displayError('layovers')}
                             </p>
                         )}
                     </div>
@@ -187,11 +212,27 @@ export default function CruisePage({ destinations }: CruisePageProps) {
                         <button
                             type="submit"
                             disabled={!canSubmit}
-                            className="rounded bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:bg-neutral-300"
+                            aria-busy={isPlotting}
+                            aria-label={
+                                isPlotting
+                                    ? t('cruise.form.plottingAriaLabel')
+                                    : undefined
+                            }
+                            className="inline-flex items-center gap-3 rounded bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:bg-neutral-300"
                         >
-                            {t('cruise.form.submit')}
+                            {isPlotting && (
+                                <span
+                                    aria-hidden="true"
+                                    className="cruise-plot-pulse inline-block size-2 rounded-full bg-white"
+                                />
+                            )}
+                            <span>
+                                {isPlotting
+                                    ? t('cruise.form.submit.plotting')
+                                    : t('cruise.form.submit.idle')}
+                            </span>
                         </button>
-                        {!canSubmit && (
+                        {!canSubmit && !isPlotting && (
                             <p className="mt-2 text-sm text-neutral-500">
                                 {t('cruise.form.submitDisabledHint')}
                             </p>
@@ -221,6 +262,23 @@ function mapZodMessage(path: string, code: string): string {
 
     if (path === 'tripStart') {
         return 'cruise.form.errors.tripStart.past';
+    }
+
+    if (path === 'layovers') {
+        // Two reasons we land here: the cross-field length mismatch
+        // (object-level `.refine()`, path = ['layovers']) and a
+        // top-level `z.array(...)` failure (missing entirely). The
+        // first is "size" semantics; the second is "required".
+        if (code === 'custom') {
+            return 'cruise.form.errors.layovers.size';
+        }
+
+        return 'cruise.form.errors.layovers.required';
+    }
+
+    if (path.startsWith('layovers.')) {
+        // Per-entry failures: out-of-range integer or non-integer.
+        return 'cruise.form.errors.layovers.range';
     }
 
     if (path.startsWith('destinations.')) {
