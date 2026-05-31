@@ -28,10 +28,10 @@ export function DestinationSelect({
     const { t } = useTranslation();
 
     return (
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-lg border border-cyan-100/15 bg-slate-950/72 p-4 backdrop-blur-md">
             <label
                 htmlFor="destination-select"
-                className="block text-sm font-medium text-neutral-700"
+                className="block text-sm font-semibold text-cyan-100"
             >
                 {t('interstellar.destinationSelect.label')}
             </label>
@@ -40,7 +40,7 @@ export function DestinationSelect({
                 value={destinationId}
                 onChange={(event) => onChange(event.target.value)}
                 aria-label={t('interstellar.destinationSelect.ariaLabel')}
-                className="block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-base text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                className="block w-full rounded border border-cyan-100/25 bg-slate-950/80 px-3 py-2 text-base text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
             >
                 {destinations.map((destination) => (
                     <option key={destination.id} value={destination.id}>
@@ -51,7 +51,7 @@ export function DestinationSelect({
                     </option>
                 ))}
             </select>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-cyan-100/58">
                 {t('interstellar.destinationSelect.hint')}
             </p>
         </div>

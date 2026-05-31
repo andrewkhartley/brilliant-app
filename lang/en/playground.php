@@ -17,7 +17,7 @@ return [
                 'description' => 'A relativity travel agency. Set acceleration, pick a destination, watch time dilation play out — Earth time, traveler time, fuel-equivalents, the equation itself.',
             ],
             'cruise' => [
-                'title' => 'Cruise',
+                'title' => 'Sol Cruise',
                 'description' => 'A planet trip builder with live NASA Horizons data. Pick destinations, set a date, get an itinerary with orbital periods + transit times.',
             ],
             'habitat' => [
@@ -101,7 +101,7 @@ return [
                     'description' => 'Relativistic travel demo. Drag the velocity slider; watch time dilation play out against the live Lorentz factor.',
                 ],
                 'cruise' => [
-                    'title' => 'Cruise',
+                    'title' => 'Sol Cruise',
                     'description' => 'Orbital mechanics with live NASA Horizons data. Pick a destination; watch the orbital-period and orbital-velocity equations resolve.',
                 ],
                 'habitat' => [

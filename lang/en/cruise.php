@@ -13,15 +13,15 @@
  */
 
 return [
-    'title' => 'Plan a Cruise',
+    'title' => 'Plan a Sol Cruise',
     'tagline' => 'Build a trip across planets. NASA Horizons computes positions; the form solves the rest.',
     'lead' => "Pick your destinations and a departure date. We'll calculate the trip.",
     'scaffoldNote' => 'Scaffolded with :count destinations loaded from the database.',
 
     'launchOverlay' => [
-        'ariaLabel' => 'Plotting your cruise route',
+        'ariaLabel' => 'Plotting your Sol Cruise route',
         'kicker' => 'Journey preparation',
-        'heading' => 'Preparing your cruise',
+        'heading' => 'Preparing your Sol Cruise',
         'body' => 'Building a clean route for :itinerary, departing :date. We are confirming planetary positions, transfer windows, and the first-pass itinerary.',
         'dateFallback' => 'your departure window',
         'itineraryFallback' => 'deep space',
@@ -31,7 +31,7 @@ return [
             'body' => 'The itinerary packet is loaded underneath. Open it when you are ready to review the route.',
         ],
         'panel' => [
-            'label' => 'Cruise desk',
+            'label' => 'Sol Cruise desk',
             'heading' => 'Route being assembled',
             'departure' => 'Departure',
             'stops' => 'Stops',
@@ -117,7 +117,7 @@ return [
             'datePanelBody' => 'Choose the date first so Horizons can anchor the planetary positions before we assemble the route.',
             'continueToDestinations' => 'Choose destinations',
             'destinationsEyebrow' => 'Route assembly',
-            'destinationsPanelHeading' => 'Choose your cruise stops',
+            'destinationsPanelHeading' => 'Choose your Sol Cruise stops',
             'destinationsPanelBody' => 'Add destinations in the order you want to visit them. You can reorder stops, repeat a destination, and tune layover days before plotting.',
             'backToDate' => 'Change date',
             'sequenceHint' => 'Start with a departure date, then assemble the route.',
@@ -155,7 +155,7 @@ return [
             'summaryHeading' => 'Please fix these before planning your trip:',
             'destinations' => [
                 'min' => 'Pick at least one destination.',
-                'max' => 'Eight destinations is the cruise-trip cap.',
+                'max' => 'Eight destinations is the Sol Cruise cap.',
                 'invalid' => 'One or more destinations isn\'t recognized.',
             ],
             'tripStart' => [

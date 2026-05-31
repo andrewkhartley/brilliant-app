@@ -64,17 +64,17 @@ export function SliderInput({
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full rounded-lg border border-cyan-100/15 bg-slate-950/72 p-4 backdrop-blur-md">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <label
                     htmlFor={id}
-                    className="text-sm font-medium text-neutral-700"
+                    className="text-sm font-semibold text-cyan-100"
                 >
                     {label}
                 </label>
                 <output
                     htmlFor={id}
-                    className="font-mono text-sm text-neutral-900"
+                    className="font-mono text-sm font-semibold text-white"
                 >
                     {formatted}
                 </output>
@@ -88,7 +88,7 @@ export function SliderInput({
                 value={value}
                 onChange={handleChange}
                 aria-valuetext={ariaValueText}
-                className="mt-2 w-full"
+                className="brilliant-slider mt-3 w-full accent-cyan-300"
             />
         </div>
     );

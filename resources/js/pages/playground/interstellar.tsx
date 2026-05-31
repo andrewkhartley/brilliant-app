@@ -163,90 +163,106 @@ export default function InterstellarPage() {
 
     return (
         <AppLayout pageTitle={t('interstellar.pageTitle')}>
-            <section className="mx-auto max-w-4xl px-4 py-12">
-                <h1 className="text-4xl font-bold tracking-tight">
-                    {t('interstellar.heading')}
-                </h1>
-                <p className="mt-4 text-lg text-neutral-700">
-                    {t('interstellar.intro')}
-                </p>
+            <section className="relative overflow-hidden bg-[#08111f] text-white">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(125,211,252,0.16),transparent_28%),radial-gradient(circle_at_18%_78%,rgba(34,211,238,0.1),transparent_24%),linear-gradient(135deg,rgba(8,17,31,0.88),rgba(15,23,42,0.96))]" />
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.42)_1px,transparent_1px)] [background-size:42px_42px] opacity-40"
+                />
+                <div className="relative mx-auto max-w-6xl px-4 py-12 sm:py-16">
+                    <h1 className="text-4xl font-semibold tracking-normal text-white sm:text-5xl">
+                        {t('interstellar.heading')}
+                    </h1>
+                    <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
+                        {t('interstellar.intro')}
+                    </p>
 
-                <div className="mt-8">
-                    <ModeToggle
-                        mode={interfaceMode}
-                        onChange={setInterfaceMode}
-                    />
-                </div>
-
-                <div className="mt-8 space-y-6">
-                    <DestinationSelect
-                        destinationId={destinationId}
-                        onChange={setDestinationId}
-                    />
-
-                    <div className="grid gap-6 md:grid-cols-2">
-                        <FuelSelector fuelId={fuelId} onChange={setFuelId} />
-                        <EfficiencySlider
-                            efficiency={efficiency}
-                            onChange={setEfficiency}
+                    <div className="mt-8">
+                        <ModeToggle
+                            mode={interfaceMode}
+                            onChange={setInterfaceMode}
                         />
                     </div>
 
-                    <div className="grid gap-6 md:grid-cols-2">
-                        <StopToggle stop={stop} onChange={setStop} />
-                        <DurationToggle
-                            mode={durationMode}
-                            onChange={setDurationMode}
+                    <div className="mt-8 space-y-6">
+                        <DestinationSelect
+                            destinationId={destinationId}
+                            onChange={setDestinationId}
                         />
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <FuelSelector
+                                fuelId={fuelId}
+                                onChange={setFuelId}
+                            />
+                            <EfficiencySlider
+                                efficiency={efficiency}
+                                onChange={setEfficiency}
+                            />
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <StopToggle stop={stop} onChange={setStop} />
+                            <DurationToggle
+                                mode={durationMode}
+                                onChange={setDurationMode}
+                            />
+                        </div>
+
+                        <SliderInput
+                            id="acceleration-slider"
+                            label={t('interstellar.accelerationSlider.label')}
+                            min={0.1}
+                            max={100}
+                            step={0.1}
+                            value={acceleration}
+                            onChange={setAcceleration}
+                            formatValue={(v) =>
+                                t(
+                                    'interstellar.accelerationSlider.valueFormat',
+                                    {
+                                        value: v.toFixed(1),
+                                        g: (v / STANDARD_GRAVITY).toFixed(2),
+                                    },
+                                )
+                            }
+                            formatAriaValueText={(v) =>
+                                t(
+                                    'interstellar.accelerationSlider.ariaValueText',
+                                    {
+                                        value: v.toFixed(1),
+                                    },
+                                )
+                            }
+                        />
+
+                        <MaxSpeedSlider
+                            maxSpeed={clampedMaxSpeed}
+                            fuelMaxVelocityMps={fuel.maxVelocityMps}
+                            onChange={setMaxSpeed}
+                        />
+
+                        {interfaceMode === 'math' && (
+                            <EquationCard equation={relativisticSpeed} />
+                        )}
+
+                        <ResultPanel
+                            durationMode={durationMode}
+                            earthTimeYears={earthTimeYears}
+                            properTimeYears={properTimeYears}
+                            dilationFactor={dilationFactor}
+                            effectiveExhaustVelocityMps={
+                                effectiveExhaustVelocityMps
+                            }
+                            accelerationDistanceLy={accelDistanceLy}
+                            accelerationDurationYears={accelDurationYears}
+                            cruiseDistanceLy={cruiseDistanceLy}
+                            cruiseDurationYears={cruiseDurationYears}
+                            isNoCruise={phases?.isNoCruise ?? true}
+                        />
+
+                        <FuelVisualization massRatio={massRatio} />
                     </div>
-
-                    <SliderInput
-                        id="acceleration-slider"
-                        label={t('interstellar.accelerationSlider.label')}
-                        min={0.1}
-                        max={100}
-                        step={0.1}
-                        value={acceleration}
-                        onChange={setAcceleration}
-                        formatValue={(v) =>
-                            t('interstellar.accelerationSlider.valueFormat', {
-                                value: v.toFixed(1),
-                                g: (v / STANDARD_GRAVITY).toFixed(2),
-                            })
-                        }
-                        formatAriaValueText={(v) =>
-                            t('interstellar.accelerationSlider.ariaValueText', {
-                                value: v.toFixed(1),
-                            })
-                        }
-                    />
-
-                    <MaxSpeedSlider
-                        maxSpeed={clampedMaxSpeed}
-                        fuelMaxVelocityMps={fuel.maxVelocityMps}
-                        onChange={setMaxSpeed}
-                    />
-
-                    {interfaceMode === 'math' && (
-                        <EquationCard equation={relativisticSpeed} />
-                    )}
-
-                    <ResultPanel
-                        durationMode={durationMode}
-                        earthTimeYears={earthTimeYears}
-                        properTimeYears={properTimeYears}
-                        dilationFactor={dilationFactor}
-                        effectiveExhaustVelocityMps={
-                            effectiveExhaustVelocityMps
-                        }
-                        accelerationDistanceLy={accelDistanceLy}
-                        accelerationDurationYears={accelDurationYears}
-                        cruiseDistanceLy={cruiseDistanceLy}
-                        cruiseDurationYears={cruiseDurationYears}
-                        isNoCruise={phases?.isNoCruise ?? true}
-                    />
-
-                    <FuelVisualization massRatio={massRatio} />
                 </div>
             </section>
         </AppLayout>

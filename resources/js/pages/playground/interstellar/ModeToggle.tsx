@@ -22,24 +22,24 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
     const mathSelected = mode === 'math';
 
     return (
-        <div className="space-y-2">
-            <p className="text-sm font-medium text-neutral-700">
+        <div className="space-y-2 rounded-lg border border-cyan-100/15 bg-slate-950/72 p-4 backdrop-blur-md">
+            <p className="text-sm font-semibold text-cyan-100">
                 {t('interstellar.modeToggle.label')}
             </p>
             <div
                 role="radiogroup"
                 aria-label={t('interstellar.modeToggle.ariaLabel')}
-                className="inline-flex rounded-md border border-neutral-300 bg-white p-1"
+                className="inline-flex rounded border border-cyan-100/25 bg-slate-950/80 p-1"
             >
                 <button
                     type="button"
                     role="radio"
                     aria-checked={beginnerSelected}
                     onClick={() => onChange('beginner')}
-                    className={`rounded px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+                    className={`cursor-pointer rounded px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
                         beginnerSelected
-                            ? 'bg-blue-600 text-white'
-                            : 'text-neutral-700 hover:bg-neutral-100'
+                            ? 'bg-cyan-200 text-slate-950 shadow-[0_0_18px_rgba(103,232,249,0.22)]'
+                            : 'text-cyan-100 hover:bg-white/10'
                     }`}
                 >
                     {t('interstellar.modeToggle.beginnerLabel')}
@@ -49,16 +49,16 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
                     role="radio"
                     aria-checked={mathSelected}
                     onClick={() => onChange('math')}
-                    className={`rounded px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+                    className={`cursor-pointer rounded px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
                         mathSelected
-                            ? 'bg-blue-600 text-white'
-                            : 'text-neutral-700 hover:bg-neutral-100'
+                            ? 'bg-cyan-200 text-slate-950 shadow-[0_0_18px_rgba(103,232,249,0.22)]'
+                            : 'text-cyan-100 hover:bg-white/10'
                     }`}
                 >
                     {t('interstellar.modeToggle.mathLabel')}
                 </button>
             </div>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-cyan-100/58">
                 {t('interstellar.modeToggle.hint')}
             </p>
         </div>

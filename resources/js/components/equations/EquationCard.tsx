@@ -79,12 +79,14 @@ export function EquationCard({
     const displayName = translate(t(nameKey), nameKey, equation.name);
 
     return (
-        <article className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
+        <article className="rounded-lg border border-cyan-100/20 bg-slate-950/78 p-6 text-cyan-50 shadow-2xl shadow-black/35 backdrop-blur-md">
             <header className="mb-4">
-                <h3 className="text-lg font-semibold">{displayName}</h3>
+                <h3 className="text-lg font-semibold text-white">
+                    {displayName}
+                </h3>
             </header>
             <div
-                className="my-4 text-center"
+                className="my-4 overflow-x-auto text-center text-cyan-50"
                 aria-label={t('common.equations.formulaAriaLabel')}
                 dangerouslySetInnerHTML={{ __html: html }}
             />
@@ -97,23 +99,23 @@ export function EquationCard({
                             <th>{t('common.equations.unitHeading')}</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-cyan-100/10">
                         {equation.variables.map((v) => {
                             const labelKey = `equations.${equation.id}.variables.${v.symbol}`;
 
                             return (
                                 <tr key={v.symbol}>
-                                    <td className="font-serif font-bold">
+                                    <td className="py-2 font-serif font-bold text-cyan-100">
                                         {v.symbol}
                                     </td>
-                                    <td>
+                                    <td className="py-2 text-slate-200">
                                         {translate(
                                             t(labelKey),
                                             labelKey,
                                             v.label,
                                         )}
                                     </td>
-                                    <td className="text-neutral-500">
+                                    <td className="py-2 text-cyan-100/58">
                                         {v.units ?? ''}
                                     </td>
                                 </tr>

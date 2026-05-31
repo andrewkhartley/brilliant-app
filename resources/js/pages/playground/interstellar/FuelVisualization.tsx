@@ -46,15 +46,15 @@ export function FuelVisualization({ massRatio }: FuelVisualizationProps) {
           });
 
     return (
-        <div className="space-y-2 rounded-lg border border-neutral-200 bg-white p-4">
-            <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
+        <div className="space-y-2 rounded-lg border border-cyan-100/15 bg-slate-950/72 p-4 backdrop-blur-md">
+            <p className="text-xs font-bold tracking-[0.18em] text-cyan-200/70 uppercase">
                 {t('interstellar.fuelVisualization.title')}
             </p>
             <div className="flex items-baseline justify-between gap-2">
-                <span className="text-sm text-neutral-600">
+                <span className="text-sm text-cyan-100/78">
                     {t('interstellar.fuelVisualization.massRatioLabel')}
                 </span>
-                <span className="font-mono text-2xl font-semibold text-neutral-900">
+                <span className="font-mono text-2xl font-semibold text-white">
                     {isOffChart
                         ? t('interstellar.fuelVisualization.offChartLabel')
                         : t('interstellar.fuelVisualization.massRatioFormat', {
@@ -65,16 +65,18 @@ export function FuelVisualization({ massRatio }: FuelVisualizationProps) {
             <div
                 role="img"
                 aria-label={ariaLabel}
-                className="h-3 w-full overflow-hidden rounded-full bg-neutral-100"
+                className="h-3 w-full overflow-hidden rounded-full bg-slate-900/80 ring-1 ring-cyan-100/15"
             >
                 <div
                     className={`h-full rounded-full transition-all ${
-                        isOffChart ? 'bg-red-600' : 'bg-blue-600'
+                        isOffChart
+                            ? 'bg-rose-400 shadow-[0_0_18px_rgba(251,113,133,0.45)]'
+                            : 'bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.4)]'
                     }`}
                     style={{ width: `${barPercent}%` }}
                 />
             </div>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-cyan-100/58">
                 {t('interstellar.fuelVisualization.caption')}
             </p>
         </div>

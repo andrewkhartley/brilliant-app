@@ -3,12 +3,12 @@ import { useTranslation } from '@/hooks/useTranslation';
 /**
  * Site footer — bottom chrome composed by AppLayout.
  *
- * Renders (centered, thin top-bordered):
- * - Row 1: © + current year + em-dash separator + attribution name
+ * Renders two compact rows:
+ * - Row 1: copyright notice plus GitHub and Email links
  * - Row 2: source-availability note + cited-code attribution note (the
  *   transparency promise — Andrew's commit history is part of the work
  *   product, so the footer acknowledges that publicly on every page)
- * - Row 3: GitHub + Email contact links with aria-label accessible names
+ * - Row 1 also includes GitHub + Email links with aria-label names
  *
  * Composition:
  * - AppLayout owns the <footer> semantic landmark wrapper; this component
@@ -16,7 +16,7 @@ import { useTranslation } from '@/hooks/useTranslation';
  *   <header> — the layout owns landmarks, the component owns content.
  *
  * i18n:
- * - All user-facing strings flow through t() — including © glyph, separator,
+ * - All user-facing strings flow through t() — including © glyph,
  *   attribution name, link labels, and aria-labels. The mailto: scheme is
  *   composed inline (it's protocol, not content) but the email address
  *   itself is a translation key so a future locale could provide a different
@@ -33,36 +33,53 @@ export function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <div className="mx-auto max-w-6xl px-4 py-8 text-center text-sm text-cyan-100/62">
-            <p>
-                {t('common.copyright')} {currentYear}
-                {t('common.separator')}
-                {t('common.attribution')}
-            </p>
-            <p className="mt-2">
-                {t('common.footer.sourceAvailable')}{' '}
-                {t('common.footer.sourceAttribution')}
-            </p>
-            <ul className="mt-3 flex flex-wrap justify-center gap-4">
+        <div className="mx-auto max-w-6xl px-4 py-7 text-center text-sm text-cyan-100/68">
+            <ul className="flex flex-wrap justify-center gap-2">
                 <li>
                     <a
                         href={t('common.footer.githubUrl')}
                         aria-label={t('common.footer.githubAriaLabel')}
-                        className="transition-colors hover:text-white"
+                        className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
                     >
+                        <i
+                            aria-hidden="true"
+                            className="fa-brands fa-github text-cyan-200"
+                        />
                         {t('common.footer.githubLinkText')}
+                    </a>
+                </li>
+                <li>
+                    <a
+                        href={t('common.footer.linkedinUrl')}
+                        aria-label={t('common.footer.linkedinAriaLabel')}
+                        className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
+                    >
+                        <i
+                            aria-hidden="true"
+                            className="fa-brands fa-linkedin text-cyan-200"
+                        />
+                        {t('common.footer.linkedinLinkText')}
                     </a>
                 </li>
                 <li>
                     <a
                         href={`mailto:${t('common.footer.email')}`}
                         aria-label={t('common.footer.emailAriaLabel')}
-                        className="transition-colors hover:text-white"
+                        className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
                     >
+                        <i
+                            aria-hidden="true"
+                            className="fa-solid fa-envelope text-cyan-200"
+                        />
                         {t('common.footer.emailLinkText')}
                     </a>
                 </li>
             </ul>
+            <p className="mt-3 text-cyan-50/82">
+                {t('common.copyright')} {t('common.copyrightWord')}{' '}
+                {currentYear} {t('common.attribution')}.{' '}
+                {t('common.footer.allRightsReserved')}
+            </p>
         </div>
     );
 }

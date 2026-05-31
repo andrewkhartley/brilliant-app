@@ -57,22 +57,44 @@ export function ExperienceCard({
     return (
         <Link
             href={href}
-            className="block overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition-shadow hover:shadow-md focus-visible:shadow-md"
+            className="group block h-full overflow-hidden rounded-lg border border-cyan-100/16 bg-slate-950/76 shadow-2xl shadow-black/35 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-cyan-200/42 hover:bg-slate-950/86 hover:shadow-cyan-950/40 focus-visible:border-cyan-200/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
         >
             {imageSrc && (
-                <img
-                    src={imageSrc}
-                    alt={imageAlt}
-                    loading="lazy"
-                    decoding="async"
-                    className="block aspect-video w-full object-cover"
-                />
+                <div className="relative aspect-[16/7] overflow-hidden border-b border-cyan-100/12 bg-cyan-950/20">
+                    <img
+                        src={imageSrc}
+                        alt={imageAlt}
+                        loading="lazy"
+                        decoding="async"
+                        className="size-full object-cover opacity-80 saturate-125 transition duration-500 group-hover:scale-105 group-hover:opacity-95"
+                    />
+                    <div
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/26 to-transparent"
+                    />
+                </div>
             )}
-            <div className="p-6">
-                <h3 className="text-lg font-semibold text-neutral-900">
+            <div className="relative p-6">
+                <div
+                    aria-hidden="true"
+                    className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/40 to-transparent"
+                />
+                <h3 className="flex items-center gap-3 text-lg font-semibold text-white">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded bg-cyan-50/10 text-cyan-200 ring-1 ring-cyan-200/35 transition duration-300 group-hover:bg-cyan-200/18 group-hover:text-white">
+                        <i
+                            aria-hidden="true"
+                            className="fa-solid fa-arrow-right text-sm transition-transform duration-300 group-hover:translate-x-0.5"
+                        />
+                    </span>
                     {title}
                 </h3>
-                <p className="mt-2 text-sm text-neutral-700">{description}</p>
+                <p className="mt-3 text-sm leading-6 text-cyan-100/78">
+                    {description}
+                </p>
+                <div
+                    aria-hidden="true"
+                    className="mt-5 h-px w-16 bg-cyan-200/28 transition-all duration-300 group-hover:w-24 group-hover:bg-cyan-200/55"
+                />
             </div>
         </Link>
     );

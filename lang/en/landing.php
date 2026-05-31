@@ -26,11 +26,11 @@ return [
         'subtitle' => 'Andrew Hartley',
         'pitch' => 'A Brilliant.org application built as the application itself — interactive math, multi-plane camera, every line of source visible.',
         'layers' => [
-            'sky' => 'JWST sky placeholder',
-            'distantNebula' => 'Distant nebula placeholder',
-            'nearNebula' => 'Near nebula veil placeholder',
-            'horizon' => 'Horizon band placeholder',
-            'rail' => 'Observation deck rail placeholder',
+            'sky' => 'Deep-space sky',
+            'distantNebula' => 'Distant nebula',
+            'nearNebula' => 'Near nebula veil',
+            'horizon' => 'Planetary horizon',
+            'rail' => 'Observation rail',
         ],
         'caption' => [
             'subtitle' => 'A Brilliant.org application built as the application itself.',
@@ -73,7 +73,7 @@ return [
         'undauntedLogoAlt' => 'Undaunted',
         'cards' => [
             'cruise' => [
-                'title' => 'Cruise',
+                'title' => 'Sol Cruise',
                 'description' => 'Planet-hopping trip builder with live NASA Horizons data. Pick destinations, pick a profile, get the relativistic itinerary.',
             ],
             'habitat' => [

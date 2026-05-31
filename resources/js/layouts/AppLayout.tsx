@@ -38,7 +38,7 @@ interface AppLayoutProps {
  *   focus indicators on keyboard tab navigation
  *
  * All user-facing strings flow through useTranslation() — no JSX literals.
- * Even decorative strings (©, em-dash separator, attribution name) flow
+ * Even decorative strings (© and attribution name) flow
  * through t() so a future locale can re-style them if needed.
  */
 export function AppLayout({ children, pageTitle }: AppLayoutProps) {
@@ -65,12 +65,32 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                 <main
                     id="main"
                     tabIndex={-1}
-                    className="flex-1 focus:outline-none"
+                    className="relative flex-1 overflow-hidden focus:outline-none"
                 >
-                    {children}
+                    {/* Theme backdrop — always fills <main> regardless of
+                        page content height. Per-section gradient/dot overlays
+                        layer on top of this for richer texture on long pages;
+                        on short pages (Playground hub, etc.) this backdrop is
+                        what users see below the section's natural bottom. The
+                        gradient/dot opacity is intentionally lighter than the
+                        per-section overlays so layering doesn't over-darken
+                        on long pages. */}
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(125,211,252,0.12),transparent_45%),linear-gradient(180deg,rgba(8,17,31,0),rgba(8,17,31,0.5))]"
+                    />
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.42)_1px,transparent_1px)] [background-size:42px_42px] opacity-25"
+                    />
+                    <div className="relative">{children}</div>
                 </main>
 
-                <footer className="border-t border-cyan-100/15 bg-[#08111f]">
+                <footer className="relative bg-[#08111f]">
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/34 to-transparent"
+                    />
                     <Footer />
                 </footer>
             </div>

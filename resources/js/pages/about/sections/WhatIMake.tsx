@@ -20,18 +20,21 @@ export function WhatIMake() {
     const { t } = useTranslation();
 
     return (
-        <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-20">
-            <h2 className="text-3xl font-semibold tracking-tight">
-                {t('about.whatIMake.heading')}
-            </h2>
-            <div className="mt-8 space-y-6 text-lg leading-relaxed text-neutral-700">
-                <p>{t('about.whatIMake.paragraph1')}</p>
-                <p>{t('about.whatIMake.paragraph2')}</p>
-                <p>{t('about.whatIMake.paragraph3')}</p>
-                <p>{t('about.whatIMake.paragraph4')}</p>
-                <p className="text-base text-neutral-600 italic">
-                    {t('about.whatIMake.transparencyNote')}
-                </p>
+        <section className="relative overflow-hidden border-t border-cyan-100/15 bg-[#08111f] text-white">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_82%,rgba(34,211,238,0.1),transparent_24%),linear-gradient(135deg,rgba(8,17,31,0.92),rgba(15,23,42,0.97))]" />
+            <div className="relative mx-auto max-w-3xl px-4 py-20">
+                <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                    {t('about.whatIMake.heading')}
+                </h2>
+                <div className="mt-8 space-y-6 text-lg leading-relaxed text-slate-200">
+                    <p>{t('about.whatIMake.paragraph1')}</p>
+                    <p>{t('about.whatIMake.paragraph2')}</p>
+                    <p>{t('about.whatIMake.paragraph3')}</p>
+                    <p>{t('about.whatIMake.paragraph4')}</p>
+                    <p className="text-base text-cyan-100/58 italic">
+                        {t('about.whatIMake.transparencyNote')}
+                    </p>
+                </div>
             </div>
         </section>
     );

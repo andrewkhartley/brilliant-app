@@ -15,18 +15,20 @@ vi.mock('@inertiajs/react', () => ({
             translations: {
                 common: {
                     copyright: '©',
-                    separator: ' — ',
-                    attribution: 'Andrew Hartley',
+                    copyrightWord: 'Copyright',
+                    attribution: 'Andrew K. Hartley',
                     footer: {
-                        sourceAvailable: 'Source available on GitHub.',
-                        sourceAttribution:
-                            'Cited code retains original attribution.',
+                        allRightsReserved: 'All Rights Reserved.',
                         githubAriaLabel: 'View source on GitHub',
                         emailAriaLabel: 'Email Andrew',
+                        linkedinAriaLabel: 'View Andrew on LinkedIn',
                         githubUrl:
                             'https://github.com/andrewkhartley/brilliant-app',
+                        linkedinUrl:
+                            'https://www.linkedin.com/in/andrewkhartley',
                         email: 'ahartley@gmail.com',
                         githubLinkText: 'GitHub',
+                        linkedinLinkText: 'LinkedIn',
                         emailLinkText: 'Email',
                     },
                 },
@@ -46,37 +48,38 @@ describe('Footer', () => {
     test('renders the copyright + attribution row', () => {
         const { container } = render(<Footer />);
 
-        // The row interpolates ©, the current year, separator, and the
-        // attribution name into a single <p>. Assert on the attribution text
-        // (stable across years) and confirm the © glyph is present somewhere.
-        expect(screen.queryByText(/Andrew Hartley/)).not.toBeNull();
+        // The row renders a plain copyright notice. Assert on the attribution
+        // text (stable across years) and confirm the © glyph is present.
+        expect(screen.queryByText(/Andrew K\. Hartley/)).not.toBeNull();
         expect(container.textContent).toContain('©');
     });
 
-    test('renders the source-available text and attribution-note text', () => {
+    test('omits the source-available attribution note', () => {
         const { container } = render(<Footer />);
 
-        // Both notes render inside the same <p> separated by a space, so
-        // queryByText's default exact-element match won't match either half
-        // on its own. Regex match against the rendered textContent confirms
-        // both substrings are present together.
-        expect(container.textContent).toMatch(/Source available on GitHub\./);
-        expect(container.textContent).toMatch(
-            /Cited code retains original attribution\./,
-        );
+        expect(container.textContent).not.toMatch(/Source available/);
+        expect(container.textContent).not.toMatch(/Cited code/);
     });
 
-    test('renders both contact links with correct href and aria-label', () => {
+    test('renders contact links with correct href and aria-label', () => {
         render(<Footer />);
 
         const github = screen.queryByRole('link', {
             name: 'View source on GitHub',
+        });
+        const linkedin = screen.queryByRole('link', {
+            name: 'View Andrew on LinkedIn',
         });
         const email = screen.queryByRole('link', { name: 'Email Andrew' });
 
         expect(github).not.toBeNull();
         expect(github?.getAttribute('href')).toBe(
             'https://github.com/andrewkhartley/brilliant-app',
+        );
+
+        expect(linkedin).not.toBeNull();
+        expect(linkedin?.getAttribute('href')).toBe(
+            'https://www.linkedin.com/in/andrewkhartley',
         );
 
         expect(email).not.toBeNull();

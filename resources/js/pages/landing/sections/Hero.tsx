@@ -12,14 +12,12 @@ import { useTranslation } from '@/hooks/useTranslation';
  * (foreground) — no top-anchored layers, so the upper half of the scene is
  * unobstructed sky and the user's eye is drawn up toward it.
  *
- * v1 ships with placeholder color layers; v2 art replaces each layer:
- * - JWST sky (depth=0.95) → wide-field JWST-style deep sky image
- * - Distant nebula (depth=0.7) → far-distance nebula band
- * - Near nebula veil (depth=0.45) → closer nebula with stars peeking through
- * - Horizon band (depth=0.2) → atmospheric horizon line (curving land, mist,
- *   or distant landscape) anchored to the bottom edge
- * - Observation deck rail (depth=0.05) → foreground brass rail anchored to
- *   the bottom edge; the viewer's POV
+ * The image set maps directly onto the MultiPlaneScene depth model:
+ * - Sky (depth=0.95): far background, full frame
+ * - Distant nebula (depth=0.7): full-frame atmospheric overlay
+ * - Near nebula veil (depth=0.45): closer overlay with center kept readable
+ * - Horizon band (depth=0.2): bottom-anchored, viewport-height scaled
+ * - Observation rail (depth=0.05): bottom-anchored foreground POV
  *
  * Camera tracks forward (viewportAnchored travel mode) — the far sky drifts
  * most, the foreground rail stays anchored. Two full-coverage nebula layers
@@ -41,39 +39,54 @@ import { useTranslation } from '@/hooks/useTranslation';
  */
 export function Hero() {
     const { t } = useTranslation();
+    const showHorizonLayer = true;
+    const showRailLayer = true;
 
     return (
         <MultiPlaneScene height="100vh" parallaxStrength={0.6} atmosphere>
             <Layer
-                color="#1e1b4b"
+                src="/assets/scenes/landing-hero/sky.png"
                 label={t('landing.hero.layers.sky')}
                 position="full"
                 depth={0.95}
+                imagePosition="center top"
             />
             <Layer
-                color="#4c1d95"
+                src="/assets/scenes/landing-hero/distant-nebula.png"
                 label={t('landing.hero.layers.distantNebula')}
                 position="full"
                 depth={0.7}
+                opacity={{ from: 0.5 }}
+                imagePosition="center center"
             />
             <Layer
-                color="#7c3aed"
+                src="/assets/scenes/landing-hero/near-veil.png"
                 label={t('landing.hero.layers.nearNebula')}
                 position="full"
                 depth={0.45}
+                opacity={{ from: 0.42 }}
+                imagePosition="center center"
             />
-            <Layer
-                color="#3f3f46"
-                label={t('landing.hero.layers.horizon')}
-                position="bottom"
-                depth={0.2}
-            />
-            <Layer
-                color="#44403c"
-                label={t('landing.hero.layers.rail')}
-                position="bottom"
-                depth={0.05}
-            />
+            {showHorizonLayer && (
+                <Layer
+                    src="/assets/scenes/landing-hero/horizon.png"
+                    label={t('landing.hero.layers.horizon')}
+                    position="full"
+                    depth={0.2}
+                    opacity={{ from: 0.72 }}
+                    imagePosition="center bottom"
+                />
+            )}
+            {showRailLayer && (
+                <Layer
+                    src="/assets/scenes/landing-hero/foreground-rail.png"
+                    label={t('landing.hero.layers.rail')}
+                    position="full"
+                    depth={0.05}
+                    opacity={{ from: 0.92 }}
+                    imagePosition="center bottom"
+                />
+            )}
 
             <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[110] mx-auto max-w-3xl -translate-y-1/2 px-6 text-center text-white">
                 <h1 className="text-4xl font-semibold tracking-tight drop-shadow-lg sm:text-5xl md:text-6xl">

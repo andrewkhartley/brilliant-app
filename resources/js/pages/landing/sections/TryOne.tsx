@@ -70,44 +70,51 @@ export function TryOne() {
     const formattedFraction = fractionOfLightSpeed.toFixed(4);
 
     return (
-        <section className="mx-auto max-w-3xl border-t border-neutral-200 px-4 py-20">
-            <h2 className="text-3xl font-semibold tracking-tight">
-                {t('landing.tryOne.heading')}
-            </h2>
-            <p className="mt-4 text-lg leading-relaxed text-neutral-700">
-                {t('landing.tryOne.intro')}
-            </p>
+        <section className="relative overflow-hidden border-t border-cyan-100/15 bg-[#08111f] text-white">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(125,211,252,0.14),transparent_28%),linear-gradient(135deg,rgba(8,17,31,0.9),rgba(15,23,42,0.97))]" />
+            <div className="relative mx-auto max-w-3xl px-4 py-20">
+                <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                    {t('landing.tryOne.heading')}
+                </h2>
+                <p className="mt-4 text-lg leading-relaxed text-slate-200">
+                    {t('landing.tryOne.intro')}
+                </p>
 
-            <div className="mt-8 space-y-6">
-                <EquationCard equation={relativisticSpeed} />
+                <div className="mt-8 space-y-6">
+                    <EquationCard equation={relativisticSpeed} />
 
-                <SliderInput
-                    id="try-one-acceleration"
-                    label={t('landing.tryOne.sliderLabel')}
-                    min={0.1}
-                    max={100}
-                    step={0.1}
-                    value={acceleration}
-                    onChange={setAcceleration}
-                    formatValue={(v) => `${v.toFixed(1)} m/s²`}
-                    formatAriaValueText={(v) =>
-                        `${v.toFixed(1)} meters per second squared`
-                    }
-                />
+                    <SliderInput
+                        id="try-one-acceleration"
+                        label={t('landing.tryOne.sliderLabel')}
+                        min={0.1}
+                        max={100}
+                        step={0.1}
+                        value={acceleration}
+                        onChange={setAcceleration}
+                        formatValue={(v) => `${v.toFixed(1)} m/s²`}
+                        formatAriaValueText={(v) =>
+                            `${v.toFixed(1)} meters per second squared`
+                        }
+                    />
 
-                <LiveResult label={t('landing.tryOne.resultLabel')}>
-                    {`${formattedFraction} c`}
-                </LiveResult>
+                    <LiveResult label={t('landing.tryOne.resultLabel')}>
+                        {`${formattedFraction} c`}
+                    </LiveResult>
+                </div>
+
+                <p className="mt-8 text-center">
+                    <Link
+                        href="/playground/interstellar"
+                        className="inline-flex items-center gap-2 rounded border border-cyan-100/25 bg-white/5 px-4 py-2 text-base font-semibold text-cyan-100 transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                    >
+                        <i
+                            aria-hidden="true"
+                            className="fa-solid fa-arrow-right text-xs text-cyan-200"
+                        />
+                        {t('landing.tryOne.fullLink')}
+                    </Link>
+                </p>
             </div>
-
-            <p className="mt-8 text-center">
-                <Link
-                    href="/playground/interstellar"
-                    className="text-blue-700 underline-offset-4 hover:underline focus-visible:underline"
-                >
-                    {t('landing.tryOne.fullLink')}
-                </Link>
-            </p>
         </section>
     );
 }

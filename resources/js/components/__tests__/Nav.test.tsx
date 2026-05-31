@@ -15,7 +15,7 @@ vi.mock('@inertiajs/react', () => ({
             dir: 'ltr',
             translations: {
                 common: {
-                    siteName: 'Brilliant',
+                    siteName: "Andrew's Brilliant Application",
                     primaryNav: 'Primary navigation',
                 },
                 nav: {
@@ -41,7 +41,9 @@ describe('Nav', () => {
     test('renders the brand mark', () => {
         render(<Nav />);
 
-        expect(screen.queryByText('Brilliant')).not.toBeNull();
+        expect(
+            screen.queryByText("Andrew's Brilliant Application"),
+        ).not.toBeNull();
     });
 
     test('renders primary navigation landmark with translated aria-label', () => {

@@ -34,14 +34,14 @@ export function LiveResult({ label, children }: LiveResultProps) {
             role="status"
             aria-live="polite"
             aria-atomic="true"
-            className="rounded-lg bg-neutral-50 p-6 text-center text-lg"
+            className="rounded-lg border border-cyan-200/30 bg-cyan-50/8 p-6 text-center text-lg shadow-[0_0_26px_rgba(103,232,249,0.12)] backdrop-blur-md"
         >
             {label && (
-                <span className="me-2 text-sm font-medium text-neutral-600">
+                <span className="me-2 text-sm font-semibold tracking-wide text-cyan-200/70 uppercase">
                     {label}
                 </span>
             )}
-            <span className="font-mono text-2xl font-semibold text-neutral-900">
+            <span className="font-mono text-2xl font-semibold text-white">
                 {children}
             </span>
         </div>

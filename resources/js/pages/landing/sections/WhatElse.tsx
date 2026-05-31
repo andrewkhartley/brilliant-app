@@ -50,32 +50,37 @@ export function WhatElse() {
     const { t } = useTranslation();
 
     return (
-        <section className="mx-auto max-w-5xl border-t border-neutral-200 px-4 py-20">
-            <h2 className="text-3xl font-semibold tracking-tight">
-                {t('landing.whatElse.heading')}
-            </h2>
-            <p className="mt-4 flex items-center gap-3 text-lg text-neutral-700">
-                <img
-                    src="/assets/brand/undaunted/logo-on-light.svg"
-                    alt={t('landing.whatElse.undauntedLogoAlt')}
-                    className="h-6 w-auto shrink-0"
-                />
-                <span>{t('landing.whatElse.intro')}</span>
-            </p>
+        <section className="relative overflow-hidden border-t border-cyan-100/15 bg-[#08111f] text-white">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_28%,rgba(125,211,252,0.14),transparent_28%),radial-gradient(circle_at_18%_78%,rgba(34,211,238,0.1),transparent_24%),linear-gradient(135deg,rgba(8,17,31,0.9),rgba(15,23,42,0.97))]" />
+            <div className="relative mx-auto max-w-5xl px-4 py-20">
+                <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                    {t('landing.whatElse.heading')}
+                </h2>
+                <p className="mt-4 flex items-center gap-3 text-lg text-slate-200">
+                    <img
+                        src="/assets/brand/undaunted/logo.svg"
+                        alt={t('landing.whatElse.undauntedLogoAlt')}
+                        className="h-6 w-auto shrink-0"
+                    />
+                    <span>{t('landing.whatElse.intro')}</span>
+                </p>
 
-            <div className="mt-10 grid gap-6 md:grid-cols-2">
-                <ExperienceCard
-                    href="/playground/cruise"
-                    title={t('landing.whatElse.cards.cruise.title')}
-                    description={t('landing.whatElse.cards.cruise.description')}
-                />
-                <ExperienceCard
-                    href="/playground/habitat"
-                    title={t('landing.whatElse.cards.habitat.title')}
-                    description={t(
-                        'landing.whatElse.cards.habitat.description',
-                    )}
-                />
+                <div className="mt-10 grid gap-6 md:grid-cols-2">
+                    <ExperienceCard
+                        href="/playground/cruise"
+                        title={t('landing.whatElse.cards.cruise.title')}
+                        description={t(
+                            'landing.whatElse.cards.cruise.description',
+                        )}
+                    />
+                    <ExperienceCard
+                        href="/playground/habitat"
+                        title={t('landing.whatElse.cards.habitat.title')}
+                        description={t(
+                            'landing.whatElse.cards.habitat.description',
+                        )}
+                    />
+                </div>
             </div>
         </section>
     );

@@ -47,7 +47,7 @@ export function EfficiencySlider({
                     })
                 }
             />
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-cyan-100/58">
                 {t('interstellar.efficiencySlider.hint')}
             </p>
         </div>
