@@ -127,9 +127,19 @@ it('flows from form submission through to a rendered review page', function () {
     $response->assertOk();
     $response->assertInertia(
         fn ($page) => $page
+            ->component('playground/cruise')
+            ->where('cruiseReady', true)
+            ->where('preparedCruise.destinations', ['ven', 'mar'])
+    );
+
+    $review = get('/playground/cruise/review');
+
+    $review->assertOk();
+    $review->assertInertia(
+        fn ($page) => $page
             ->component('playground/cruise-review')
             ->where('horizonsError', false)
-            ->has('trip.legs', 3) // ear → ven → mar → ear
+            ->has('trip.legs', 3)
     );
 });
 

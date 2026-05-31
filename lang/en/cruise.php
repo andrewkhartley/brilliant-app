@@ -18,6 +18,28 @@ return [
     'lead' => "Pick your destinations and a departure date. We'll calculate the trip.",
     'scaffoldNote' => 'Scaffolded with :count destinations loaded from the database.',
 
+    'launchOverlay' => [
+        'ariaLabel' => 'Plotting your cruise route',
+        'kicker' => 'Journey preparation',
+        'heading' => 'Preparing your cruise',
+        'body' => 'Building a clean route for :itinerary, departing :date. We are confirming planetary positions, transfer windows, and the first-pass itinerary.',
+        'dateFallback' => 'your departure window',
+        'itineraryFallback' => 'deep space',
+        'viewDetails' => 'View trip details',
+        'panel' => [
+            'label' => 'Cruise desk',
+            'heading' => 'Route being assembled',
+            'departure' => 'Departure',
+            'stops' => 'Stops',
+            'route' => 'Selected route',
+        ],
+        'steps' => [
+            'ephemeris' => 'Confirming ephemeris',
+            'transfer' => 'Shaping transfer arcs',
+            'itinerary' => 'Preparing itinerary',
+        ],
+    ],
+
     'review' => [
         'title' => 'Your trip',
         'lead' => 'Here is the trip we plotted. Each leg shows the distance, time, and top speed under constant 1g acceleration.',

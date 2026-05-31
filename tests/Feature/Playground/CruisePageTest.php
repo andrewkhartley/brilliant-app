@@ -55,14 +55,15 @@ it('shares the cruise translation namespace for the form labels', function () {
  * validation surface + the flash + the redirect target.
  */
 
-it('accepts a valid trip submission and flashes the payload to the review URL', function () {
+it('accepts a valid trip submission and flashes the payload to the cruise page', function () {
     $response = post('/playground/cruise', [
         'destinations' => ['mer', 'ven'],
         'layovers' => [5, 5],
         'tripStart' => now()->addDays(7)->toDateString(),
     ]);
 
-    $response->assertRedirect('/playground/cruise/review');
+    $response->assertRedirect('/playground/cruise');
+    $response->assertSessionHas('cruiseReady', true);
     $response->assertSessionHas('cruise', [
         'destinations' => ['mer', 'ven'],
         'layovers' => [5, 5],
@@ -130,7 +131,8 @@ it('accepts duplicate destination codes when layovers are valid', function () {
         'tripStart' => now()->addDays(7)->toDateString(),
     ]);
 
-    $response->assertRedirect('/playground/cruise/review');
+    $response->assertRedirect('/playground/cruise');
+    $response->assertSessionHas('cruiseReady', true);
     $response->assertSessionHas('cruise', [
         'destinations' => ['mer', 'mer'],
         'layovers' => [3, 10],

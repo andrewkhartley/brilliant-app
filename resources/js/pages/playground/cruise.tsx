@@ -8,6 +8,7 @@ import { cruiseFormSchema } from '@/lib/validation/cruise-form-schema';
 import type { CruiseFormValues } from '@/lib/validation/cruise-form-schema';
 import cruiseRoutes from '@/routes/playground/cruise';
 
+import { CruiseLaunchOverlay } from './cruise/CruiseLaunchOverlay';
 import { DatePicker } from './cruise/DatePicker';
 import { DestinationPicker } from './cruise/DestinationPicker';
 import type { Destination, SelectedSlot } from './cruise/DestinationPicker';
@@ -20,7 +21,11 @@ interface CruisePageProps {
      * trip-build time (T5 wiring).
      */
     destinations: Destination[];
+    cruiseReady?: boolean;
+    preparedCruise?: CruiseFormPayload | null;
 }
+
+type LaunchState = 'idle' | 'plotting' | 'ready';
 
 /**
  * Wire shape we hand Inertia.post — derived from the zod-inferred
@@ -62,17 +67,34 @@ type CruiseFormPayload = Omit<CruiseFormValues, 'tripStart'> & {
  *     the zod path uses.
  *  4. On success, the controller redirects to /playground/cruise/review.
  */
-export default function CruisePage({ destinations }: CruisePageProps) {
+export default function CruisePage({
+    destinations,
+    cruiseReady = false,
+    preparedCruise = null,
+}: CruisePageProps) {
     const { t } = useTranslation();
     // `usePage().props.errors` is auto-shared by Inertia v3 after any
     // 302-with-error-bag response. Typed as `Errors & ErrorBag` upstream.
     const page = usePage();
-    const [selected, setSelected] = useState<SelectedSlot[]>([]);
-    const [tripStart, setTripStart] = useState<Date | undefined>(undefined);
+    const [selected, setSelected] = useState<SelectedSlot[]>(() =>
+        preparedCruise === null
+            ? []
+            : buildSelectedSlots(
+                  preparedCruise.destinations,
+                  preparedCruise.layovers,
+              ),
+    );
+    const [tripStart, setTripStart] = useState<Date | undefined>(() =>
+        preparedCruise === null
+            ? undefined
+            : fromISODate(preparedCruise.tripStart),
+    );
     const [clientErrors, setClientErrors] = useState<Record<string, string>>(
         {},
     );
-    const [isPlotting, setIsPlotting] = useState<boolean>(false);
+    const [launchState, setLaunchState] = useState<LaunchState>(
+        cruiseReady ? 'ready' : 'idle',
+    );
 
     // Server-side errors come in via Inertia's shared `errors` prop
     // (Inertia v3 auto-shares them after a 302-with-errors). Merge
@@ -99,7 +121,7 @@ export default function CruisePage({ destinations }: CruisePageProps) {
         // Block double-submits while a round-trip is in flight. Inertia
         // calls `onFinish` even on error, so this gate releases for the
         // retry-after-failure case too.
-        if (isPlotting) {
+        if (launchState === 'plotting') {
             return;
         }
 
@@ -133,20 +155,38 @@ export default function CruisePage({ destinations }: CruisePageProps) {
             tripStart: toISODate(parsed.data.tripStart),
         };
 
+        setLaunchState('plotting');
+
         router.post(cruiseRoutes.store().url, payload, {
-            onStart: () => setIsPlotting(true),
-            onError: (serverErrors) => setClientErrors(serverErrors),
-            onSuccess: () => setClientErrors({}),
-            onFinish: () => setIsPlotting(false),
+            onStart: () => setLaunchState('plotting'),
+            onError: (serverErrors) => {
+                setClientErrors(serverErrors);
+                setLaunchState('idle');
+            },
+            onSuccess: () => {
+                setClientErrors({});
+                setLaunchState('ready');
+            },
         });
     }
 
     const canSubmit =
-        selected.length > 0 && tripStart !== undefined && !isPlotting;
+        selected.length > 0 &&
+        tripStart !== undefined &&
+        launchState !== 'plotting';
     const hasErrors = Object.keys(errors).length > 0;
 
     return (
         <AppLayout pageTitle={t('cruise.title')}>
+            {launchState !== 'idle' && (
+                <CruiseLaunchOverlay
+                    destinations={destinations}
+                    selected={selected}
+                    tripStart={tripStart}
+                    isReady={launchState === 'ready'}
+                    reviewHref={cruiseRoutes.review().url}
+                />
+            )}
             <section className="mx-auto max-w-3xl px-4 py-12">
                 <h1 className="text-4xl font-bold tracking-tight text-neutral-900">
                     {t('cruise.title')}
@@ -212,27 +252,27 @@ export default function CruisePage({ destinations }: CruisePageProps) {
                         <button
                             type="submit"
                             disabled={!canSubmit}
-                            aria-busy={isPlotting}
+                            aria-busy={launchState === 'plotting'}
                             aria-label={
-                                isPlotting
+                                launchState === 'plotting'
                                     ? t('cruise.form.plottingAriaLabel')
                                     : undefined
                             }
                             className="inline-flex items-center gap-3 rounded bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:bg-neutral-300"
                         >
-                            {isPlotting && (
+                            {launchState === 'plotting' && (
                                 <span
                                     aria-hidden="true"
                                     className="cruise-plot-pulse inline-block size-2 rounded-full bg-white"
                                 />
                             )}
                             <span>
-                                {isPlotting
+                                {launchState === 'plotting'
                                     ? t('cruise.form.submit.plotting')
                                     : t('cruise.form.submit.idle')}
                             </span>
                         </button>
-                        {!canSubmit && !isPlotting && (
+                        {!canSubmit && launchState !== 'plotting' && (
                             <p className="mt-2 text-sm text-neutral-500">
                                 {t('cruise.form.submitDisabledHint')}
                             </p>
@@ -300,4 +340,21 @@ function toISODate(date: Date): string {
     const day = String(date.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+}
+
+function fromISODate(date: string): Date {
+    const [year, month, day] = date.split('-').map(Number);
+
+    return new Date(year, month - 1, day);
+}
+
+function buildSelectedSlots(
+    destinations: string[],
+    layovers: number[],
+): SelectedSlot[] {
+    return destinations.map((code, index) => ({
+        slotId: `prepared-${code}-${index}`,
+        code,
+        layoverDays: layovers[index] ?? 5,
+    }));
 }

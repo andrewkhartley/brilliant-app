@@ -47,6 +47,13 @@ class CruiseController extends Controller
 
     public function create(): Response
     {
+        $preparedCruise = session('cruise');
+        $cruiseReady = (bool) session('cruiseReady', false);
+
+        if ($cruiseReady && is_array($preparedCruise)) {
+            session()->keep(['cruise']);
+        }
+
         $destinations = Destination::getCachedFacts()
             ->map(fn (Destination $destination): array => [
                 'code' => $destination->destination_code,
@@ -57,6 +64,8 @@ class CruiseController extends Controller
 
         return Inertia::render('playground/cruise', [
             'destinations' => $destinations,
+            'cruiseReady' => $cruiseReady,
+            'preparedCruise' => is_array($preparedCruise) ? $preparedCruise : null,
             'translations' => translations(['cruise']),
         ]);
     }
@@ -70,8 +79,9 @@ class CruiseController extends Controller
      */
     public function store(StoreCruiseRequest $request): RedirectResponse
     {
-        return redirect()->route('playground.cruise.review')
-            ->with('cruise', $request->validated());
+        return redirect()->route('playground.cruise')
+            ->with('cruise', $request->validated())
+            ->with('cruiseReady', true);
     }
 
     /**

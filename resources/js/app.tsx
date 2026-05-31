@@ -2,7 +2,7 @@ import { createInertiaApp } from '@inertiajs/react';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-if (import.meta.env.DEV) {
+if (import.meta.env.DEV && !import.meta.env.SSR) {
     void (async () => {
         const [{ default: React }, { default: ReactDOM }, { default: axe }] =
             await Promise.all([

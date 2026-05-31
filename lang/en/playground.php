@@ -45,6 +45,13 @@ return [
         'outro' => 'This prototype uses color blocks instead of artwork so the motion model can be judged on its own.',
     ],
 
+    'animationDebug' => [
+        'title' => 'Animation Debug',
+        'lead' => 'Pick an animation to run it full-screen with test data.',
+        'escapeHint' => 'Press Esc to close the active preview.',
+        'previewButton' => 'Preview',
+    ],
+
     'equationsDebug' => [
         'pageTitle' => 'Equations debug — Brilliant',
         'heading' => 'Equations debug',

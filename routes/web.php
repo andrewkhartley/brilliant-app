@@ -3,6 +3,7 @@
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\API\HorizonController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\Playground\AnimationDebugController;
 use App\Http\Controllers\Playground\ComponentsDebugController;
 use App\Http\Controllers\Playground\CruiseController;
 use App\Http\Controllers\Playground\EquationsDebugController;
@@ -26,6 +27,9 @@ Route::get('/playground/scene-debug', SceneDebugController::class)
 
 Route::get('/playground/components-debug', ComponentsDebugController::class)
     ->name('playground.components-debug');
+
+Route::get('/playground/animation-debug', AnimationDebugController::class)
+    ->name('playground.animation-debug');
 
 Route::get('/playground/equations-debug', EquationsDebugController::class)
     ->name('playground.equations-debug');
