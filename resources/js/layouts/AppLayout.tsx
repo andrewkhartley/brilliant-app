@@ -57,7 +57,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                 {t('common.skipToMain')}
             </a>
 
-            <div className="flex min-h-screen flex-col">
+            <div className="flex min-h-screen flex-col bg-[#08111f]">
                 <header>
                     <Nav />
                 </header>
@@ -70,7 +70,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                     {children}
                 </main>
 
-                <footer className="border-t border-neutral-200">
+                <footer className="border-t border-cyan-100/15 bg-[#08111f]">
                     <Footer />
                 </footer>
             </div>

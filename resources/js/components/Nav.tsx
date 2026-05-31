@@ -45,20 +45,24 @@ export function Nav() {
     return (
         <nav
             aria-label={t('common.primaryNav')}
-            className="sticky top-0 z-50 bg-white/80 shadow-sm backdrop-blur"
+            className="sticky top-0 z-50 border-b border-cyan-100/15 bg-[#08111f]/92 shadow-[0_1px_0_rgba(125,211,252,0.08)] backdrop-blur"
         >
             <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
                 <Link
                     href="/"
-                    className="text-xl font-bold tracking-tight text-neutral-900"
+                    className="inline-flex items-center gap-2 text-xl font-bold tracking-tight text-white"
                 >
+                    <i
+                        aria-hidden="true"
+                        className="fa-solid fa-stars text-sm text-cyan-200"
+                    />
                     {t('common.siteName')}
                 </Link>
                 <ul className="flex flex-wrap items-center gap-6">
                     <li>
                         <Link
                             href="/playground"
-                            className="text-sm font-medium text-neutral-700 hover:text-neutral-900"
+                            className="text-sm font-medium text-cyan-100/78 transition-colors hover:text-white"
                         >
                             {t('nav.playground')}
                         </Link>
@@ -66,7 +70,7 @@ export function Nav() {
                     <li>
                         <Link
                             href="/about"
-                            className="text-sm font-medium text-neutral-700 hover:text-neutral-900"
+                            className="text-sm font-medium text-cyan-100/78 transition-colors hover:text-white"
                         >
                             {t('nav.about')}
                         </Link>

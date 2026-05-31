@@ -113,6 +113,33 @@ it('renders the review page with leg data when the flash payload is present', fu
     );
 });
 
+it('keeps the cruise payload available when the review page is refreshed', function () {
+    stubHorizonService();
+
+    $tripStart = now()->addDays(14)->toDateString();
+
+    $response = withSession([
+        'cruise' => [
+            'destinations' => ['mer'],
+            'layovers' => [5],
+            'tripStart' => $tripStart,
+        ],
+    ])->get('/playground/cruise/review');
+
+    $response->assertOk();
+
+    $refresh = get('/playground/cruise/review');
+
+    $refresh->assertOk();
+    $refresh->assertInertia(
+        fn ($page) => $page
+            ->component('playground/cruise-review')
+            ->where('cruise.tripStart', $tripStart)
+            ->where('cruise.destinations', ['mer'])
+            ->where('horizonsError', false)
+    );
+});
+
 it('flows from form submission through to a rendered review page', function () {
     stubHorizonService();
 

@@ -25,7 +25,8 @@ interface CruisePageProps {
     preparedCruise?: CruiseFormPayload | null;
 }
 
-type LaunchState = 'idle' | 'plotting' | 'ready';
+type LaunchState = 'idle' | 'plotting' | 'ready' | 'transitioning';
+type PlannerStep = 'date' | 'destinations';
 
 /**
  * Wire shape we hand Inertia.post — derived from the zod-inferred
@@ -95,6 +96,9 @@ export default function CruisePage({
     const [launchState, setLaunchState] = useState<LaunchState>(
         cruiseReady ? 'ready' : 'idle',
     );
+    const [plannerStep, setPlannerStep] = useState<PlannerStep>(() =>
+        preparedCruise?.tripStart ? 'destinations' : 'date',
+    );
 
     // Server-side errors come in via Inertia's shared `errors` prop
     // (Inertia v3 auto-shares them after a 302-with-errors). Merge
@@ -145,6 +149,7 @@ export default function CruisePage({
             }
 
             setClientErrors(fieldErrors);
+            setPlannerStep(fieldErrors.tripStart ? 'date' : 'destinations');
 
             return;
         }
@@ -158,23 +163,62 @@ export default function CruisePage({
         setLaunchState('plotting');
 
         router.post(cruiseRoutes.store().url, payload, {
+            showProgress: false,
             onStart: () => setLaunchState('plotting'),
             onError: (serverErrors) => {
                 setClientErrors(serverErrors);
+                setPlannerStep(
+                    serverErrors.tripStart ? 'date' : 'destinations',
+                );
                 setLaunchState('idle');
             },
             onSuccess: () => {
                 setClientErrors({});
-                setLaunchState('ready');
+                visitReviewPage();
             },
+        });
+    }
+
+    function visitReviewPage() {
+        sessionStorage.setItem(
+            'cruise-review-transition',
+            JSON.stringify({
+                selected,
+                tripStart:
+                    tripStart === undefined ? null : toISODate(tripStart),
+            }),
+        );
+
+        router.visit(cruiseRoutes.review().url, {
+            method: 'get',
+            preserveScroll: false,
+            showProgress: false,
+            onError: () => setLaunchState('ready'),
         });
     }
 
     const canSubmit =
         selected.length > 0 &&
         tripStart !== undefined &&
-        launchState !== 'plotting';
+        launchState !== 'plotting' &&
+        launchState !== 'transitioning';
     const hasErrors = Object.keys(errors).length > 0;
+    const selectedDeparture =
+        tripStart === undefined
+            ? t('cruise.form.planner.noDateSelected')
+            : tripStart.toLocaleDateString(undefined, {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+              });
+    const selectedDestinationNames = selected
+        .map(
+            (slot) =>
+                destinations.find(
+                    (destination) => destination.code === slot.code,
+                )?.name,
+        )
+        .filter((name): name is string => name !== undefined);
 
     return (
         <AppLayout pageTitle={t('cruise.title')}>
@@ -184,103 +228,342 @@ export default function CruisePage({
                     selected={selected}
                     tripStart={tripStart}
                     isReady={launchState === 'ready'}
-                    reviewHref={cruiseRoutes.review().url}
                 />
             )}
-            <section className="mx-auto max-w-3xl px-4 py-12">
-                <h1 className="text-4xl font-bold tracking-tight text-neutral-900">
-                    {t('cruise.title')}
-                </h1>
-                <p className="mt-4 text-lg text-neutral-700">
-                    {t('cruise.lead')}
-                </p>
+            <section className="relative overflow-hidden bg-[#08111f] text-white">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(125,211,252,0.16),transparent_28%),radial-gradient(circle_at_18%_78%,rgba(34,211,238,0.1),transparent_24%),linear-gradient(135deg,rgba(8,17,31,0.88),rgba(15,23,42,0.96))]" />
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.42)_1px,transparent_1px)] [background-size:42px_42px] opacity-40"
+                />
 
-                <form onSubmit={handleSubmit} className="mt-10 space-y-10">
-                    <div>
-                        <DestinationPicker
-                            destinations={destinations}
-                            selected={selected}
-                            onChange={setSelected}
-                        />
-                        {displayError('destinations') && (
-                            <p
-                                role="alert"
-                                className="mt-2 text-sm text-red-700"
-                            >
-                                {displayError('destinations')}
-                            </p>
-                        )}
-                        {displayError('layovers') && (
-                            <p
-                                role="alert"
-                                className="mt-2 text-sm text-red-700"
-                            >
-                                {displayError('layovers')}
-                            </p>
-                        )}
-                    </div>
-
-                    <div>
-                        <DatePicker value={tripStart} onChange={setTripStart} />
-                        {displayError('tripStart') && (
-                            <p
-                                role="alert"
-                                className="mt-2 text-sm text-red-700"
-                            >
-                                {displayError('tripStart')}
-                            </p>
-                        )}
-                    </div>
-
-                    {hasErrors && (
-                        <div
-                            role="alert"
-                            className="rounded border border-red-300 bg-red-50 p-4 text-sm text-red-800"
-                        >
-                            <p className="font-semibold">
-                                {t('cruise.form.errors.summaryHeading')}
-                            </p>
-                            <ul className="mt-2 list-disc pl-5">
-                                {Object.keys(errors).map((field) => (
-                                    <li key={field}>{displayError(field)}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={!canSubmit}
-                            aria-busy={launchState === 'plotting'}
-                            aria-label={
-                                launchState === 'plotting'
-                                    ? t('cruise.form.plottingAriaLabel')
-                                    : undefined
-                            }
-                            className="inline-flex items-center gap-3 rounded bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:bg-neutral-300"
-                        >
-                            {launchState === 'plotting' && (
-                                <span
+                <div className="relative mx-auto max-w-6xl px-4 py-8 sm:py-10">
+                    <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                        <div>
+                            <div className="inline-flex items-center gap-3 rounded-full border border-cyan-200/30 bg-cyan-50/10 px-4 py-2 text-sm font-semibold text-cyan-100">
+                                <i
                                     aria-hidden="true"
-                                    className="cruise-plot-pulse inline-block size-2 rounded-full bg-white"
+                                    className="fa-solid fa-shuttle-space text-cyan-200"
                                 />
-                            )}
-                            <span>
-                                {launchState === 'plotting'
-                                    ? t('cruise.form.submit.plotting')
-                                    : t('cruise.form.submit.idle')}
-                            </span>
-                        </button>
-                        {!canSubmit && launchState !== 'plotting' && (
-                            <p className="mt-2 text-sm text-neutral-500">
-                                {t('cruise.form.submitDisabledHint')}
-                            </p>
-                        )}
+                                {t('cruise.launchOverlay.kicker')}
+                            </div>
+                            <h1 className="mt-4 text-4xl font-semibold tracking-normal text-white sm:text-5xl">
+                                {t('cruise.title')}
+                            </h1>
+                        </div>
                     </div>
-                </form>
+
+                    <form
+                        onSubmit={handleSubmit}
+                        className="mt-7 overflow-hidden rounded-lg border border-cyan-100/20 bg-slate-950/78 p-4 shadow-2xl shadow-black/35 backdrop-blur-md sm:p-5"
+                    >
+                        <div className="grid gap-5 lg:grid-cols-[minmax(220px,0.618fr)_minmax(0,1fr)]">
+                            <div className="rounded border border-cyan-100/15 bg-slate-900/80 p-4 text-slate-100">
+                                <p className="text-xs font-bold tracking-[0.18em] text-cyan-200 uppercase">
+                                    {t('cruise.form.planner.kicker')}
+                                </p>
+                                <div className="mt-5 space-y-3">
+                                    <StepButton
+                                        step="date"
+                                        activeStep={plannerStep}
+                                        icon="fa-calendar-days"
+                                        label={t(
+                                            'cruise.form.planner.dateStep',
+                                        )}
+                                        meta={selectedDeparture}
+                                        onClick={() => setPlannerStep('date')}
+                                    />
+                                    <StepButton
+                                        step="destinations"
+                                        activeStep={plannerStep}
+                                        icon="fa-route"
+                                        label={t(
+                                            'cruise.form.planner.destinationsStep',
+                                        )}
+                                        meta={t(
+                                            'cruise.form.planner.destinationCount',
+                                            {
+                                                count: String(selected.length),
+                                            },
+                                        )}
+                                        disabled={tripStart === undefined}
+                                        onClick={() =>
+                                            setPlannerStep('destinations')
+                                        }
+                                    />
+                                </div>
+
+                                <div className="mt-6 rounded border border-cyan-100/15 bg-cyan-50/8 p-4">
+                                    <p className="text-sm font-semibold text-cyan-100">
+                                        {t(
+                                            'cruise.form.planner.manifestHeading',
+                                        )}
+                                    </p>
+                                    <dl className="mt-3 space-y-3 text-sm">
+                                        <div>
+                                            <dt className="text-slate-400">
+                                                {t(
+                                                    'cruise.form.planner.departureLabel',
+                                                )}
+                                            </dt>
+                                            <dd className="font-semibold text-white">
+                                                {selectedDeparture}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt className="text-slate-400">
+                                                {t(
+                                                    'cruise.form.planner.routeLabel',
+                                                )}
+                                            </dt>
+                                            <dd className="font-semibold text-white">
+                                                {selectedDestinationNames.length >
+                                                0
+                                                    ? selectedDestinationNames.join(
+                                                          ' -> ',
+                                                      )
+                                                    : t(
+                                                          'cruise.form.planner.noRouteSelected',
+                                                      )}
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <div className="rounded border border-cyan-100/15 bg-slate-900/82 p-5 text-slate-100 shadow-inner shadow-cyan-950/10 sm:p-7">
+                                {plannerStep === 'date' ? (
+                                    <div>
+                                        <DatePicker
+                                            value={tripStart}
+                                            onChange={setTripStart}
+                                        />
+                                        {displayError('tripStart') && (
+                                            <p
+                                                role="alert"
+                                                className="mt-2 text-sm text-red-300"
+                                            >
+                                                {displayError('tripStart')}
+                                            </p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        <div>
+                                            <div>
+                                                <p className="text-xs font-bold tracking-[0.18em] text-cyan-200 uppercase">
+                                                    {t(
+                                                        'cruise.form.planner.destinationsEyebrow',
+                                                    )}
+                                                </p>
+                                                <h2 className="mt-2 text-2xl font-bold text-white">
+                                                    {t(
+                                                        'cruise.form.planner.destinationsPanelHeading',
+                                                    )}
+                                                </h2>
+                                                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                                                    {t(
+                                                        'cruise.form.planner.destinationsPanelBody',
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded border border-cyan-100/15 bg-slate-950/55 p-4 text-slate-100 shadow-inner shadow-black/20">
+                                            <DestinationPicker
+                                                destinations={destinations}
+                                                selected={selected}
+                                                onChange={setSelected}
+                                            />
+                                        </div>
+                                        {displayError('destinations') && (
+                                            <p
+                                                role="alert"
+                                                className="mt-2 text-sm text-red-300"
+                                            >
+                                                {displayError('destinations')}
+                                            </p>
+                                        )}
+                                        {displayError('layovers') && (
+                                            <p
+                                                role="alert"
+                                                className="mt-2 text-sm text-red-300"
+                                            >
+                                                {displayError('layovers')}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {hasErrors && (
+                                    <div
+                                        role="alert"
+                                        className="mt-6 rounded border border-red-300/50 bg-red-950/40 p-4 text-sm text-red-100"
+                                    >
+                                        <p className="font-semibold">
+                                            {t(
+                                                'cruise.form.errors.summaryHeading',
+                                            )}
+                                        </p>
+                                        <ul className="mt-2 list-disc pl-5">
+                                            {Object.keys(errors).map(
+                                                (field) => (
+                                                    <li key={field}>
+                                                        {displayError(field)}
+                                                    </li>
+                                                ),
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                <div className="mt-7 flex flex-col gap-3 border-t border-cyan-100/15 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        {plannerStep === 'destinations' && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setPlannerStep('date')
+                                                }
+                                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded border border-cyan-100/25 bg-white/5 px-4 py-3 text-sm font-bold text-cyan-100 transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                                            >
+                                                <i
+                                                    aria-hidden="true"
+                                                    className="fa-solid fa-arrow-left"
+                                                />
+                                                <span>
+                                                    {t(
+                                                        'cruise.form.planner.backToDate',
+                                                    )}
+                                                </span>
+                                            </button>
+                                        )}
+                                    </div>
+                                    <span aria-hidden="true" />
+                                    {plannerStep === 'date' ? (
+                                        <button
+                                            type="button"
+                                            disabled={tripStart === undefined}
+                                            onClick={() =>
+                                                setPlannerStep('destinations')
+                                            }
+                                            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded bg-cyan-200 px-6 py-3 text-base font-bold text-slate-950 shadow-[0_0_26px_rgba(103,232,249,0.22)] transition-colors hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300 disabled:shadow-none"
+                                        >
+                                            <span>
+                                                {t(
+                                                    'cruise.form.planner.continueToDestinations',
+                                                )}
+                                            </span>
+                                            <i
+                                                aria-hidden="true"
+                                                className="fa-solid fa-arrow-right"
+                                            />
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="submit"
+                                            disabled={!canSubmit}
+                                            aria-busy={
+                                                launchState === 'plotting'
+                                            }
+                                            aria-label={
+                                                launchState === 'plotting'
+                                                    ? t(
+                                                          'cruise.form.plottingAriaLabel',
+                                                      )
+                                                    : undefined
+                                            }
+                                            className="inline-flex cursor-pointer items-center justify-center gap-3 rounded bg-cyan-200 px-6 py-3 text-base font-bold text-slate-950 shadow-[0_0_26px_rgba(103,232,249,0.22)] transition-colors hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300 disabled:shadow-none"
+                                        >
+                                            {launchState === 'plotting' && (
+                                                <span
+                                                    aria-hidden="true"
+                                                    className="cruise-plot-pulse inline-block size-2 rounded-full bg-slate-950"
+                                                />
+                                            )}
+                                            <span>
+                                                {launchState === 'plotting'
+                                                    ? t(
+                                                          'cruise.form.submit.plotting',
+                                                      )
+                                                    : t(
+                                                          'cruise.form.submit.idle',
+                                                      )}
+                                            </span>
+                                        </button>
+                                    )}
+                                </div>
+                                {!canSubmit &&
+                                    launchState !== 'plotting' &&
+                                    plannerStep === 'destinations' && (
+                                        <p className="mt-2 text-sm text-neutral-500 sm:text-right">
+                                            {t(
+                                                'cruise.form.submitDisabledHint',
+                                            )}
+                                        </p>
+                                    )}
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </section>
         </AppLayout>
+    );
+}
+
+interface StepButtonProps {
+    step: PlannerStep;
+    activeStep: PlannerStep;
+    icon: string;
+    label: string;
+    meta: string;
+    disabled?: boolean;
+    onClick: () => void;
+}
+
+function StepButton({
+    step,
+    activeStep,
+    icon,
+    label,
+    meta,
+    disabled = false,
+    onClick,
+}: StepButtonProps) {
+    const isActive = step === activeStep;
+
+    return (
+        <button
+            type="button"
+            disabled={disabled}
+            aria-current={isActive ? 'step' : undefined}
+            onClick={onClick}
+            className={`grid w-full grid-cols-[40px_1fr] gap-3 rounded border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:opacity-45 ${
+                isActive
+                    ? 'border-cyan-200 bg-cyan-200 text-slate-950 shadow-[0_0_22px_rgba(103,232,249,0.22)]'
+                    : 'border-cyan-100/15 bg-white/5 text-slate-100 hover:bg-white/10'
+            }`}
+        >
+            <span
+                className={`flex size-10 items-center justify-center rounded ${
+                    isActive
+                        ? 'bg-slate-950 text-cyan-100'
+                        : 'bg-cyan-50/10 text-cyan-200'
+                }`}
+            >
+                <i aria-hidden="true" className={`fa-solid ${icon}`} />
+            </span>
+            <span>
+                <span className="block text-sm font-bold">{label}</span>
+                <span
+                    className={`mt-1 block text-xs ${
+                        isActive ? 'text-slate-700' : 'text-slate-400'
+                    }`}
+                >
+                    {meta}
+                </span>
+            </span>
+        </button>
     );
 }
 

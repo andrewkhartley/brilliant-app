@@ -9,6 +9,11 @@
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         @fonts
+        <script>
+            window.FontAwesomeConfig = {
+                autoReplaceSvg: 'nest',
+            };
+        </script>
         <script src="https://kit.fontawesome.com/f22762bc1a.js" crossorigin="anonymous"></script>
 
         @viteReactRefresh

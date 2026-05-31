@@ -26,6 +26,10 @@ return [
         'dateFallback' => 'your departure window',
         'itineraryFallback' => 'deep space',
         'viewDetails' => 'View trip details',
+        'ready' => [
+            'heading' => 'Your itinerary is ready',
+            'body' => 'The itinerary packet is loaded underneath. Open it when you are ready to review the route.',
+        ],
         'panel' => [
             'label' => 'Cruise desk',
             'heading' => 'Route being assembled',
@@ -42,6 +46,7 @@ return [
 
     'review' => [
         'title' => 'Your trip',
+        'kicker' => 'Itinerary received',
         'lead' => 'Here is the trip we plotted. Each leg shows the distance, time, and top speed under constant 1g acceleration.',
         'backToForm' => 'Plan a different trip',
         'summary' => [
@@ -98,6 +103,25 @@ return [
     ],
 
     'form' => [
+        'planner' => [
+            'kicker' => 'Mission planner',
+            'dateStep' => 'Departure date',
+            'destinationsStep' => 'Destinations',
+            'destinationCount' => ':count selected',
+            'manifestHeading' => 'Trip manifest',
+            'departureLabel' => 'Departure',
+            'routeLabel' => 'Route',
+            'noDateSelected' => 'Not selected yet',
+            'noRouteSelected' => 'No destinations yet',
+            'datePanelHeading' => 'Set your launch window',
+            'datePanelBody' => 'Choose the date first so Horizons can anchor the planetary positions before we assemble the route.',
+            'continueToDestinations' => 'Choose destinations',
+            'destinationsEyebrow' => 'Route assembly',
+            'destinationsPanelHeading' => 'Choose your cruise stops',
+            'destinationsPanelBody' => 'Add destinations in the order you want to visit them. You can reorder stops, repeat a destination, and tune layover days before plotting.',
+            'backToDate' => 'Change date',
+            'sequenceHint' => 'Start with a departure date, then assemble the route.',
+        ],
         'submit' => [
             'idle' => 'Plan trip',
             'plotting' => 'Plotting trajectory…',

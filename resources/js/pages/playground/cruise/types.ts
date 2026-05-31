@@ -82,6 +82,8 @@ export interface Trip {
 export interface CruiseInput {
     /** User-picked destination codes, in trip order. */
     destinations: string[];
+    /** Per-destination layover days, parallel to destinations. */
+    layovers: number[];
     /** Trip-start date as YYYY-MM-DD (what the user picked in the form). */
     tripStart: string;
 }

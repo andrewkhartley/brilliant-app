@@ -1,9 +1,12 @@
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
 
 import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
 import { cruise as cruiseRoute } from '@/routes/playground';
 
+import { CruiseLaunchOverlay } from './cruise/CruiseLaunchOverlay';
+import type { Destination, SelectedSlot } from './cruise/DestinationPicker';
 import { HorizonsError } from './cruise/HorizonsError';
 import type { Coordinates, CruiseInput, Leg, Trip } from './cruise/types';
 
@@ -70,35 +73,78 @@ export default function CruiseReviewPage({
     attemptedDestinationNames,
 }: CruiseReviewPageProps) {
     const { t } = useTranslation();
+    const [transition] = useState(() =>
+        readCruiseReviewTransition(cruise, trip),
+    );
+    const [showRevealOverlay, setShowRevealOverlay] = useState(
+        transition !== null,
+    );
+    const [isRevealingItinerary, setIsRevealingItinerary] = useState(false);
 
     return (
         <AppLayout pageTitle={t('cruise.review.title')}>
-            <section className="mx-auto max-w-4xl px-4 py-12">
-                <div className="flex items-baseline justify-between gap-6">
-                    <h1 className="text-4xl font-bold tracking-tight text-neutral-900">
-                        {t('cruise.review.title')}
-                    </h1>
-                    <Link
-                        href={cruiseRoute.url()}
-                        className="text-sm font-medium text-blue-700 hover:text-blue-900 hover:underline"
-                    >
-                        {t('cruise.review.backToForm')}
-                    </Link>
-                </div>
-                <p className="mt-4 text-lg text-neutral-700">
-                    {t('cruise.review.lead')}
-                </p>
+            {showRevealOverlay && transition !== null && (
+                <CruiseLaunchOverlay
+                    destinations={transition.destinations}
+                    selected={transition.selected}
+                    tripStart={transition.tripStart}
+                    isReady={!isRevealingItinerary}
+                    revealOnMount={isRevealingItinerary}
+                    onViewDetails={() => setIsRevealingItinerary(true)}
+                    onRevealComplete={() => setShowRevealOverlay(false)}
+                />
+            )}
+            <section className="relative overflow-hidden bg-[#08111f] text-white">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_22%,rgba(125,211,252,0.16),transparent_28%),linear-gradient(135deg,rgba(8,17,31,0.9),rgba(15,23,42,0.97))]" />
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.42)_1px,transparent_1px)] [background-size:42px_42px] opacity-35"
+                />
 
-                {horizonsError ? (
-                    <HorizonsError
-                        cruise={cruise}
-                        attemptedDestinationNames={attemptedDestinationNames}
-                    />
-                ) : (
-                    trip !== null && (
-                        <ComputedTripView cruise={cruise} trip={trip} />
-                    )
-                )}
+                <div className="relative mx-auto max-w-6xl px-4 py-12 sm:py-16">
+                    <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="max-w-3xl">
+                            <div className="inline-flex items-center gap-3 rounded-full border border-cyan-200/30 bg-cyan-50/10 px-4 py-2 text-sm font-semibold text-cyan-100">
+                                <i
+                                    aria-hidden="true"
+                                    className="fa-solid fa-ticket-airline text-cyan-200"
+                                />
+                                {t('cruise.review.kicker')}
+                            </div>
+                            <h1 className="mt-5 text-4xl font-semibold tracking-normal text-white sm:text-6xl">
+                                {t('cruise.review.title')}
+                            </h1>
+                            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
+                                {t('cruise.review.lead')}
+                            </p>
+                        </div>
+                        <Link
+                            href={cruiseRoute.url()}
+                            className="inline-flex items-center gap-2 self-start rounded border border-cyan-100/20 bg-cyan-50/10 px-4 py-2 text-sm font-semibold text-cyan-100 transition-colors hover:bg-cyan-50/16 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
+                        >
+                            <i
+                                aria-hidden="true"
+                                className="fa-solid fa-arrow-left text-xs"
+                            />
+                            {t('cruise.review.backToForm')}
+                        </Link>
+                    </div>
+
+                    <div className="mt-10 overflow-hidden rounded-lg border border-cyan-100/20 bg-slate-950/72 p-5 text-cyan-50 shadow-2xl shadow-black/35 backdrop-blur-md sm:p-7">
+                        {horizonsError ? (
+                            <HorizonsError
+                                cruise={cruise}
+                                attemptedDestinationNames={
+                                    attemptedDestinationNames
+                                }
+                            />
+                        ) : (
+                            trip !== null && (
+                                <ComputedTripView cruise={cruise} trip={trip} />
+                            )
+                        )}
+                    </div>
+                </div>
             </section>
         </AppLayout>
     );
@@ -114,8 +160,8 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
 
     return (
         <>
-            <section className="mt-10 rounded-lg border border-neutral-200 bg-neutral-50 p-6">
-                <h2 className="text-xl font-semibold text-neutral-900">
+            <section className="rounded-lg border border-cyan-100/25 bg-slate-950 p-6 text-cyan-50">
+                <h2 className="text-xl font-semibold text-white">
                     {t('cruise.review.summary.heading')}
                 </h2>
                 <dl className="mt-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
@@ -150,7 +196,7 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
                 aria-label={t('cruise.review.itinerary.label')}
                 className="mt-10 space-y-4"
             >
-                <h2 className="text-xl font-semibold text-neutral-900">
+                <h2 className="text-xl font-semibold text-white">
                     {t('cruise.review.itinerary.heading')}
                 </h2>
                 {trip.legs.map((leg, index) => (
@@ -208,19 +254,19 @@ function LegRow({ leg, index }: LegRowProps) {
     return (
         <article
             aria-labelledby={`leg-${leg.leg}-heading`}
-            className="cruise-leg-reveal rounded-lg border border-neutral-200 bg-white p-6 shadow-sm"
+            className="cruise-leg-reveal rounded-lg border border-cyan-100/15 bg-cyan-50/8 p-6 text-cyan-50 shadow-sm"
             style={{ animationDelay: `${index * LEG_REVEAL_STAGGER_MS}ms` }}
         >
             <header className="flex flex-wrap items-center gap-4">
                 <PlanetIcon code={leg.departure} name={leg.departureName} />
-                <span aria-hidden="true" className="text-2xl text-neutral-400">
+                <span aria-hidden="true" className="text-2xl text-cyan-100/40">
                     {'→'}
                 </span>
                 <PlanetIcon code={leg.arrival} name={leg.arrivalName} />
                 <div className="flex-1">
                     <h3
                         id={`leg-${leg.leg}-heading`}
-                        className="text-lg font-semibold text-neutral-900"
+                        className="text-lg font-semibold text-white"
                     >
                         {t('cruise.review.leg.heading', {
                             number: leg.leg,
@@ -228,7 +274,7 @@ function LegRow({ leg, index }: LegRowProps) {
                             arrival: leg.arrivalName,
                         })}
                     </h3>
-                    <p className="mt-1 text-sm text-neutral-500">
+                    <p className="mt-1 text-sm text-cyan-100/60">
                         {t('cruise.review.leg.timeRange', {
                             departure: leg.departureTime,
                             arrival: leg.arrivalTime,
@@ -279,8 +325,8 @@ function LegDetailsDisclosure({ leg }: LegDetailsDisclosureProps) {
     const { t } = useTranslation();
 
     return (
-        <details className="group mt-5 border-t border-neutral-100 pt-4">
-            <summary className="cursor-pointer text-sm font-medium text-neutral-600 hover:text-neutral-900">
+        <details className="group mt-5 border-t border-cyan-100/15 pt-4">
+            <summary className="cursor-pointer text-sm font-medium text-cyan-100/68 hover:text-white">
                 <span className="group-open:hidden">
                     {t('cruise.review.leg.details.show')}
                 </span>
@@ -303,15 +349,15 @@ function LegDetailsDisclosure({ leg }: LegDetailsDisclosureProps) {
                 />
             </dl>
             <div className="mt-4">
-                <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
+                <p className="text-xs font-medium tracking-wide text-cyan-100/58 uppercase">
                     {t('cruise.review.leg.details.coordinatesLabel')}
                 </p>
-                <p className="mt-2 font-mono text-xs leading-relaxed text-neutral-700">
+                <p className="mt-2 font-mono text-xs leading-relaxed text-cyan-50/82">
                     <CoordinateLine
                         translationKey="cruise.review.leg.details.departureCoordinates"
                         coordinates={leg.depCoordinates}
                     />
-                    <span aria-hidden="true" className="mx-2 text-neutral-400">
+                    <span aria-hidden="true" className="mx-2 text-cyan-100/35">
                         {'·'}
                     </span>
                     <CoordinateLine
@@ -370,10 +416,10 @@ interface DetailItemProps {
 function DetailItem({ label, value }: DetailItemProps) {
     return (
         <div>
-            <dt className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
+            <dt className="text-xs font-medium tracking-wide text-cyan-100/58 uppercase">
                 {label}
             </dt>
-            <dd className="mt-1 text-neutral-800">{value}</dd>
+            <dd className="mt-1 text-cyan-50">{value}</dd>
         </div>
     );
 }
@@ -401,8 +447,8 @@ interface SummaryItemProps {
 function SummaryItem({ label, value }: SummaryItemProps) {
     return (
         <div>
-            <dt className="font-medium text-neutral-500">{label}</dt>
-            <dd className="mt-1 font-semibold text-neutral-900">{value}</dd>
+            <dt className="font-medium text-cyan-100/62">{label}</dt>
+            <dd className="mt-1 font-semibold text-cyan-50">{value}</dd>
         </div>
     );
 }
@@ -416,17 +462,131 @@ interface StatProps {
 function Stat({ label, value, units }: StatProps) {
     return (
         <div>
-            <dt className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
+            <dt className="text-xs font-medium tracking-wide text-cyan-100/58 uppercase">
                 {label}
             </dt>
-            <dd className="mt-1 text-xl font-semibold text-neutral-900">
+            <dd className="mt-1 text-xl font-semibold text-white">
                 {value}
                 {units !== undefined && (
-                    <span className="ms-1 text-base font-normal text-neutral-500">
+                    <span className="ms-1 text-base font-normal text-cyan-100/58">
                         {units}
                     </span>
                 )}
             </dd>
         </div>
     );
+}
+
+interface CruiseReviewTransition {
+    destinations: Destination[];
+    selected: SelectedSlot[];
+    tripStart: Date | undefined;
+}
+
+interface StoredCruiseReviewTransition {
+    selected?: SelectedSlot[];
+    tripStart?: string | null;
+}
+
+function readCruiseReviewTransition(
+    cruise: CruiseInput,
+    trip: Trip | null,
+): CruiseReviewTransition | null {
+    if (typeof sessionStorage === 'undefined') {
+        return null;
+    }
+
+    const raw = sessionStorage.getItem('cruise-review-transition');
+
+    if (raw === null) {
+        return null;
+    }
+
+    sessionStorage.removeItem('cruise-review-transition');
+
+    const stored = parseStoredTransition(raw);
+    const selected =
+        stored.selected ??
+        buildSelectedSlots(cruise.destinations, cruise.layovers);
+
+    return {
+        destinations: buildDestinationCatalog(cruise, trip),
+        selected,
+        tripStart:
+            stored.tripStart === null || stored.tripStart === undefined
+                ? fromISODate(cruise.tripStart)
+                : fromISODate(stored.tripStart),
+    };
+}
+
+function parseStoredTransition(raw: string): StoredCruiseReviewTransition {
+    try {
+        const parsed = JSON.parse(raw) as StoredCruiseReviewTransition;
+
+        return {
+            selected: Array.isArray(parsed.selected)
+                ? parsed.selected.filter(isSelectedSlot)
+                : undefined,
+            tripStart:
+                typeof parsed.tripStart === 'string' ||
+                parsed.tripStart === null
+                    ? parsed.tripStart
+                    : undefined,
+        };
+    } catch {
+        return {};
+    }
+}
+
+function isSelectedSlot(value: unknown): value is SelectedSlot {
+    if (typeof value !== 'object' || value === null) {
+        return false;
+    }
+
+    const slot = value as Partial<SelectedSlot>;
+
+    return (
+        typeof slot.slotId === 'string' &&
+        typeof slot.code === 'string' &&
+        typeof slot.layoverDays === 'number'
+    );
+}
+
+function buildDestinationCatalog(
+    cruise: CruiseInput,
+    trip: Trip | null,
+): Destination[] {
+    const catalog = new Map<string, string>();
+
+    if (trip !== null) {
+        for (const leg of trip.legs) {
+            catalog.set(leg.departure, leg.departureName);
+            catalog.set(leg.arrival, leg.arrivalName);
+        }
+    }
+
+    for (const code of cruise.destinations) {
+        if (!catalog.has(code)) {
+            catalog.set(code, code.toUpperCase());
+        }
+    }
+
+    return Array.from(catalog, ([code, name]) => ({ code, name }));
+}
+
+function buildSelectedSlots(
+    destinations: string[],
+    layovers: number[] = [],
+): SelectedSlot[] {
+    return destinations.map((code, index) => ({
+        slotId: `review-transition-${code}-${index}`,
+        code,
+        layoverDays: layovers[index] ?? 5,
+    }));
+}
+
+function fromISODate(date: string): Date {
+    const [year, month, day] = date.split('-').map(Number);
+
+    return new Date(year, month - 1, day);
 }

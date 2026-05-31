@@ -1,8 +1,7 @@
-import { Link } from '@inertiajs/react';
 import { animate } from 'animejs';
 import type { JSAnimation } from 'animejs';
 import { gsap } from 'gsap';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import { useTranslation } from '@/hooks/useTranslation';
@@ -14,15 +13,21 @@ interface CruiseLaunchOverlayProps {
     selected: SelectedSlot[];
     tripStart: Date | undefined;
     isReady?: boolean;
-    reviewHref?: string;
+    revealOnMount?: boolean;
+    onRevealComplete?: () => void;
+    onViewDetails?: () => void;
 }
+
+type OverlayCopyMode = 'preparing' | 'ready';
 
 export function CruiseLaunchOverlay({
     destinations,
     selected,
     tripStart,
     isReady = false,
-    reviewHref = '/playground/cruise/review',
+    revealOnMount = false,
+    onRevealComplete,
+    onViewDetails,
 }: CruiseLaunchOverlayProps) {
     const { t } = useTranslation();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -40,6 +45,18 @@ export function CruiseLaunchOverlay({
         () => buildItineraryStops(destinations, selected),
         [destinations, selected],
     );
+    const targetCopyMode: OverlayCopyMode = isReady ? 'ready' : 'preparing';
+    const [displayedCopyMode, setDisplayedCopyMode] =
+        useState<OverlayCopyMode>(targetCopyMode);
+    // Derived rather than stateful: the fade-out class is on whenever the
+    // displayed copy differs from the target AND we're not currently
+    // tearing down the overlay (revealOnMount). Avoids the
+    // react-hooks/set-state-in-effect lint that the old isCopyExiting
+    // state triggered for purely-coordination state.
+    const isCopyExiting =
+        !revealOnMount && targetCopyMode !== displayedCopyMode;
+    const showReadyCta =
+        isReady && displayedCopyMode === 'ready' && !isCopyExiting;
 
     useEffect(() => {
         const previousOverflow = document.body.style.overflow;
@@ -50,6 +67,38 @@ export function CruiseLaunchOverlay({
             document.body.style.overflow = previousOverflow;
         };
     }, []);
+
+    useEffect(() => {
+        // Freeze the copy during the reveal-out fade. Without this guard,
+        // clicking the CTA flips `isRevealingItinerary` → `isReady` drops
+        // to false → `targetCopyMode` recomputes to 'preparing' and this
+        // effect would crossfade the old "preparing" body back in while
+        // the overlay itself is fading out. The user sees a brief flash
+        // of stale copy before the overlay disappears.
+        if (revealOnMount) {
+            return;
+        }
+
+        if (targetCopyMode === displayedCopyMode) {
+            return;
+        }
+
+        const reducedMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+        // Must match the .cruise-overlay-copy-exit animation duration
+        // in resources/css/app.css. Bump both together — drifting them
+        // apart causes either a flash of the new copy before the exit
+        // completes (JS shorter than CSS) or a blank beat between exit
+        // and enter (JS longer than CSS).
+        const delay = reducedMotion ? 0 : 750;
+
+        const timeout = window.setTimeout(() => {
+            setDisplayedCopyMode(targetCopyMode);
+        }, delay);
+
+        return () => window.clearTimeout(timeout);
+    }, [displayedCopyMode, revealOnMount, targetCopyMode]);
 
     useEffect(() => {
         const root = rootRef.current;
@@ -94,7 +143,7 @@ export function CruiseLaunchOverlay({
     useEffect(() => {
         const root = rootRef.current;
 
-        if (!root || !isReady) {
+        if (!root || !showReadyCta) {
             return;
         }
 
@@ -130,10 +179,64 @@ export function CruiseLaunchOverlay({
         });
 
         return () => {
-            ctaAnimation.revert();
-            glowAnimation.revert();
+            ctaAnimation.cancel();
+            glowAnimation.cancel();
         };
-    }, [isReady]);
+    }, [showReadyCta]);
+
+    useEffect(() => {
+        const root = rootRef.current;
+
+        if (!root || !revealOnMount) {
+            return;
+        }
+
+        const reducedMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+
+        if (reducedMotion) {
+            const timeout = window.setTimeout(() => onRevealComplete?.(), 250);
+
+            return () => window.clearTimeout(timeout);
+        }
+
+        const timeout = window.setTimeout(() => {
+            animate(root.querySelectorAll('[data-hero-copy]'), {
+                translateX: [0, -72],
+                opacity: [1, 0],
+                duration: 760,
+                ease: 'inOutSine',
+            });
+            animate(root.querySelectorAll('[data-console]'), {
+                translateY: [0, 140],
+                opacity: [1, 0],
+                duration: 760,
+                ease: 'inOutSine',
+            });
+            animate(root.querySelectorAll('[data-scene-canvas]'), {
+                scale: [1, 1.1],
+                opacity: [1, 0],
+                duration: 980,
+                ease: 'inOutSine',
+            });
+            animate(root, {
+                opacity: [1, 0],
+                duration: 980,
+                delay: 260,
+                ease: 'inOutSine',
+            });
+        }, 220);
+        const completeTimeout = window.setTimeout(
+            () => onRevealComplete?.(),
+            1500,
+        );
+
+        return () => {
+            window.clearTimeout(timeout);
+            window.clearTimeout(completeTimeout);
+        };
+    }, [onRevealComplete, revealOnMount]);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -199,10 +302,12 @@ export function CruiseLaunchOverlay({
             renderer.setSize(rect.width, rect.height, false);
 
             const aspect = rect.width / Math.max(rect.height, 1);
-            camera.left = -4.8 * aspect;
-            camera.right = 4.8 * aspect;
-            camera.top = 3.2;
-            camera.bottom = -3.2;
+            const verticalHalfSize = 3.2;
+
+            camera.left = -verticalHalfSize * aspect;
+            camera.right = verticalHalfSize * aspect;
+            camera.top = verticalHalfSize;
+            camera.bottom = -verticalHalfSize;
             camera.updateProjectionMatrix();
         }
 
@@ -284,6 +389,7 @@ export function CruiseLaunchOverlay({
         >
             <canvas
                 ref={canvasRef}
+                data-scene-canvas
                 aria-hidden="true"
                 className="absolute inset-0 h-full w-full"
             />
@@ -291,24 +397,40 @@ export function CruiseLaunchOverlay({
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_34%,rgba(125,211,252,0.16),transparent_30%),linear-gradient(135deg,rgba(8,17,31,0.2),rgba(15,23,42,0.72))]" />
 
             <div className="relative z-10 flex min-h-full flex-col justify-between gap-8 px-4 pt-12 pb-5 sm:px-8 sm:pt-16">
-                <div className="max-w-2xl">
+                <div data-hero-copy className="max-w-2xl">
                     <div className="inline-flex items-center gap-3 rounded-full border border-cyan-200/30 bg-cyan-50/10 px-4 py-2 text-sm font-semibold text-cyan-100">
-                        <span className="size-2 rounded-full bg-cyan-200" />
+                        <i
+                            aria-hidden="true"
+                            className="fa-solid fa-shuttle-space text-cyan-200"
+                        />
                         {t('cruise.launchOverlay.kicker')}
                     </div>
-                    <h2 className="mt-5 text-4xl font-semibold tracking-normal text-white sm:text-6xl">
-                        {t('cruise.launchOverlay.heading')}
-                    </h2>
-                    <p className="mt-5 max-w-xl text-base leading-7 text-slate-200 sm:text-lg">
-                        {t('cruise.launchOverlay.body', {
-                            itinerary: itineraryLabel,
-                            date:
-                                tripStart === undefined
-                                    ? t('cruise.launchOverlay.dateFallback')
-                                    : formatDate(tripStart),
-                        })}
-                    </p>
-                    {isReady && (
+                    <div
+                        key={displayedCopyMode}
+                        className={
+                            isCopyExiting
+                                ? 'cruise-overlay-copy-exit'
+                                : 'cruise-overlay-copy-enter'
+                        }
+                    >
+                        <h2 className="mt-5 text-4xl font-semibold tracking-normal text-white sm:text-6xl">
+                            {copyHeading(displayedCopyMode, t)}
+                        </h2>
+                        <p className="mt-5 max-w-xl text-base leading-7 text-slate-200 sm:text-lg">
+                            {displayedCopyMode === 'ready'
+                                ? t('cruise.launchOverlay.ready.body')
+                                : t('cruise.launchOverlay.body', {
+                                      itinerary: itineraryLabel,
+                                      date:
+                                          tripStart === undefined
+                                              ? t(
+                                                    'cruise.launchOverlay.dateFallback',
+                                                )
+                                              : formatDate(tripStart),
+                                  })}
+                        </p>
+                    </div>
+                    {showReadyCta && (
                         <div
                             data-ready-cta
                             className="relative mt-7 inline-flex"
@@ -318,21 +440,25 @@ export function CruiseLaunchOverlay({
                                 aria-hidden="true"
                                 className="absolute inset-0 rounded bg-cyan-200/40 blur-xl"
                             />
-                            <Link
-                                href={reviewHref}
-                                className="relative inline-flex items-center gap-3 rounded bg-cyan-200 px-6 py-3 text-base font-bold text-slate-950 shadow-[0_0_34px_rgba(103,232,249,0.34)] transition-colors hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-200"
+                            <button
+                                type="button"
+                                onClick={onViewDetails}
+                                className="relative inline-flex cursor-pointer items-center gap-3 rounded bg-cyan-200 px-6 py-3 text-base font-bold text-slate-950 shadow-[0_0_34px_rgba(103,232,249,0.34)] transition-colors hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-200"
                             >
                                 <i
                                     aria-hidden="true"
                                     className="fa-solid fa-route text-sm"
                                 />
                                 {t('cruise.launchOverlay.viewDetails')}
-                            </Link>
+                            </button>
                         </div>
                     )}
                 </div>
 
-                <aside className="relative mx-auto w-full max-w-[100rem] overflow-hidden rounded-lg border border-cyan-100/20 bg-slate-950/78 px-5 py-4 text-cyan-50 shadow-2xl shadow-black/35 backdrop-blur-md">
+                <aside
+                    data-console
+                    className="relative mx-auto w-full max-w-[100rem] overflow-hidden rounded-lg border border-cyan-100/20 bg-slate-950/78 px-5 py-4 text-cyan-50 shadow-2xl shadow-black/35 backdrop-blur-md"
+                >
                     <span
                         data-scan-line
                         aria-hidden="true"
@@ -416,6 +542,17 @@ function createCircle(radius: number, color: number) {
     );
 }
 
+function copyHeading(
+    mode: OverlayCopyMode,
+    t: (key: string) => string,
+): string {
+    if (mode === 'ready') {
+        return t('cruise.launchOverlay.ready.heading');
+    }
+
+    return t('cruise.launchOverlay.heading');
+}
+
 function createDestinationMarker(
     destination: Destination,
     index: number,
@@ -451,16 +588,23 @@ function createShip() {
 
     const body = new THREE.Mesh(
         new THREE.CapsuleGeometry(0.13, 0.5, 4, 16),
-        new THREE.MeshBasicMaterial({ color: 0xf8fafc }),
+        new THREE.MeshBasicMaterial({
+            color: 0xf8fafc,
+            transparent: true,
+        }),
     );
     body.rotation.z = Math.PI / 2;
 
     const window = createCircle(0.09, 0x38bdf8);
+    window.material.transparent = true;
     window.position.set(0.12, 0.03, 0.08);
 
     const flame = new THREE.Mesh(
         new THREE.ConeGeometry(0.1, 0.28, 24),
-        new THREE.MeshBasicMaterial({ color: 0xfde68a }),
+        new THREE.MeshBasicMaterial({
+            color: 0xfde68a,
+            transparent: true,
+        }),
     );
     flame.position.set(-0.42, 0, -0.01);
     flame.rotation.z = Math.PI / 2;
@@ -522,10 +666,10 @@ function createRouteLine(
 }
 
 function createFlightTimeline(ship: THREE.Group, routePoints: THREE.Vector3[]) {
+    const shipMaterials = collectMaterials(ship);
     const timeline = gsap.timeline({
         repeat: -1,
         defaults: { ease: 'sine.inOut' },
-        repeatDelay: 0.45,
     });
 
     routePoints.slice(1).forEach((point, index) => {
@@ -546,13 +690,44 @@ function createFlightTimeline(ship: THREE.Group, routePoints: THREE.Vector3[]) {
             '<',
         );
     });
-    timeline.to(ship.position, {
+    timeline.to(
+        shipMaterials,
+        {
+            opacity: 0,
+            duration: 0.5,
+        },
+        '+=2',
+    );
+    timeline.set(ship.position, {
         x: routePoints[0].x,
         y: routePoints[0].y,
-        duration: 0.01,
+        z: 0.35,
+    });
+    timeline.set(ship.rotation, {
+        z: 0.18,
+    });
+    timeline.to(shipMaterials, {
+        opacity: 1,
+        duration: 0.5,
     });
 
     return timeline;
+}
+
+function collectMaterials(object: THREE.Object3D): THREE.Material[] {
+    const materials: THREE.Material[] = [];
+
+    object.traverse((child: THREE.Object3D) => {
+        if (child instanceof THREE.Mesh || child instanceof THREE.Sprite) {
+            if (Array.isArray(child.material)) {
+                materials.push(...child.material);
+            } else {
+                materials.push(child.material);
+            }
+        }
+    });
+
+    return materials;
 }
 
 function createStarfield(

@@ -33,7 +33,7 @@ export function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <div className="mx-auto max-w-6xl px-4 py-8 text-center text-sm text-neutral-600">
+        <div className="mx-auto max-w-6xl px-4 py-8 text-center text-sm text-cyan-100/62">
             <p>
                 {t('common.copyright')} {currentYear}
                 {t('common.separator')}
@@ -48,7 +48,7 @@ export function Footer() {
                     <a
                         href={t('common.footer.githubUrl')}
                         aria-label={t('common.footer.githubAriaLabel')}
-                        className="hover:text-neutral-900"
+                        className="transition-colors hover:text-white"
                     >
                         {t('common.footer.githubLinkText')}
                     </a>
@@ -57,7 +57,7 @@ export function Footer() {
                     <a
                         href={`mailto:${t('common.footer.email')}`}
                         aria-label={t('common.footer.emailAriaLabel')}
-                        className="hover:text-neutral-900"
+                        className="transition-colors hover:text-white"
                     >
                         {t('common.footer.emailLinkText')}
                     </a>

@@ -65,7 +65,14 @@ class CruiseController extends Controller
         return Inertia::render('playground/cruise', [
             'destinations' => $destinations,
             'cruiseReady' => $cruiseReady,
-            'preparedCruise' => is_array($preparedCruise) ? $preparedCruise : null,
+            // `preparedCruise` is gated on `cruiseReady` so the form only
+            // pre-fills on the just-submitted "trip is ready" landing.
+            // Without this gate, the back-to-form link from the review
+            // page would re-hydrate the form with the prior trip's data
+            // (the cruise flash is still alive there because review's
+            // `session()->keep(['cruise'])` extends it one request).
+            // A user navigating back to plan a NEW trip wants a blank form.
+            'preparedCruise' => $cruiseReady && is_array($preparedCruise) ? $preparedCruise : null,
             'translations' => translations(['cruise']),
         ]);
     }
@@ -122,6 +129,8 @@ class CruiseController extends Controller
         if (! is_array($cruise) || ! isset($cruise['destinations'], $cruise['tripStart'], $cruise['layovers'])) {
             return redirect()->route('playground.cruise');
         }
+
+        session()->keep(['cruise']);
 
         $destinationsInput = $this->buildDestinationsInput(
             $cruise['destinations'],

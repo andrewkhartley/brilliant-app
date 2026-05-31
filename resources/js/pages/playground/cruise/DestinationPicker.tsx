@@ -140,18 +140,26 @@ export function DestinationPicker({
     return (
         <div className="space-y-4">
             <div>
-                <h3 className="text-lg font-semibold text-neutral-900">
+                <h3 className="text-lg font-semibold text-white">
                     {t('cruise.form.destinations.label')}
                 </h3>
-                <p className="mt-1 text-sm text-neutral-500">
+                <p className="mt-1 text-sm leading-6 text-slate-300">
                     {t('cruise.form.destinations.hint')}
                 </p>
             </div>
 
             {selected.length === 0 ? (
-                <p className="rounded border border-dashed border-neutral-300 bg-neutral-50 px-3 py-4 text-sm text-neutral-500">
-                    {t('cruise.form.destinations.emptyState')}
-                </p>
+                <div className="rounded border border-dashed border-cyan-200/35 bg-cyan-50/8 px-4 py-5 text-sm text-slate-300">
+                    <div className="flex items-center gap-3">
+                        <span className="flex size-10 items-center justify-center rounded bg-cyan-200/12 text-cyan-100">
+                            <i
+                                aria-hidden="true"
+                                className="fa-solid fa-route"
+                            />
+                        </span>
+                        <p>{t('cruise.form.destinations.emptyState')}</p>
+                    </div>
+                </div>
             ) : (
                 <DndContext
                     sensors={sensors}
@@ -201,20 +209,33 @@ export function DestinationPicker({
             )}
 
             <div>
-                <h4 className="text-sm font-medium text-neutral-700">
+                <h4 className="text-sm font-bold text-cyan-100">
                     {t('cruise.form.destinations.availableLabel')}
                 </h4>
-                <ul className="mt-2 flex flex-wrap gap-2">
+                <ul className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     {destinations.map((destination) => (
                         <li key={destination.code}>
                             <button
                                 type="button"
                                 onClick={() => handleAdd(destination)}
-                                className="rounded border border-neutral-300 bg-white px-3 py-1 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                            >
-                                {t('cruise.form.destinations.add', {
+                                aria-label={t('cruise.form.destinations.add', {
                                     name: destination.name,
                                 })}
+                                className="group flex min-h-20 w-full cursor-pointer items-center gap-3 rounded border border-cyan-100/20 bg-white/6 p-3 text-left transition-colors hover:border-cyan-200/70 hover:bg-cyan-200/12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                            >
+                                <span className="flex size-12 shrink-0 items-center justify-center rounded bg-slate-950/70 ring-1 ring-cyan-100/15">
+                                    <img
+                                        src={destinationImageSrc(destination)}
+                                        alt=""
+                                        className="size-9 object-contain transition-transform group-hover:scale-110"
+                                        loading="lazy"
+                                    />
+                                </span>
+                                <span className="min-w-0">
+                                    <span className="block truncate text-sm font-bold text-white">
+                                        {destination.name}
+                                    </span>
+                                </span>
                             </button>
                         </li>
                     ))}
@@ -278,23 +299,30 @@ function SortableItem({
         <li
             ref={setNodeRef}
             style={style}
-            className="flex items-center gap-3 rounded border border-neutral-300 bg-white px-3 py-2 shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            className="flex items-center gap-3 rounded border border-cyan-100/20 bg-white/8 px-3 py-2 shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
             {...attributes}
             {...listeners}
         >
             <span
                 aria-hidden="true"
-                className="font-mono text-sm text-neutral-400"
+                className="flex size-9 shrink-0 items-center justify-center rounded bg-cyan-200 text-sm font-bold text-slate-950"
             >
                 {t('cruise.form.destinations.positionLabel', {
                     position: String(position),
                 })}
             </span>
-            <span className="flex-1 text-neutral-900">{destination.name}</span>
-            <label
-                htmlFor={layoverInputId}
-                className="text-xs text-neutral-500"
-            >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded bg-slate-950/80 ring-1 ring-cyan-100/15">
+                <img
+                    src={destinationImageSrc(destination)}
+                    alt=""
+                    className="size-8 object-contain"
+                    loading="lazy"
+                />
+            </span>
+            <span className="flex-1 font-semibold text-white">
+                {destination.name}
+            </span>
+            <label htmlFor={layoverInputId} className="text-xs text-slate-400">
                 {t('cruise.form.destinations.layoverLabel', {
                     name: destination.name,
                 })}
@@ -314,9 +342,9 @@ function SortableItem({
                     'cruise.form.destinations.layoverInputAriaLabel',
                     { name: destination.name },
                 )}
-                className="w-16 rounded border border-neutral-300 px-2 py-1 text-sm text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                className="w-16 rounded border border-cyan-100/25 bg-slate-950/80 px-2 py-1 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
             />
-            <span aria-hidden="true" className="text-xs text-neutral-500">
+            <span aria-hidden="true" className="text-xs text-slate-400">
                 {t('cruise.form.destinations.layoverUnitLabel')}
             </span>
             <button
@@ -326,12 +354,16 @@ function SortableItem({
                 aria-label={t('cruise.form.destinations.removeAriaLabel', {
                     name: destination.name,
                 })}
-                className="rounded px-2 py-1 text-sm text-neutral-600 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                className="cursor-pointer rounded px-2 py-1 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
             >
                 {t('cruise.form.destinations.removeLabel')}
             </button>
         </li>
     );
+}
+
+function destinationImageSrc(destination: Destination): string {
+    return `/assets/img/destinations/${destination.code}.png`;
 }
 
 /**
