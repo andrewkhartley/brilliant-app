@@ -38,3 +38,6 @@ Route::get('/playground/cruise', [CruiseController::class, 'create'])
 
 Route::post('/playground/cruise', [CruiseController::class, 'store'])
     ->name('playground.cruise.store');
+
+Route::get('/playground/cruise/review', [CruiseController::class, 'review'])
+    ->name('playground.cruise.review');

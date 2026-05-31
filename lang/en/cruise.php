@@ -18,6 +18,43 @@ return [
     'lead' => "Pick your destinations and a departure date. We'll calculate the trip.",
     'scaffoldNote' => 'Scaffolded with :count destinations loaded from the database.',
 
+    'review' => [
+        'title' => 'Your trip',
+        'lead' => 'Here is the trip we plotted. Each leg shows the distance, time, and top speed under constant 1g acceleration.',
+        'backToForm' => 'Plan a different trip',
+        'summary' => [
+            'heading' => 'Trip summary',
+            'departureLabel' => 'Departure',
+            'arrivalLabel' => 'Arrival',
+            'durationLabel' => 'Total duration',
+            'legsLabel' => 'Legs',
+        ],
+        'itinerary' => [
+            'heading' => 'Itinerary',
+            'label' => 'Trip itinerary, leg by leg',
+        ],
+        'leg' => [
+            'heading' => 'Leg :number — :departure to :arrival',
+            'timeRange' => ':departure → :arrival',
+            'distance' => [
+                'label' => 'Distance',
+                'units' => 'km',
+            ],
+            'duration' => [
+                'label' => 'Travel time',
+            ],
+            'maxSpeed' => [
+                'label' => 'Top speed',
+                'units' => 'm/s',
+            ],
+        ],
+        'horizonsError' => [
+            'heading' => 'Out of contact',
+            'body' => "NASA's Horizons service didn't answer in time. The trip-builder needs live planetary positions, so the per-leg breakdown can't render right now.",
+            'retry' => 'Try again',
+        ],
+    ],
+
     'form' => [
         'submit' => 'Plan trip',
         'submitDisabledHint' => 'Pick at least one destination and a departure date to plan a trip.',
