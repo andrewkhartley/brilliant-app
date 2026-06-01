@@ -1,8 +1,4 @@
-import {
-    Caption,
-    Layer,
-    MultiPlaneScene,
-} from '@/components/multi-plane-scene';
+import { Layer, MultiPlaneScene } from '@/components/multi-plane-scene';
 import { useTranslation } from '@/hooks/useTranslation';
 
 /**
@@ -81,28 +77,37 @@ export function Hero() {
                 <Layer
                     src="/assets/scenes/landing-hero/foreground-rail.png"
                     label={t('landing.hero.layers.rail')}
-                    position="full"
+                    position="bottom"
                     depth={0.05}
+                    motion="static"
                     opacity={{ from: 0.92 }}
+                    size="30vh"
+                    edgeBleed="1vh"
                     imagePosition="center bottom"
                 />
             )}
 
-            <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[110] mx-auto max-w-3xl -translate-y-1/2 px-6 text-center text-white">
-                <h1 className="text-4xl font-semibold tracking-tight drop-shadow-lg sm:text-5xl md:text-6xl">
-                    {t('landing.hero.title')}
+            <div className="pointer-events-auto absolute inset-x-0 top-[43%] z-[110] mx-auto max-w-4xl -translate-y-1/2 px-6 text-center text-white select-text">
+                <h1 className="text-4xl font-semibold tracking-normal drop-shadow-lg sm:text-5xl md:text-7xl">
+                    <span className="block">
+                        {t('landing.hero.titleLine1')}
+                    </span>
+                    <span className="mt-1 block text-cyan-100 [text-shadow:0_0_28px_rgba(125,211,252,0.42)] sm:mt-2">
+                        {t('landing.hero.titleLine2')}
+                    </span>
                 </h1>
-                <p className="mt-6 text-lg font-medium tracking-wide text-white/90 drop-shadow-md sm:text-xl">
+                <p className="mt-7 text-xs font-semibold tracking-[0.26em] text-cyan-200/90 uppercase drop-shadow-md sm:text-sm">
                     {t('landing.hero.subtitle')}
                 </p>
-                <p className="mx-auto mt-4 max-w-xl text-sm text-white/80 drop-shadow-md sm:text-base">
-                    {t('landing.hero.pitch')}
+                <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/82 drop-shadow-md sm:text-base">
+                    {t('landing.hero.pitchPrefix')}{' '}
+                    <strong className="font-semibold whitespace-nowrap text-cyan-100 [text-shadow:0_0_18px_rgba(125,211,252,0.36)]">
+                        {t('landing.hero.pitchEmphasis')}
+                    </strong>
+                    , {t('landing.hero.pitchSecond')}, and{' '}
+                    {t('landing.hero.pitchThird')}.
                 </p>
             </div>
-
-            <Caption at={0.75} align="center">
-                {t('landing.hero.caption.subtitle')}
-            </Caption>
         </MultiPlaneScene>
     );
 }

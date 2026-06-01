@@ -7,7 +7,6 @@ import { CovidOrigin } from './landing/sections/CovidOrigin';
 import { Hero } from './landing/sections/Hero';
 import { TryOne } from './landing/sections/TryOne';
 import { WhatElse } from './landing/sections/WhatElse';
-import { WhyInteractive } from './landing/sections/WhyInteractive';
 
 /**
  * Landing page — the site's centerpiece. Long-form vertical scroll composing
@@ -31,7 +30,6 @@ export default function Landing() {
         <AppLayout pageTitle={t('landing.pageTitle')}>
             <Hero />
             <CovidOrigin />
-            <WhyInteractive />
             <TryOne />
             <WhatElse />
             <ClosingScene />
