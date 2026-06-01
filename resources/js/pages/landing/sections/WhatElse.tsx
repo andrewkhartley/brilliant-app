@@ -1,62 +1,26 @@
 import { ExperienceCard } from '@/components/ExperienceCard';
 import { useTranslation } from '@/hooks/useTranslation';
 
-/**
- * WhatElse section — 2-card ExperienceCard grid linking to Cruise +
- * Habitat playground experiences.
- *
- * Each card is the whole-rectangle click target Phase 6 established
- * (P6.T6 ExperienceCard). Destinations 404 until Phase 10 (Cruise) and
- * Phase 11 (Habitat) ship. Card images are deferred — when Phase 10/11
- * land their scene art, the cards can pick up thumbnails.
- *
- * Interstellar isn't in this grid because it has its own inline taster
- * upstream in the TryOne section. WhatElse is the "what ELSE I built"
- * beat — the two experiences beyond the inline demo.
- *
- * Undaunted brand first-mention (P7.T9):
- * - The Undaunted icon mark renders inline at the head of the intro
- *   paragraph, sized small (h-6) to read as part of the reading flow
- *   rather than as a brand drop. This is the first visual surfacing of
- *   the Undaunted name on the landing.
- * - Placement rationale: of the three options considered (wordmark
- *   above heading; icon inline with intro; wordmark below cards as
- *   attribution), the inline-icon option lets visitors *discover* the
- *   Undaunted attribution as part of reading the section's setup
- *   sentence rather than seeing the brand drop before the content —
- *   matches the landing's demonstrative-not-declarative posture. The
- *   wordmark (788x100 aspect) is reserved for future contexts where a
- *   wider banner placement makes sense; the icon (100x100) is the
- *   right shape inline with body text.
- * - Asset path: /assets/brand/undaunted/logo-on-light.svg — the icon
- *   variant designed for light backgrounds (darker, more saturated
- *   sky-blue and amber tones). The original /assets/brand/undaunted/
- *   logo.svg uses the brand's brighter sky-blue + golden-yellow
- *   gradients designed for dark backgrounds (used in dark scenes if
- *   they need branding later). Both icon and wordmark variants live
- *   side-by-side: logo.svg + logo-text.svg are the dark-bg defaults;
- *   logo-on-light.svg + logo-text-on-light.svg are the light-bg
- *   variants. Pick the variant matching the section's background tone.
- * - Accessibility: alt text "Undaunted" flows through t() so the
- *   image carries the brand name for AT users even if the placeholder
- *   intro copy doesn't yet mention Undaunted by name. When Andrew's
- *   weekend copy names Undaunted explicitly in the intro, this alt
- *   can be flipped to "" (decorative) to avoid double-announcement.
- *
- * Copy is placeholder; Andrew refines over the weekend with full landing
- * arc visible end-to-end.
- */
 export function WhatElse() {
     const { t } = useTranslation();
 
     return (
-        <section className="relative overflow-hidden border-t border-cyan-100/15 bg-[#08111f] text-white">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_28%,rgba(125,211,252,0.14),transparent_28%),radial-gradient(circle_at_18%_78%,rgba(34,211,238,0.1),transparent_24%),linear-gradient(135deg,rgba(8,17,31,0.9),rgba(15,23,42,0.97))]" />
-            <div className="relative mx-auto max-w-5xl px-4 py-20">
-                <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+        <section className="relative overflow-hidden border-t border-cyan-100/15 bg-[#07101d] text-white">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_16%,rgba(125,211,252,0.18),transparent_30%),radial-gradient(circle_at_14%_72%,rgba(34,211,238,0.12),transparent_26%),linear-gradient(180deg,rgba(8,17,31,0.94),rgba(7,16,29,0.98)_72%,rgba(7,16,29,1))]" />
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.34)_1px,transparent_1px)] [background-size:52px_52px] opacity-30"
+            />
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#07101d] to-transparent"
+            />
+
+            <div className="relative mx-auto max-w-6xl px-4 py-20">
+                <h2 className="text-3xl font-semibold tracking-normal text-white sm:text-4xl">
                     {t('landing.whatElse.heading')}
                 </h2>
-                <p className="mt-4 flex items-center gap-3 text-lg text-slate-200">
+                <p className="mt-4 flex max-w-3xl items-center gap-3 text-lg leading-8 text-slate-200">
                     <img
                         src="/assets/brand/undaunted/logo.svg"
                         alt={t('landing.whatElse.undauntedLogoAlt')}
@@ -65,13 +29,24 @@ export function WhatElse() {
                     <span>{t('landing.whatElse.intro')}</span>
                 </p>
 
-                <div className="mt-10 grid gap-6 md:grid-cols-2">
+                <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <ExperienceCard
+                        href="/playground/interstellar"
+                        title={t('landing.whatElse.cards.interstellar.title')}
+                        description={t(
+                            'landing.whatElse.cards.interstellar.description',
+                        )}
+                        imageSrc="/assets/img/bg/color-nebula.jpg"
+                        imageAlt=""
+                    />
                     <ExperienceCard
                         href="/playground/cruise"
                         title={t('landing.whatElse.cards.cruise.title')}
                         description={t(
                             'landing.whatElse.cards.cruise.description',
                         )}
+                        imageSrc="/assets/img/bg/muted-nebula.png"
+                        imageAlt=""
                     />
                     <ExperienceCard
                         href="/playground/habitat"
@@ -79,6 +54,8 @@ export function WhatElse() {
                         description={t(
                             'landing.whatElse.cards.habitat.description',
                         )}
+                        imageSrc="/assets/img/bg/cylinder.jpg"
+                        imageAlt=""
                     />
                 </div>
             </div>

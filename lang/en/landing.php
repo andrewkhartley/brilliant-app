@@ -1,35 +1,26 @@
 <?php
 
 /*
- * Landing page translations — populated incrementally across Phase 7.
+ * Landing page translations for the Phase 7 interactive cover letter.
  *
- * Per-task subnamespaces:
- * - hero (P7.T2) — title + tagline + multi-plane scene labels + captions
- * - covidOrigin (P7.T3) — opening prose + multi-plane scene labels + captions
- * - whyInteractive (P7.T4) — philosophy prose (3 paragraphs)
- * - tryOne (P7.T5) — inline Interstellar demo copy
- * - whatElse (P7.T6) — ExperienceCard text for Cruise + Habitat
- * - closingScene (P7.T7) — final multi-plane scene labels + captions
- * - contactFooter (P7.T8) — page-specific CTA + contact links
- *
- * P7.T1 (this scaffold) seeds each subnamespace with placeholderTitle +
- * placeholderNote keys; subsequent tasks replace those with real section
- * content.
+ * The visible narrative is ordered top-to-bottom so this file can be edited
+ * like a cover-letter script. Non-visible labels, alt text, and modal strings
+ * sit after the visible copy for their section.
  */
 
 return [
-    'pageTitle' => 'Andrew Hartley — Brilliant application',
-    'pageDescription' => 'Multi-plane scenes + interactive equations + the craft behind the application.',
+    'pageTitle' => 'Andrew Hartley :.: Brilliant Application',
+    'pageDescription' => 'Multi-plane scenes, interactive equations, and the craft behind the application.',
 
     'hero' => [
-        'title' => 'Take the math, and make it move.',
         'titleLine1' => 'Take the math,',
-        'titleLine2' => 'and make it move.',
-        'subtitle' => 'For the people who learn by taking apart the world',
-        'pitchPrefix' => 'A job history says where I have been. This is the story of what I want to do:',
+        'titleLine2' => 'and make it dance.',
+        'subtitleLine1' => 'For people who learn',
+        'subtitleLine2' => 'by taking the world apart',
+        'pitchPrefix' => 'I want to',
         'pitchEmphasis' => 'find my people',
-        'pitchSecond' => 'build interactive learning for the curiosity-driven',
-        'pitchThird' => 'help people find their spark in a fascinating and sometimes uncertain world',
+        'pitchSecond' => 'build interactive learning experiences that turn curiosity into agency',
+        'pitchThird' => 'especially for those still looking for their spark in a fascinating and uncertain world',
         'layers' => [
             'sky' => 'Deep-space sky',
             'distantNebula' => 'Distant nebula',
@@ -41,26 +32,13 @@ return [
 
     'covidOrigin' => [
         'kicker' => 'Clubhouse',
-        'heading' => 'Small steps, giant rooms',
-        'intro' => 'A strange season of chaos became the place I learned how much curiosity can move through a room.',
+        'heading' => 'Curiosity in Motion',
+        'intro' => 'In a strange, isolated season, live conversations taught me that curiosity could become something shared, energetic, and buildable.',
         'story' => [
             'kicker' => 'Small Steps & Giant Leaps',
-            'heading' => 'The rooms became laboratories for wonder.',
-            'paragraph1' => 'A few years back, something happened that caused a bit of chaos. I was working with an airline, so I disappeared for a while. When I came back up for air, Clubhouse was waiting.',
-            'paragraph2' => 'One group stuck out: Small Steps & Giant Leaps. After lurking for a few days, I started joining conversations about what humans might be capable of if we made a few decisions better.',
-            'paragraph3' => 'That led to becoming one of the group leaders, helping shape rooms around curiosity, stage energy, and small interactive websites that could accompany the discussion.',
-            'paragraph4' => 'Community came first, but tools gave people a reason to keep returning. My part became a mix of facilitation, room design, and companion builds: creating the conditions where curious people could stay with an idea long enough for it to become shared.',
-        ],
-        'capstone' => [
-            'kicker' => 'What it taught me',
-            'heading' => 'Inspiration should feel like participation.',
-            'paragraph1' => 'The best rooms did not just explain big ideas. They gave people a way into them: a question, a model, a sketch, a small interactive artifact that made the conversation easier to enter and harder to leave.',
-            'paragraph2' => 'That is the thread I see in Brilliant\'s "feel the math" approach and in the old multi-plane camera idea: layers, motion, and direct cause-and-effect can make an abstract idea feel like a place. Clubhouse taught me the community side of that pattern; this site is me building toward the tools side.',
-        ],
-        'rooms' => [
-            'mars' => 'How to Build a City on Mars',
-            'jamesWebb' => 'James Webb Space Telescope inauguration',
-            'generationShip' => 'Designing a Generation Ship',
+            'heading' => 'The future became specific enough for anyone curious to reason about.',
+            'paragraph1' => 'A few years back, when the world went sideways, I was working with an airline. When Covid stalled travel, I suddenly had something that always felt in short supply: time. Fortunately, Clubhouse became an accessible community of voice at exactly the moment people were craving human contact.',
+            'paragraph2' => 'One group stuck out: Small Steps & Giant Leaps. After lurking for a few days, I started joining conversations about what humans might be capable of if we made better decisions together. I was honored to help steer rooms as a moderator and leader, where questions about Martian city planning, asteroid supply chains, megastructures, and off-world industry kept bringing people back. A teenager interested in astronomy could share a stage with the NASA chief scientist, and the room could still feel undaunting. The future became specific enough for anyone curious to reason about.',
         ],
         'visual' => [
             'placeholderLabel' => 'Room performance',
@@ -71,11 +49,18 @@ return [
             'jamesWebbAlt' => 'Archived Clubhouse room screenshot for the James Webb Space Telescope inauguration.',
             'generationShipAlt' => 'Archived Clubhouse room screenshot for Designing a Generation Ship.',
         ],
+        'rooms' => [
+            'mars' => 'How to Build a City on Mars',
+            'jamesWebb' => 'James Webb Space Telescope inauguration',
+            'generationShip' => 'Designing a Generation Ship',
+        ],
+        'capstone' => [
+            'kicker' => 'The Inspiration that Remained',
+            'heading' => 'Curiosity needs a place to go.',
+            'paragraph1' => 'A good story has rules and constraints, and rooms built around the art of the possible have to embrace them: what would the city need, where would the material come from, what breaks first, and what has to be learned before any of it becomes possible? Week after week, hundreds would listen or take the leap to join us on stage.',
+            'paragraph2' => 'As the world adjusted and opened back up, the rooms on Clubhouse began to empty. The inspiration did not. Curiosity needs a place to go. That is where Brilliant feels so aligned to me: it turns learning into something active, playful, and worth returning to.',
+        ],
         'gallery' => [
-            'close' => 'Close gallery',
-            'previous' => 'Previous image',
-            'next' => 'Next image',
-            'position' => ':current of :total',
             'analytics' => [
                 'title' => 'Room growth over time',
                 'caption' => 'An archived performance chart from the Clubhouse era. The final crop can focus this around the growth line and remove browser chrome.',
@@ -90,71 +75,80 @@ return [
             ],
             'generationShip' => [
                 'title' => 'Designing a Generation Ship',
-                'caption' => 'This room included one of the small companion pages I liked building alongside discussions: a quick interactive artifact people could open while the room unfolded.',
+                'caption' => 'This room included one of the small companion pages I liked building alongside discussions: an interactive artifact people could open while the room unfolded.',
                 'linkLabel' => 'Open the archived companion page',
                 'linkHref' => 'https://web.archive.org/web/20211102133600/https://andrewkhartley.com/generation/',
             ],
+            'close' => 'Close gallery',
+            'previous' => 'Previous image',
+            'next' => 'Next image',
+            'position' => ':current of :total',
+            'archiveNotice' => [
+                'title' => 'Archived site',
+                'body' => 'This opens an old companion page preserved by the Wayback Machine. It may load slowly, look dated, or behave differently than the original.',
+                'cancel' => 'Stay here',
+                'accept' => 'Open archive',
+            ],
         ],
-        'layers' => [
-            'lectureHall' => 'Clubhouse room backdrop',
-            'seats' => 'Audience glow',
-            'slideDeck' => 'Interactive companion',
-        ],
-        'caption' => [
-            'opening' => 'Clubhouse turned a strange season into a room full of curious people.',
-            'midReveal' => 'The best rooms did not lecture. They invited people on stage to think out loud.',
-            'close' => 'That pattern stuck: explain the idea, then build something people can touch.',
-        ],
-    ],
-
-    'whyInteractive' => [
-        'heading' => 'Why interactive',
-        'feelTheMath' => 'Brilliant calls it "feel the math." A problem isn\'t something you read about — it\'s something you can pull on, push back from, watch respond. That direct sense of cause and effect is the difference between knowing-about and knowing.',
-        'multiPlaneCamera' => 'Disney called it the multi-plane camera, 1937. Layers of glass at different depths, photographed through a vertical column. When the camera moved, parallax did the rest — depth and atmosphere emerging from flat paint.',
-        'synthesis' => 'Both inventions answer the same question: how do you make an idea feel like a place? This site is one application of that question to math, animation, and engineering — built as the cover letter for a Brilliant role.',
     ],
 
     'tryOne' => [
-        'heading' => 'Try one yourself',
-        'intro' => 'The full Interstellar travel agency lives at /playground/interstellar. Here\'s a taste — drag the slider to set a constant proper acceleration sustained for one year of coordinate time, and watch the relativistic speed approach the speed of light.',
+        'kicker' => 'Storytelling experiences',
+        'heading' => 'This is the work I want to do.',
+        'intro' => 'Every generation has a different doorway into wonder: radios and model planes, arcades and home computers, phones a toddler can understand before she can read.',
+        'era1900' => '1900s',
+        'era1940' => '1940s',
+        'era1980' => '1980s',
+        'era2020' => '2020s',
+        'eraFuture' => 'Near future',
+        'paragraph1' => 'I once watched my niece pick up my phone, swipe across the bottom by instinct, reach the lock screen, and hand it back. She already knew there could be something fun inside.',
+        'paragraph2' => 'That instinct matters. Curiosity is how people keep reaching for the next thing, even as the brain changes pace with age. The right story can make a difficult path feel worth entering.',
+        'paragraph3' => 'One day, someone may plan real travel itineraries through the solar system. To make that possible, people will need to solve fuel, radiation, biology, materials, and orbital mechanics. Some of the people critical to those answers are alive today, but may not yet know what they will contribute.',
+        'capstone' => 'That is why I want to build near-future scenarios that connect imagination to the educational paths required to solve real problems. Alexandria comes from the same instinct: use technology wisely, so creative human beings can think, organize, and build with more clarity, not less.',
+        'demoKicker' => 'Solar-system itinerary',
+        'demoHeading' => 'What would a one-year burn feel like?',
+        'demoIntro' => 'Set a constant proper acceleration for one year of coordinate time and watch speed bend toward its limit.',
         'sliderLabel' => 'Acceleration',
         'resultLabel' => 'Peak velocity:',
-        'fullLink' => 'Open the full Interstellar experience →',
     ],
 
     'whatElse' => [
-        'heading' => 'What else I built',
-        'intro' => 'Two more experiences in the playground — built on the same engine and equation registry.',
-        'undauntedLogoAlt' => 'Undaunted',
+        'heading' => 'Here is the proof of work.',
+        'intro' => 'Three playgrounds built around the same idea: make the scenario vivid first, then let the math answer back.',
         'cards' => [
+            'interstellar' => [
+                'title' => 'Interstellar',
+                'description' => 'A relativity travel agency for impossible itineraries. Pick the frame, feel the acceleration, and watch time stop behaving like a simple clock.',
+            ],
             'cruise' => [
                 'title' => 'Sol Cruise',
-                'description' => 'Planet-hopping trip builder with live NASA Horizons data. Pick destinations, pick a profile, get the relativistic itinerary.',
+                'description' => 'A planet-hopping trip builder with live NASA Horizons data. Pick destinations, set a date, and turn orbital mechanics into an itinerary.',
             ],
             'habitat' => [
                 'title' => 'Habitat',
-                'description' => 'O\'Neill Cylinder interior with the multi-plane camera as a shadowbox window. Interactive sliders for radius, length → 1g spin rate, surface area, population at given density.',
+                'description' => 'An O\'Neill Cylinder as a shadowbox world. Adjust radius, length, spin gravity, surface area, and population until the habitat starts to feel real.',
             ],
         ],
+        'undauntedLogoAlt' => 'Undaunted',
     ],
 
     'closingScene' => [
         'heading' => 'Closing scene',
+        'caption' => [
+            'opening' => 'Dawn inside an O\'Neill Cylinder. The sun-line catches the curved horizon.',
+            'midReflection' => 'A place - not a problem, not a chart. Made of geometry, motion, and patience.',
+            'close' => 'That is the question I want to help Brilliant keep answering: how do you make an idea feel like a place?',
+        ],
         'layers' => [
             'cylinderHorizon' => 'O\'Neill cylinder curved horizon placeholder',
             'sunLine' => 'Dawn sun-line atmospheric haze placeholder',
             'frame' => 'Cylinder structural frame placeholder',
         ],
-        'caption' => [
-            'opening' => 'Dawn inside an O\'Neill Cylinder. The sun-line catches the curved horizon.',
-            'midReflection' => 'A place — not a problem, not a chart. Made of geometry, paint, and patience.',
-            'close' => 'Brilliant\'s craft. Disney\'s craft. The same answer to "how do you make an idea feel like a place?"',
-        ],
     ],
 
     'contactFooter' => [
-        'heading' => 'Let\'s talk',
-        'pitch' => 'I built this site as my application for a role at Brilliant. If you\'d like to chat about it, or about anything else — I\'m easy to reach.',
+        'heading' => 'I would like to talk.',
+        'pitch' => 'I would love to contribute as an engineer, and I would love to discuss where this kind of work could go.',
         'links' => [
             'email' => 'Email',
             'emailHref' => 'mailto:ahartley@gmail.com',

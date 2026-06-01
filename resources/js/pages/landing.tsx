@@ -9,19 +9,15 @@ import { TryOne } from './landing/sections/TryOne';
 import { WhatElse } from './landing/sections/WhatElse';
 
 /**
- * Landing page — the site's centerpiece. Long-form vertical scroll composing
- * 7 section components in spec order. Replaces the Phase 4 welcome.tsx
- * placeholder.
+ * Landing page: the application's centerpiece and proof-of-work narrative.
  *
- * - Hero (P7.T2) — title card + multi-plane scene
- * - CovidOrigin (P7.T3) — the talk's origin story + multi-plane scene
- * - WhyInteractive (P7.T4) — prose, philosophy
- * - TryOne (P7.T5) — inline Interstellar demo (EquationCard + SliderInput + LiveResult)
- * - WhatElse (P7.T6) — ExperienceCard grid for Cruise + Habitat
- * - ClosingScene (P7.T7) — final multi-plane scene
- * - ContactFooter (P7.T8) — page-specific CTA close
- *
- * AppLayout's chrome <Nav /> and <Footer /> wrap all sections.
+ * Current Phase 7 shape:
+ * - Hero: title card + multi-plane scene
+ * - CovidOrigin: Clubhouse origin + interactive-learning capstone
+ * - TryOne: storytelling-experiences philosophy + inline relativity demo
+ * - WhatElse: links to Interstellar, Sol Cruise, and Habitat
+ * - ClosingScene: final multi-plane scene
+ * - ContactFooter: page-specific CTA close
  */
 export default function Landing() {
     const { t } = useTranslation();

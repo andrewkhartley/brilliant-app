@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -45,18 +45,18 @@ export function CovidOrigin() {
     ];
     const activeGalleryItem =
         activeGalleryIndex === null ? null : galleryItems[activeGalleryIndex];
-    const showPreviousImage = () => {
+    const showPreviousImage = useCallback(() => {
         setActiveGalleryIndex((index) =>
             index === null
                 ? null
                 : (index - 1 + galleryItems.length) % galleryItems.length,
         );
-    };
-    const showNextImage = () => {
+    }, [galleryItems.length]);
+    const showNextImage = useCallback(() => {
         setActiveGalleryIndex((index) =>
             index === null ? null : (index + 1) % galleryItems.length,
         );
-    };
+    }, [galleryItems.length]);
 
     useEffect(() => {
         if (activeGalleryIndex === null) {
@@ -83,7 +83,7 @@ export function CovidOrigin() {
         window.addEventListener('keydown', handleKeyDown);
 
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [activeGalleryIndex]);
+    }, [activeGalleryIndex, showNextImage, showPreviousImage]);
 
     return (
         <section className="relative overflow-hidden bg-[#07101d] text-white">
@@ -110,74 +110,78 @@ export function CovidOrigin() {
                     </p>
                 </div>
 
-                <div className="mt-14 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-                    <article className="rounded-lg border border-cyan-100/14 bg-slate-950/68 p-6 shadow-2xl shadow-black/35 backdrop-blur-md">
-                        <p className="text-xs font-semibold tracking-[0.22em] text-cyan-200/80 uppercase">
-                            {t('landing.covidOrigin.story.kicker')}
-                        </p>
-                        <h3 className="mt-3 text-2xl font-semibold tracking-normal text-white">
-                            {t('landing.covidOrigin.story.heading')}
-                        </h3>
-                        <div className="mt-5 space-y-4 text-sm leading-7 text-cyan-50/74">
-                            <p>{t('landing.covidOrigin.story.paragraph1')}</p>
-                            <p>{t('landing.covidOrigin.story.paragraph2')}</p>
-                            <p>{t('landing.covidOrigin.story.paragraph3')}</p>
-                            <p>{t('landing.covidOrigin.story.paragraph4')}</p>
-                        </div>
-                    </article>
-
-                    <div className="relative">
-                        <div
-                            aria-hidden="true"
-                            className="absolute -inset-4 rounded-xl bg-cyan-300/6 blur-2xl"
-                        />
-                        <div className="relative rounded-lg border border-cyan-100/16 bg-cyan-50/8 p-5 shadow-2xl shadow-black/35 backdrop-blur-md">
-                            <div className="flex items-center justify-between gap-3">
-                                <p className="text-xs font-semibold tracking-[0.2em] text-cyan-200/80 uppercase">
-                                    {t(
-                                        'landing.covidOrigin.visual.placeholderLabel',
-                                    )}
+                <article className="relative mt-14 overflow-hidden rounded-lg border-x border-y-[0.5px] border-cyan-100/14 bg-slate-950/68 p-6 shadow-2xl shadow-black/35 backdrop-blur-md sm:p-8">
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(34,211,238,0.14),transparent_42%),radial-gradient(circle_at_26%_74%,rgba(168,85,247,0.08),transparent_38%)]"
+                    />
+                    <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.618fr)] lg:items-start">
+                        <div>
+                            <div className="space-y-4 text-sm leading-7 text-cyan-50/74 sm:text-base sm:leading-8">
+                                <p>
+                                    {t('landing.covidOrigin.story.paragraph1')}
                                 </p>
-                                <span className="rounded border border-cyan-100/12 bg-slate-950/50 px-2 py-1 text-xs text-cyan-50/64">
-                                    {t('landing.covidOrigin.visual.status')}
-                                </span>
+                                <p>
+                                    {t('landing.covidOrigin.story.paragraph2')}
+                                </p>
                             </div>
-                            <GalleryButton
-                                className="mt-4"
-                                item={galleryItems[0]}
-                                onClick={() => setActiveGalleryIndex(0)}
-                                variant="featured"
-                            />
                         </div>
 
-                        <div className="relative mt-4 grid gap-3 sm:grid-cols-3">
-                            <RoomTitle
-                                title={t('landing.covidOrigin.rooms.mars')}
-                                label={t(
-                                    'landing.covidOrigin.visual.roomLabel',
-                                )}
-                                item={galleryItems[1]}
-                                onClick={() => setActiveGalleryIndex(1)}
-                            />
-                            <RoomTitle
-                                title={t('landing.covidOrigin.rooms.jamesWebb')}
-                                label={t(
-                                    'landing.covidOrigin.visual.roomLabel',
-                                )}
-                                item={galleryItems[2]}
-                                onClick={() => setActiveGalleryIndex(2)}
-                            />
-                            <RoomTitle
-                                title={t(
-                                    'landing.covidOrigin.rooms.generationShip',
-                                )}
-                                label={t(
-                                    'landing.covidOrigin.visual.roomLabel',
-                                )}
-                                item={galleryItems[3]}
-                                onClick={() => setActiveGalleryIndex(3)}
-                            />
+                        <div className="relative">
+                            <div className="relative">
+                                <p className="text-xs font-semibold tracking-[0.22em] text-cyan-200/80 uppercase">
+                                    {t('landing.covidOrigin.story.kicker')}
+                                </p>
+                                <h3 className="relative mt-7 max-w-[20rem] text-xl leading-tight font-semibold tracking-normal text-white italic sm:text-2xl">
+                                    <span
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute top-0 left-0 -translate-x-[22%] -translate-y-[26%] font-serif text-7xl leading-none font-bold text-cyan-100/10 not-italic sm:text-8xl"
+                                    >
+                                        {'“'}
+                                    </span>
+                                    <span>
+                                        {t('landing.covidOrigin.story.heading')}
+                                    </span>
+                                </h3>
+                            </div>
                         </div>
+                    </div>
+                </article>
+
+                <div className="relative mt-6">
+                    <div
+                        aria-hidden="true"
+                        className="absolute -inset-x-4 top-1/2 h-px bg-gradient-to-r from-transparent via-cyan-200/30 to-transparent"
+                    />
+                    <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <RoomTitle
+                            title={galleryItems[0].title}
+                            label={t(
+                                'landing.covidOrigin.visual.placeholderLabel',
+                            )}
+                            item={galleryItems[0]}
+                            onClick={() => setActiveGalleryIndex(0)}
+                        />
+                        <RoomTitle
+                            title={t('landing.covidOrigin.rooms.mars')}
+                            label={t('landing.covidOrigin.visual.roomLabel')}
+                            item={galleryItems[1]}
+                            onClick={() => setActiveGalleryIndex(1)}
+                        />
+                        <RoomTitle
+                            title={t('landing.covidOrigin.rooms.jamesWebb')}
+                            label={t('landing.covidOrigin.visual.roomLabel')}
+                            item={galleryItems[2]}
+                            onClick={() => setActiveGalleryIndex(2)}
+                        />
+                        <RoomTitle
+                            title={t(
+                                'landing.covidOrigin.rooms.generationShip',
+                            )}
+                            label={t('landing.covidOrigin.visual.roomLabel')}
+                            item={galleryItems[3]}
+                            onClick={() => setActiveGalleryIndex(3)}
+                        />
                     </div>
                 </div>
 
@@ -186,18 +190,30 @@ export function CovidOrigin() {
                         aria-hidden="true"
                         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(34,211,238,0.16),transparent_32%),radial-gradient(circle_at_86%_34%,rgba(168,85,247,0.12),transparent_34%)]"
                     />
-                    <div className="relative grid gap-6 lg:grid-cols-[0.42fr_0.58fr] lg:items-start">
+                    <div className="relative grid gap-6 lg:grid-cols-[minmax(0,0.618fr)_minmax(0,1fr)] lg:items-start">
                         <div>
                             <p className="text-xs font-semibold tracking-[0.22em] text-cyan-200/80 uppercase">
                                 {t('landing.covidOrigin.capstone.kicker')}
                             </p>
-                            <h3 className="mt-3 text-2xl font-semibold tracking-normal text-white sm:text-3xl">
-                                {t('landing.covidOrigin.capstone.heading')}
+                            <h3 className="relative mt-7 text-xl leading-tight font-semibold tracking-normal text-white italic sm:text-2xl">
+                                <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute top-0 left-0 -translate-x-[22%] -translate-y-[26%] font-serif text-7xl leading-none font-bold text-cyan-100/10 not-italic sm:text-8xl"
+                                >
+                                    {'“'}
+                                </span>
+                                <span>
+                                    {t('landing.covidOrigin.capstone.heading')}
+                                </span>
                             </h3>
                         </div>
                         <div className="space-y-4 text-sm leading-7 text-cyan-50/76 sm:text-base sm:leading-8">
-                            <p>{t('landing.covidOrigin.capstone.paragraph1')}</p>
-                            <p>{t('landing.covidOrigin.capstone.paragraph2')}</p>
+                            <p>
+                                {t('landing.covidOrigin.capstone.paragraph1')}
+                            </p>
+                            <p>
+                                {t('landing.covidOrigin.capstone.paragraph2')}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -213,6 +229,20 @@ export function CovidOrigin() {
                     closeLabel={t('landing.covidOrigin.gallery.close')}
                     previousLabel={t('landing.covidOrigin.gallery.previous')}
                     nextLabel={t('landing.covidOrigin.gallery.next')}
+                    archiveNotice={{
+                        title: t(
+                            'landing.covidOrigin.gallery.archiveNotice.title',
+                        ),
+                        body: t(
+                            'landing.covidOrigin.gallery.archiveNotice.body',
+                        ),
+                        cancel: t(
+                            'landing.covidOrigin.gallery.archiveNotice.cancel',
+                        ),
+                        accept: t(
+                            'landing.covidOrigin.gallery.archiveNotice.accept',
+                        ),
+                    }}
                     onClose={() => setActiveGalleryIndex(null)}
                     onPrevious={showPreviousImage}
                     onNext={showNextImage}
@@ -266,6 +296,7 @@ function GalleryButton({
 }
 
 function GalleryModal({
+    archiveNotice,
     closeLabel,
     item,
     nextLabel,
@@ -275,6 +306,12 @@ function GalleryModal({
     position,
     previousLabel,
 }: {
+    archiveNotice: {
+        title: string;
+        body: string;
+        cancel: string;
+        accept: string;
+    };
     closeLabel: string;
     item: GalleryItem;
     nextLabel: string;
@@ -284,6 +321,16 @@ function GalleryModal({
     position: string;
     previousLabel: string;
 }) {
+    const [isArchiveNoticeOpen, setIsArchiveNoticeOpen] = useState(false);
+    const openArchive = () => {
+        if (!item.linkHref) {
+            return;
+        }
+
+        window.open(item.linkHref, '_blank', 'noopener,noreferrer');
+        setIsArchiveNoticeOpen(false);
+    };
+
     return (
         <div
             role="dialog"
@@ -327,18 +374,17 @@ function GalleryModal({
                     </h3>
                     <p className="mt-4 text-sm leading-7">{item.caption}</p>
                     {item.linkHref && item.linkLabel && (
-                        <a
-                            href={item.linkHref}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-5 inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-2 text-sm font-medium text-cyan-100 transition-colors hover:bg-cyan-50/12 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                        <button
+                            type="button"
+                            onClick={() => setIsArchiveNoticeOpen(true)}
+                            className="mt-5 inline-flex cursor-pointer items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-2 text-sm font-medium text-cyan-100 transition-colors hover:bg-cyan-50/12 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
                         >
                             {item.linkLabel}
                             <i
                                 aria-hidden="true"
                                 className="fa-solid fa-arrow-up-right-from-square text-xs"
                             />
-                        </a>
+                        </button>
                     )}
                     <div className="mt-8 flex gap-3">
                         <button
@@ -365,6 +411,37 @@ function GalleryModal({
                         </button>
                     </div>
                 </aside>
+
+                {isArchiveNoticeOpen && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/72 p-4 backdrop-blur-sm">
+                        <div className="w-full max-w-sm rounded-lg border border-cyan-100/18 bg-[#07101d] p-5 text-cyan-50 shadow-2xl shadow-black/50">
+                            <h4 className="text-lg font-semibold text-white">
+                                {archiveNotice.title}
+                            </h4>
+                            <p className="mt-3 text-sm leading-6 text-cyan-50/74">
+                                {archiveNotice.body}
+                            </p>
+                            <div className="mt-5 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setIsArchiveNoticeOpen(false)
+                                    }
+                                    className="cursor-pointer rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-2 text-sm font-medium text-cyan-100 transition-colors hover:bg-cyan-50/12 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                                >
+                                    {archiveNotice.cancel}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={openArchive}
+                                    className="cursor-pointer rounded border border-cyan-200/35 bg-cyan-200/16 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-cyan-200/24 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                                >
+                                    {archiveNotice.accept}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

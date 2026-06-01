@@ -96,16 +96,33 @@ export function Hero() {
                         {t('landing.hero.titleLine2')}
                     </span>
                 </h1>
-                <p className="mt-7 text-xs font-semibold tracking-[0.26em] text-cyan-200/90 uppercase drop-shadow-md sm:text-sm">
-                    {t('landing.hero.subtitle')}
-                </p>
+                <div className="mx-auto mt-7 flex max-w-3xl items-center justify-center gap-4 sm:gap-5">
+                    <span
+                        aria-hidden="true"
+                        className="h-px flex-1 bg-gradient-to-l from-cyan-200/58 to-transparent"
+                    />
+                    <p className="shrink-0 text-xs leading-5 font-semibold tracking-[0.26em] text-cyan-200/90 uppercase drop-shadow-md sm:text-sm">
+                        <span>{t('landing.hero.subtitleLine1')}</span>
+                        <span className="block sm:inline">
+                            <span className="hidden sm:inline"> </span>
+                            {t('landing.hero.subtitleLine2')}
+                        </span>
+                    </p>
+                    <span
+                        aria-hidden="true"
+                        className="h-px flex-1 bg-gradient-to-r from-cyan-200/58 to-transparent"
+                    />
+                </div>
                 <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/82 drop-shadow-md sm:text-base">
                     {t('landing.hero.pitchPrefix')}{' '}
                     <strong className="font-semibold whitespace-nowrap text-cyan-100 [text-shadow:0_0_18px_rgba(125,211,252,0.36)]">
                         {t('landing.hero.pitchEmphasis')}
                     </strong>
-                    , {t('landing.hero.pitchSecond')}, and{' '}
-                    {t('landing.hero.pitchThird')}.
+                    {' and '}
+                    {t('landing.hero.pitchSecond')}
+                    {', '}
+                    {t('landing.hero.pitchThird')}
+                    {'.'}
                 </p>
             </div>
         </MultiPlaneScene>

@@ -77,7 +77,8 @@ export function Footer() {
             </ul>
             <p className="mt-3 text-cyan-50/82">
                 {t('common.copyright')} {t('common.copyrightWord')}{' '}
-                {currentYear} {t('common.attribution')}.{' '}
+                {currentYear} {t('common.attribution')}
+                {'. '}
                 {t('common.footer.allRightsReserved')}
             </p>
         </div>
