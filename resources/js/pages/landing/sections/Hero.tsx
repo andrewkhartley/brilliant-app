@@ -1,3 +1,6 @@
+import { gsap } from 'gsap';
+import { useEffect, useRef } from 'react';
+
 import { Layer, MultiPlaneScene } from '@/components/multi-plane-scene';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -35,8 +38,37 @@ import { useTranslation } from '@/hooks/useTranslation';
  */
 export function Hero() {
     const { t } = useTranslation();
+    const heroCopyRef = useRef<HTMLDivElement>(null);
     const showHorizonLayer = true;
     const showRailLayer = true;
+
+    useEffect(() => {
+        const heroCopy = heroCopyRef.current;
+
+        if (
+            !heroCopy ||
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+            return;
+        }
+
+        const context = gsap.context(() => {
+            gsap.fromTo(
+                '[data-hero-reveal]',
+                { autoAlpha: 0, y: 18, filter: 'blur(8px)' },
+                {
+                    autoAlpha: 1,
+                    y: 0,
+                    filter: 'blur(0px)',
+                    duration: 0.9,
+                    ease: 'power3.out',
+                    stagger: 0.14,
+                },
+            );
+        }, heroCopy);
+
+        return () => context.revert();
+    }, []);
 
     return (
         <MultiPlaneScene height="100vh" parallaxStrength={0.6} atmosphere>
@@ -87,8 +119,14 @@ export function Hero() {
                 />
             )}
 
-            <div className="pointer-events-auto absolute inset-x-0 top-[43%] z-[110] mx-auto max-w-4xl -translate-y-1/2 px-6 text-center text-white select-text">
-                <h1 className="text-4xl font-semibold tracking-normal drop-shadow-lg sm:text-5xl md:text-7xl">
+            <div
+                ref={heroCopyRef}
+                className="pointer-events-auto absolute inset-x-0 top-[43%] z-[110] mx-auto max-w-4xl -translate-y-1/2 px-6 text-center text-white select-text"
+            >
+                <h1
+                    data-hero-reveal
+                    className="text-4xl font-semibold tracking-normal drop-shadow-lg sm:text-5xl md:text-7xl"
+                >
                     <span className="block">
                         {t('landing.hero.titleLine1')}
                     </span>
@@ -96,7 +134,10 @@ export function Hero() {
                         {t('landing.hero.titleLine2')}
                     </span>
                 </h1>
-                <div className="mx-auto mt-7 flex max-w-3xl items-center justify-center gap-4 sm:gap-5">
+                <div
+                    data-hero-reveal
+                    className="mx-auto mt-7 flex max-w-3xl items-center justify-center gap-4 sm:gap-5"
+                >
                     <span
                         aria-hidden="true"
                         className="h-px flex-1 bg-gradient-to-l from-cyan-200/58 to-transparent"
@@ -113,7 +154,10 @@ export function Hero() {
                         className="h-px flex-1 bg-gradient-to-r from-cyan-200/58 to-transparent"
                     />
                 </div>
-                <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/82 drop-shadow-md sm:text-base">
+                <p
+                    data-hero-reveal
+                    className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/82 drop-shadow-md sm:text-base"
+                >
                     {t('landing.hero.pitchPrefix')}{' '}
                     <strong className="font-semibold whitespace-nowrap text-cyan-100 [text-shadow:0_0_18px_rgba(125,211,252,0.36)]">
                         {t('landing.hero.pitchEmphasis')}

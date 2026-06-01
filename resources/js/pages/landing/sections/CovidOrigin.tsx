@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -10,6 +12,7 @@ import { useTranslation } from '@/hooks/useTranslation';
  */
 export function CovidOrigin() {
     const { t } = useTranslation();
+    const sectionRef = useRef<HTMLElement>(null);
     const [activeGalleryIndex, setActiveGalleryIndex] = useState<number | null>(
         null,
     );
@@ -85,8 +88,62 @@ export function CovidOrigin() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [activeGalleryIndex, showNextImage, showPreviousImage]);
 
+    useEffect(() => {
+        const section = sectionRef.current;
+
+        if (
+            !section ||
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+            return;
+        }
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        const context = gsap.context(() => {
+            gsap.fromTo(
+                '[data-clubhouse-reveal]',
+                { autoAlpha: 0, y: 28, filter: 'blur(10px)' },
+                {
+                    autoAlpha: 1,
+                    y: 0,
+                    filter: 'blur(0px)',
+                    duration: 0.85,
+                    ease: 'power3.out',
+                    stagger: 0.1,
+                    scrollTrigger: {
+                        trigger: section,
+                        start: 'top 70%',
+                    },
+                },
+            );
+
+            gsap.fromTo(
+                '[data-clubhouse-card]',
+                { autoAlpha: 0, y: 24, scale: 0.98 },
+                {
+                    autoAlpha: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.72,
+                    ease: 'power2.out',
+                    stagger: 0.08,
+                    scrollTrigger: {
+                        trigger: '[data-clubhouse-gallery]',
+                        start: 'top 78%',
+                    },
+                },
+            );
+        }, section);
+
+        return () => context.revert();
+    }, []);
+
     return (
-        <section className="relative overflow-hidden bg-[#07101d] text-white">
+        <section
+            ref={sectionRef}
+            className="relative overflow-hidden bg-[#07101d] text-white"
+        >
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(34,211,238,0.18),transparent_28%),radial-gradient(circle_at_78%_24%,rgba(168,85,247,0.14),transparent_30%),radial-gradient(circle_at_50%_88%,rgba(125,211,252,0.08),transparent_26%),linear-gradient(180deg,rgba(7,16,29,1),rgba(8,13,29,0.98)_42%,rgba(6,10,22,1))]" />
             <div
                 aria-hidden="true"
@@ -98,7 +155,10 @@ export function CovidOrigin() {
             <div className="pointer-events-none absolute inset-x-12 bottom-0 h-8 bg-cyan-200/10 blur-2xl" />
 
             <div className="relative mx-auto max-w-6xl px-4 py-20 text-white select-text sm:py-24">
-                <div className="mx-auto max-w-5xl text-center">
+                <div
+                    data-clubhouse-reveal
+                    className="mx-auto max-w-5xl text-center"
+                >
                     <p className="text-xs font-semibold tracking-[0.28em] text-cyan-200/75 uppercase">
                         {t('landing.covidOrigin.kicker')}
                     </p>
@@ -110,7 +170,10 @@ export function CovidOrigin() {
                     </p>
                 </div>
 
-                <article className="relative mt-14 overflow-hidden rounded-lg border-x border-y-[0.5px] border-cyan-100/14 bg-slate-950/68 p-6 shadow-2xl shadow-black/35 backdrop-blur-md sm:p-8">
+                <article
+                    data-clubhouse-reveal
+                    className="relative mt-14 overflow-hidden rounded-lg border-x border-y-[0.5px] border-cyan-100/14 bg-slate-950/68 p-6 shadow-2xl shadow-black/35 backdrop-blur-md sm:p-8"
+                >
                     <div
                         aria-hidden="true"
                         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(34,211,238,0.14),transparent_42%),radial-gradient(circle_at_26%_74%,rgba(168,85,247,0.08),transparent_38%)]"
@@ -148,7 +211,7 @@ export function CovidOrigin() {
                     </div>
                 </article>
 
-                <div className="relative mt-6">
+                <div data-clubhouse-gallery className="relative mt-6">
                     <div
                         aria-hidden="true"
                         className="absolute -inset-x-4 top-1/2 h-px bg-gradient-to-r from-transparent via-cyan-200/30 to-transparent"
@@ -459,7 +522,10 @@ function RoomTitle({
     title: string;
 }) {
     return (
-        <div className="overflow-hidden rounded-lg border border-cyan-100/14 bg-slate-950/58 shadow-xl shadow-black/20 backdrop-blur-md">
+        <div
+            data-clubhouse-card
+            className="overflow-hidden rounded-lg border border-cyan-100/14 bg-slate-950/58 shadow-xl shadow-black/20 backdrop-blur-md"
+        >
             <GalleryButton item={item} onClick={onClick} />
             <div className="p-4">
                 <p className="text-xs font-semibold tracking-[0.2em] text-cyan-200/70 uppercase">
