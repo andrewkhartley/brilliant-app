@@ -10,11 +10,14 @@ use App\Http\Controllers\Playground\EquationsDebugController;
 use App\Http\Controllers\Playground\InterstellarController;
 use App\Http\Controllers\Playground\SceneDebugController;
 use App\Http\Controllers\PlaygroundController;
+use App\Http\Controllers\ProjectsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
 
 Route::get('/about', AboutController::class)->name('about.index');
+
+Route::get('/projects', ProjectsController::class)->name('projects.index');
 
 Route::get('/api/horizon/query', [HorizonController::class, 'queryHorizon'])
     ->name('horizon.query');

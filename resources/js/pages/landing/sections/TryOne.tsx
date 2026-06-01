@@ -63,13 +63,6 @@ export function TryOne() {
     const isAtGeostationaryOrbit =
         orbitalRadius >= GEOSTATIONARY_ORBIT_RADIUS - 1000;
     const isAtOneGravity = Math.abs(acceleration - STANDARD_GRAVITY) <= 0.01;
-    const eras = [
-        t('landing.tryOne.era1900'),
-        t('landing.tryOne.era1940'),
-        t('landing.tryOne.era1980'),
-        t('landing.tryOne.era2020'),
-        t('landing.tryOne.eraFuture'),
-    ];
 
     return (
         <section className="relative overflow-hidden border-t border-cyan-100/15 bg-[#08111f] text-white">
@@ -80,7 +73,7 @@ export function TryOne() {
             />
 
             <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-24">
-                <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+                <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.618fr)] lg:items-start">
                     <div>
                         <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
                             {t('landing.tryOne.kicker')}
@@ -92,24 +85,20 @@ export function TryOne() {
                             {t('landing.tryOne.intro')}
                         </p>
 
-                        <div className="mt-7 grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
-                            {eras.map((era) => (
-                                <span
-                                    key={era}
-                                    className="rounded border border-cyan-100/12 bg-cyan-50/6 px-3 py-2 text-center font-semibold text-cyan-50/78"
-                                >
-                                    {era}
-                                </span>
-                            ))}
-                        </div>
-
                         <div className="mt-7 space-y-4 text-sm leading-7 text-cyan-50/72 sm:text-base sm:leading-8">
                             <p>{t('landing.tryOne.paragraph1')}</p>
                             <p>{t('landing.tryOne.paragraph2')}</p>
                             <p>{t('landing.tryOne.paragraph3')}</p>
                         </div>
                         <p className="mt-6 rounded border border-cyan-100/14 bg-cyan-50/7 p-4 text-sm leading-7 font-semibold text-cyan-50/86 shadow-lg shadow-black/20">
-                            {t('landing.tryOne.capstone')}
+                            {t('landing.tryOne.capstonePrefix')}{' '}
+                            <a
+                                href="/projects"
+                                className="text-cyan-100 underline decoration-cyan-200/45 underline-offset-4 transition hover:text-white hover:decoration-cyan-100"
+                            >
+                                {t('landing.tryOne.alexandriaLinkLabel')}
+                            </a>{' '}
+                            {t('landing.tryOne.capstoneSuffix')}
                         </p>
                     </div>
 
