@@ -1,13 +1,70 @@
 <?php
 
-/*
- * O'Neill Cylinder habitat experience — Phase 11 consumer.
- *
- * Per-page namespace: controllers rendering /playground/habitat
- * must include 'habitat' in their translations() call.
- */
-
 return [
-    'title' => 'O\'Neill Cylinder habitat',
-    'tagline' => 'Design a rotating space habitat. The equation registry surfaces the math behind the scenes.',
+    'pageTitle' => 'Habitat',
+    'hero' => [
+        'kicker' => 'Habitat builder',
+        'heading' => 'Design a rotating world.',
+        'intro' => 'A new pass on the old Generation Ship idea: set the size of an O\'Neill Cylinder, then watch the numbers decide how fast it turns, how much living band it creates, and how many people it might hold.',
+        'imageAlt' => 'O\'Neill Cylinder habitat concept art',
+    ],
+    'builder' => [
+        'kicker' => 'Interactive sketch',
+        'heading' => 'Start with the drum. Let the constraints answer back.',
+        'intro' => 'The archive version asked people to size the vessel, calculate the inner surface, and think through gravity, motion, and scale. This version keeps that spirit, but gives it the visual language of the Brilliant application.',
+    ],
+    'controls' => [
+        'title' => 'World controls',
+        'radius' => 'Cylinder radius',
+        'length' => 'Cylinder length',
+        'gravity' => 'Target spin gravity',
+        'density' => 'Population density',
+        'acceleration' => 'Vessel acceleration',
+        'radiusFormat' => ':value km',
+        'lengthFormat' => ':value km',
+        'gravityFormat' => ':value g',
+        'densityFormat' => ':value people / km2',
+        'accelerationFormat' => ':value g',
+        'radiusAria' => ':value kilometers radius',
+        'lengthAria' => ':value kilometers length',
+        'gravityAria' => ':value standard gravity',
+        'densityAria' => ':value people per square kilometer',
+        'accelerationAria' => ':value standard gravity acceleration',
+    ],
+    'results' => [
+        'title' => 'Habitat readout',
+        'circumference' => 'Circumference',
+        'innerBand' => 'Usable inner band',
+        'closedShell' => 'Closed shell area',
+        'spinRate' => 'Spin rate',
+        'dayLength' => 'One rotation',
+        'rimSpeed' => 'Rim speed',
+        'population' => 'Population at density',
+        'tilt' => 'Acceleration tilt',
+        'kmFormat' => ':value km',
+        'areaFormat' => ':value km2',
+        'rpmFormat' => ':value rpm',
+        'secondsFormat' => ':value seconds',
+        'speedFormat' => ':value m/s',
+        'populationFormat' => ':value people',
+        'tiltFormat' => ':value degrees',
+    ],
+    'formula' => [
+        'title' => 'Why these numbers matter',
+        'spinTitle' => 'Spin gravity',
+        'spinFormula' => 'g = omega^2 r',
+        'spinBody' => 'A larger radius needs a slower spin for the same felt gravity. That is why scale makes the world easier on the body.',
+        'bandTitle' => 'Living band',
+        'bandFormula' => 'A = 2 pi r h',
+        'bandBody' => 'The useful floor wraps around the cylinder wall. The end caps count for structure and light, but not as normal spin-gravity ground.',
+        'tiltTitle' => 'Acceleration',
+        'tiltFormula' => 'theta = atan(a / g)',
+        'tiltBody' => 'If the whole vessel accelerates, the apparent down direction tilts. The faster the burn, the more the interior has to account for it.',
+        'registryTitle' => 'Registry comparison',
+        'registryBody' => 'The shared equation registry also tracks the closed-cylinder surface area, useful when the question is material or shell size instead of living band.',
+    ],
+    'scene' => [
+        'label' => 'Cylinder concept',
+        'caption' => 'A habitat story starts as an image, but it becomes interesting when the numbers start pushing back.',
+    ],
 ];
