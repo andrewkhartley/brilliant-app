@@ -57,8 +57,8 @@ return [
         'capstone' => [
             'kicker' => 'The Inspiration that Remained',
             'heading' => 'Curiosity needs a place to go.',
-            'paragraph1' => 'A good story has rules and constraints, and rooms built around the art of the possible have to embrace them: what would the city need, where would the material come from, what breaks first, and what has to be learned before any of it becomes possible? Week after week, hundreds would listen or take the leap to join us on stage.',
-            'paragraph2' => 'As the world adjusted and opened back up, the rooms on Clubhouse began to empty. The inspiration did not. Curiosity needs a place to go. That is where Brilliant feels so aligned to me: it turns learning into something active, playful, and worth returning to.',
+            'paragraph1' => 'A good story has rules and constraints, and rooms built around the art of the possible have to embrace them: what would the city need, where would the material come from, what breaks first, and what has to be learned before any of it becomes possible? Week after week, hundreds (and sometimes thousands) would listen or take the leap to join us on stage.',
+            'paragraph2' => 'As the world adjusted and opened back up, the rooms on Clubhouse began to empty, but the inspiration did not. Curiosity needs a place to go. That is where Brilliant feels so aligned to me: it turns learning into something active, playful, and worth returning to.',
         ],
         'gallery' => [
             'analytics' => [
@@ -105,11 +105,31 @@ return [
         'paragraph2' => 'That instinct matters. Curiosity is how people keep reaching for the next thing, even as the brain changes pace with age. The right story can make a difficult path feel worth entering.',
         'paragraph3' => 'One day, someone may plan real travel itineraries through the solar system. To make that possible, people will need to solve fuel, radiation, biology, materials, and orbital mechanics. Some of the people critical to those answers are alive today, but may not yet know what they will contribute.',
         'capstone' => 'That is why I want to build near-future scenarios that connect imagination to the educational paths required to solve real problems. Alexandria comes from the same instinct: use technology wisely, so creative human beings can think, organize, and build with more clarity, not less.',
-        'demoKicker' => 'Solar-system itinerary',
-        'demoHeading' => 'What would a one-year burn feel like?',
-        'demoIntro' => 'Set a constant proper acceleration for one year of coordinate time and watch speed bend toward its limit.',
-        'sliderLabel' => 'Acceleration',
-        'resultLabel' => 'Peak velocity:',
+        'demoKicker' => 'Scenario math',
+        'demoHeading' => 'The story changes with the equation.',
+        'demoIntro' => 'Tab between a few of the formulas behind the playgrounds: orbital routes and interstellar travel ask different questions.',
+        'formulaTabs' => [
+            'label' => 'Choose a formula example',
+            'orbitalVelocity' => [
+                'tab' => 'Orbit speed',
+                'description' => 'Sol Cruise starts with a simple question: how fast does something need to move to hold a circular orbit?',
+                'radiusLabel' => 'Orbital radius',
+                'resultLabel' => 'Required speed:',
+            ],
+            'orbitalPeriod' => [
+                'tab' => 'Orbit time',
+                'description' => 'For a natural circular orbit, time comes from gravity: radius, central mass, and the gravitational constant determine the lap.',
+                'radiusLabel' => 'Orbital radius',
+                'resultLabel' => 'Orbital period:',
+            ],
+            'relativity' => [
+                'tab' => 'Relativity',
+                'description' => 'Interstellar travel asks a different kind of question: what happens as human-scale acceleration pushes speed toward its limit?',
+                'accelerationLabel' => 'Acceleration',
+                'durationLabel' => 'Acceleration duration',
+                'resultLabel' => 'Peak velocity:',
+            ],
+        ],
     ],
 
     'whatElse' => [
