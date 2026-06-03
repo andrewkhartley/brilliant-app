@@ -10,6 +10,7 @@ use App\Http\Controllers\Playground\EquationsDebugController;
 use App\Http\Controllers\Playground\HabitatController;
 use App\Http\Controllers\Playground\InterstellarController;
 use App\Http\Controllers\Playground\SceneDebugController;
+use App\Http\Controllers\Playground\StoryStageDebugController;
 use App\Http\Controllers\PlaygroundController;
 use App\Http\Controllers\ProjectsController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,9 @@ Route::get('/playground/components-debug', ComponentsDebugController::class)
 
 Route::get('/playground/animation-debug', AnimationDebugController::class)
     ->name('playground.animation-debug');
+
+Route::get('/playground/story-stage-debug', StoryStageDebugController::class)
+    ->name('playground.story-stage-debug');
 
 Route::get('/playground/equations-debug', EquationsDebugController::class)
     ->name('playground.equations-debug');
