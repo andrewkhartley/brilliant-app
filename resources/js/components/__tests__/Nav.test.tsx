@@ -15,7 +15,7 @@ vi.mock('@inertiajs/react', () => ({
             dir: 'ltr',
             translations: {
                 common: {
-                    siteName: "Andrew's Brilliant Application",
+                    siteName: "Andrew's Application",
                     primaryNav: 'Primary navigation',
                 },
                 nav: {
@@ -42,7 +42,7 @@ describe('Nav', () => {
         render(<Nav />);
 
         expect(
-            screen.queryByText("Andrew's Brilliant Application"),
+            screen.queryByText("Andrew's Application"),
         ).not.toBeNull();
     });
 

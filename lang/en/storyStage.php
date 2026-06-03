@@ -15,6 +15,10 @@ return [
         'next' => 'Next',
         'progress' => ':current / :total',
         'restart' => 'Restart',
+        'textSpeed' => 'Text speed',
+        'textSpeedFast' => 'Fast',
+        'textSpeedInstant' => 'Instant',
+        'textSpeedSlow' => 'Slow',
     ],
     'demo' => [
         'backgroundAlt' => 'Rotating habitat concept background',
@@ -35,9 +39,9 @@ return [
             'choice' => [
                 'speaker' => 'Andrew',
                 'dialogue' => 'Choices can branch the lesson without leaving the full-screen stage. In practice, they should feel like someone talking back.',
-                'heightChoiceDescription' => 'Ask how the world changes when you move inward.',
+                'heightChoiceDescription' => '',
                 'heightChoice' => 'What happens if I climb toward the axis?',
-                'radiusChoiceDescription' => 'Ask why scale changes how comfortable the habitat feels.',
+                'radiusChoiceDescription' => '',
                 'radiusChoice' => 'Why does the radius change the spin?',
             ],
             'height' => [

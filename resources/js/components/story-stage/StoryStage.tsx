@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 
 import type {
     StoryStageChoice,
@@ -9,17 +10,28 @@ import type {
     StoryStageSprite,
     StoryStageSpritePresence,
     StoryStageSpritePosition,
+    StoryStageTextSpeed,
 } from './types';
 
 const DEFAULT_SPRITE_DURATION_MS = 900;
 const DEFAULT_SCENE_TRANSITION_MS = 360;
-const TEXT_REVEAL_INTERVAL_MS = 22;
+const TEXT_SPEED_STORAGE_KEY = 'story-stage:text-speed';
+const DEFAULT_TEXT_SPEED: StoryStageTextSpeed = 'fast';
+const TEXT_REVEAL_INTERVAL_MS: Record<StoryStageTextSpeed, number> = {
+    fast: 16,
+    instant: 0,
+    slow: 38,
+};
 const TEXT_FAST_FILL_MS = 250;
 const CHOICE_OTHERS_FADE_MS = 250;
 const CHOICE_SELECTED_HOLD_MS = 150;
 const CHOICE_SELECTED_FADE_MS = 200;
 const CHOICE_SELECT_DELAY_MS =
     CHOICE_OTHERS_FADE_MS + CHOICE_SELECTED_HOLD_MS + CHOICE_SELECTED_FADE_MS;
+const CHOICE_ENTER_DURATION_MS = 360;
+const CHOICE_ENTER_STAGGER_MS = 240;
+const STORY_MENU_ANIMATION_MS = 180;
+const STORY_MENU_ITEM_COUNT = 6;
 
 interface StoryStageBacklogEntry {
     dialogue: string;
@@ -85,6 +97,10 @@ function StoryStagePlayer({
         return initialScene ? [createLineBacklogEntry(initialScene, 0)] : [];
     });
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [areChoicesVisible, setAreChoicesVisible] = useState(false);
+    const [textSpeed, setTextSpeed] = useState<StoryStageTextSpeed>(() =>
+        readTextSpeedState(),
+    );
 
     const sceneIndex = useMemo(
         () => scenes.findIndex((scene) => scene.id === sceneId),
@@ -93,7 +109,6 @@ function StoryStagePlayer({
     const scene = scenes[sceneIndex] ?? scenes[0];
     const hasPrevious = history.length > 0;
     const hasNext = Boolean(resolveNextSceneId(scene, scenes, sceneIndex));
-
     useEffect(() => {
         if (scene) {
             onSceneChange?.(scene);
@@ -121,6 +136,11 @@ function StoryStagePlayer({
         return () => window.removeEventListener('keydown', handleKeyDown);
     });
 
+    function updateTextSpeed(nextTextSpeed: StoryStageTextSpeed) {
+        setTextSpeed(nextTextSpeed);
+        writeTextSpeedState(nextTextSpeed);
+    }
+
     if (!scene) {
         return null;
     }
@@ -128,6 +148,7 @@ function StoryStagePlayer({
     function goTo(nextSceneId: string) {
         const nextScene = scenes.find((scene) => scene.id === nextSceneId);
 
+        setAreChoicesVisible(false);
         setHistory((current) => [...current, scene.id]);
 
         if (nextScene) {
@@ -155,6 +176,7 @@ function StoryStagePlayer({
             return;
         }
 
+        setAreChoicesVisible(false);
         setHistory((current) => current.slice(0, -1));
         setBacklog((current) => {
             const previousScene = scenes.find(
@@ -176,6 +198,7 @@ function StoryStagePlayer({
             scenes.find((scene) => scene.id === firstSceneId) ?? scenes[0];
 
         setHistory([]);
+        setAreChoicesVisible(false);
         setBacklog(
             restartScene ? [createLineBacklogEntry(restartScene, 0)] : [],
         );
@@ -206,44 +229,15 @@ function StoryStagePlayer({
 
     return (
         <div
-            className="fixed inset-0 z-50 overflow-hidden bg-slate-950 text-white"
+            className="story-stage fixed inset-0 z-50 overflow-hidden bg-slate-950 text-white"
             role="dialog"
             aria-modal="true"
             aria-labelledby="story-stage-speaker"
         >
             <StoryStageKeyframes />
 
-            <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-3 p-4">
-                <p className="rounded border border-cyan-100/16 bg-slate-950/58 px-3 py-2 font-mono text-xs font-semibold text-cyan-100/78 backdrop-blur-md">
-                    {labels.progress(sceneIndex + 1, scenes.length)}
-                </p>
-                <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={() => setIsHistoryOpen(true)}
-                        className="cursor-pointer rounded border border-cyan-100/16 bg-slate-950/58 px-3 py-2 text-sm font-semibold text-cyan-50/78 backdrop-blur-md transition hover:bg-cyan-50/10 focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:outline-none"
-                    >
-                        {labels.history}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={restart}
-                        className="cursor-pointer rounded border border-cyan-100/16 bg-slate-950/58 px-3 py-2 text-sm font-semibold text-cyan-50/78 backdrop-blur-md transition hover:bg-cyan-50/10 focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:outline-none"
-                    >
-                        {labels.restart}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="cursor-pointer rounded border border-cyan-100/16 bg-slate-950/58 px-3 py-2 text-sm font-semibold text-cyan-50/78 backdrop-blur-md transition hover:bg-cyan-50/10 focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:outline-none"
-                    >
-                        {labels.close}
-                    </button>
-                </div>
-            </div>
-
             <div
-                key={scene.id}
+                key={`scene-${scene.id}-${history.length}`}
                 className="absolute inset-0"
                 style={{
                     animation: sceneTransitionAnimation(scene, reducedMotion),
@@ -262,6 +256,7 @@ function StoryStagePlayer({
                     <StorySprite
                         key={sprite.id}
                         activeSpriteIds={scene.activeSpriteIds}
+                        lift={areChoicesVisible && !reducedMotion}
                         reducedMotion={reducedMotion}
                         sprite={sprite}
                     />
@@ -271,15 +266,21 @@ function StoryStagePlayer({
             {children}
 
             <StoryDialogue
-                key={scene.id}
+                key={`dialogue-${scene.id}-${history.length}`}
                 hasNext={hasNext}
                 hasPrevious={hasPrevious}
                 labels={labels}
                 onBack={goBack}
+                onClose={onClose}
                 onChoice={choose}
+                onChoicesVisibleChange={setAreChoicesVisible}
+                onHistory={() => setIsHistoryOpen(true)}
                 onNext={advance}
+                onRestart={restart}
                 reducedMotion={reducedMotion}
                 scene={scene}
+                textSpeed={textSpeed}
+                onTextSpeedChange={updateTextSpeed}
             />
 
             {isHistoryOpen && (
@@ -298,22 +299,34 @@ function StoryDialogue({
     hasPrevious,
     labels,
     onBack,
+    onClose,
     onChoice,
+    onChoicesVisibleChange,
+    onHistory,
     onNext,
+    onRestart,
+    onTextSpeedChange,
     reducedMotion,
     scene,
+    textSpeed,
 }: {
     hasNext: boolean;
     hasPrevious: boolean;
     labels: StoryStageLabels;
     onBack: () => void;
+    onClose: () => void;
     onChoice: (choice: StoryStageChoice) => void;
+    onChoicesVisibleChange: (isVisible: boolean) => void;
+    onHistory: () => void;
     onNext: () => void;
+    onRestart: () => void;
+    onTextSpeedChange: (textSpeed: StoryStageTextSpeed) => void;
     reducedMotion: boolean;
     scene: StoryStageScene;
+    textSpeed: StoryStageTextSpeed;
 }) {
     const [visibleCharacterCount, setVisibleCharacterCount] = useState(
-        reducedMotion ? scene.dialogue.length : 0,
+        reducedMotion || textSpeed === 'instant' ? scene.dialogue.length : 0,
     );
     const [isFastFilling, setIsFastFilling] = useState(false);
     const [activeChoiceIndex, setActiveChoiceIndex] = useState(0);
@@ -321,16 +334,29 @@ function StoryDialogue({
         null,
     );
     const [isSelectedChoiceFading, setIsSelectedChoiceFading] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMenuClosing, setIsMenuClosing] = useState(false);
+    const [activeMenuIndex, setActiveMenuIndex] = useState(0);
+    const menuCloseTimeoutRef = useRef<number | null>(null);
     const visibleDialogue = reducedMotion
         ? scene.dialogue
         : scene.dialogue.slice(0, visibleCharacterCount);
     const isDialogueComplete =
-        reducedMotion || visibleCharacterCount >= scene.dialogue.length;
+        reducedMotion ||
+        textSpeed === 'instant' ||
+        visibleCharacterCount >= scene.dialogue.length;
     const choices = useMemo(() => scene.choices ?? [], [scene.choices]);
     const hasChoices = isDialogueComplete && choices.length > 0;
+    const isMenuVisible = isMenuOpen || isMenuClosing;
+
+    useEffect(() => {
+        onChoicesVisibleChange(hasChoices);
+
+        return () => onChoicesVisibleChange(false);
+    }, [hasChoices, onChoicesVisibleChange]);
 
     function fastFillDialogue() {
-        if (reducedMotion) {
+        if (reducedMotion || textSpeed === 'instant') {
             setVisibleCharacterCount(scene.dialogue.length);
 
             return;
@@ -384,8 +410,126 @@ function StoryDialogue({
         }, CHOICE_SELECT_DELAY_MS);
     }
 
+    function changeTextSpeed(nextTextSpeed: StoryStageTextSpeed) {
+        onTextSpeedChange(nextTextSpeed);
+
+        if (nextTextSpeed === 'instant') {
+            setVisibleCharacterCount(scene.dialogue.length);
+        }
+    }
+
+    function clearMenuCloseTimeout() {
+        if (menuCloseTimeoutRef.current !== null) {
+            window.clearTimeout(menuCloseTimeoutRef.current);
+            menuCloseTimeoutRef.current = null;
+        }
+    }
+
+    function openMenu() {
+        clearMenuCloseTimeout();
+        setActiveMenuIndex(textSpeedToMenuIndex(textSpeed));
+        setIsMenuClosing(false);
+        setIsMenuOpen(true);
+    }
+
+    function closeMenu(afterClose?: () => void) {
+        clearMenuCloseTimeout();
+
+        if (reducedMotion) {
+            setIsMenuOpen(false);
+            setIsMenuClosing(false);
+            afterClose?.();
+
+            return;
+        }
+
+        setIsMenuOpen(false);
+        setIsMenuClosing(true);
+        menuCloseTimeoutRef.current = window.setTimeout(() => {
+            setIsMenuClosing(false);
+            menuCloseTimeoutRef.current = null;
+            afterClose?.();
+        }, STORY_MENU_ANIMATION_MS);
+    }
+
+    function activateMenuItem(index: number) {
+        if (index === 0) {
+            changeTextSpeed('slow');
+
+            return;
+        }
+
+        if (index === 1) {
+            changeTextSpeed('fast');
+
+            return;
+        }
+
+        if (index === 2) {
+            changeTextSpeed('instant');
+
+            return;
+        }
+
+        if (index === 3) {
+            closeMenu(onHistory);
+
+            return;
+        }
+
+        if (index === 4) {
+            closeMenu(onRestart);
+
+            return;
+        }
+
+        closeMenu(onClose);
+    }
+
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
+            if (event.key === 'Escape' && isMenuVisible) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                closeMenu();
+
+                return;
+            }
+
+            if (isMenuVisible) {
+                if (isMenuClosing) {
+                    return;
+                }
+
+                if (
+                    ![
+                        ' ',
+                        'Enter',
+                        'ArrowRight',
+                        'ArrowLeft',
+                        'ArrowUp',
+                        'ArrowDown',
+                    ].includes(event.key)
+                ) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopImmediatePropagation();
+
+                if (event.key === ' ' || event.key === 'Enter') {
+                    activateMenuItem(activeMenuIndex);
+
+                    return;
+                }
+
+                setActiveMenuIndex((current) =>
+                    nextMenuIndex(current, event.key, textSpeed),
+                );
+
+                return;
+            }
+
             if (
                 ![
                     ' ',
@@ -460,10 +604,14 @@ function StoryDialogue({
             }
         }
 
-        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keydown', handleKeyDown, true);
 
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown, true);
     });
+
+    useEffect(() => {
+        return () => clearMenuCloseTimeout();
+    }, []);
 
     useEffect(() => {
         if (reducedMotion || isDialogueComplete || isFastFilling) {
@@ -474,7 +622,7 @@ function StoryDialogue({
             setVisibleCharacterCount((current) =>
                 Math.min(current + 1, scene.dialogue.length),
             );
-        }, TEXT_REVEAL_INTERVAL_MS);
+        }, TEXT_REVEAL_INTERVAL_MS[textSpeed]);
 
         return () => window.clearTimeout(timeout);
     }, [
@@ -482,36 +630,41 @@ function StoryDialogue({
         isFastFilling,
         reducedMotion,
         scene.dialogue.length,
+        textSpeed,
         visibleCharacterCount,
     ]);
 
     return (
-        <div className="absolute inset-x-0 bottom-0 z-30">
-            <div className="relative overflow-hidden border-t border-cyan-100/16 bg-slate-950/84 shadow-[0_-22px_64px_rgba(8,145,178,0.14),0_22px_72px_rgba(0,0,0,0.44)] backdrop-blur-xl">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-cyan-100/82 to-transparent" />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-amber-200/32 to-transparent" />
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(34,211,238,0.08),transparent_18%,transparent_82%,rgba(251,191,36,0.07)),radial-gradient(circle_at_18%_0%,rgba(34,211,238,0.16),transparent_28%),radial-gradient(circle_at_82%_100%,rgba(251,191,36,0.11),transparent_26%)]" />
+        <div
+            className="story-stage-dialogue absolute inset-x-0 bottom-0 z-30"
+            data-choices-visible={hasChoices ? 'true' : undefined}
+        >
+            <div className={dialogueShellClass()}>
+                <div className={dialogueTopRuleClass()} />
+                <div className={dialogueBottomRuleClass()} />
+                <div className={dialogueAtmosphereClass()} />
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(180deg,rgba(255,255,255,0.045)_0,rgba(255,255,255,0.045)_1px,transparent_1px,transparent_12px)] opacity-28"
+                    className={dialogueCornerClass('top')}
                 />
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute top-2 left-2 h-5 w-5 border-t border-l border-cyan-100/36"
-                />
-                <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute right-2 bottom-2 h-5 w-5 border-r border-b border-amber-100/30"
+                    className={dialogueCornerClass('bottom')}
                 />
 
-                <div className="relative mx-auto flex min-h-42 max-w-6xl flex-col px-4 py-3 sm:min-h-46 sm:px-6 sm:py-4">
+                <div className={dialogueContentClass()}>
                     <div className="flex items-center justify-between gap-3">
                         {scene.speaker ? (
                             <p
                                 id="story-stage-speaker"
-                                className="min-w-0 border border-cyan-100/18 bg-cyan-100/8 px-3 py-1 font-mono text-xs font-semibold tracking-[0.2em] text-cyan-100/86 uppercase shadow-lg shadow-cyan-950/20"
+                                className={dialogueSpeakerClass()}
+                                style={{
+                                    transform: 'skewX(-12deg)',
+                                }}
                             >
-                                {scene.speaker}
+                                <span className="inline-block skew-x-12">
+                                    {scene.speaker}
+                                </span>
                             </p>
                         ) : (
                             <span />
@@ -521,28 +674,67 @@ function StoryDialogue({
                                 type="button"
                                 onClick={onBack}
                                 disabled={!hasPrevious}
-                                className="cursor-pointer border border-cyan-100/16 bg-cyan-50/5 px-3 py-1.5 text-xs font-semibold text-cyan-50/72 transition hover:bg-cyan-50/10 focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-35"
+                                className={dialogueControlClass('secondary')}
+                                style={{
+                                    transform: 'skewX(-12deg)',
+                                }}
                             >
-                                {labels.back}
+                                <span className="inline-block skew-x-12">
+                                    {labels.back}
+                                </span>
                             </button>
-                            {!hasChoices && (
+                            {isDialogueComplete && !hasChoices && (
                                 <button
                                     type="button"
                                     onClick={onNext}
                                     disabled={!hasNext}
-                                    className="cursor-pointer border border-amber-100/44 bg-amber-300 px-3 py-1.5 text-xs font-semibold text-slate-950 shadow-lg shadow-amber-950/24 transition hover:bg-amber-200 focus-visible:ring-2 focus-visible:ring-amber-100 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-35"
+                                    className={dialogueControlClass('primary')}
+                                    style={{
+                                        transform: 'skewX(-12deg)',
+                                    }}
                                 >
-                                    {labels.next}
+                                    <span className="inline-block skew-x-12">
+                                        {labels.next}
+                                    </span>
                                 </button>
                             )}
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (isMenuVisible) {
+                                            closeMenu();
+                                        } else {
+                                            openMenu();
+                                        }
+                                    }}
+                                    aria-expanded={isMenuVisible}
+                                    aria-label="Story menu"
+                                    className={dialogueControlClass(
+                                        'secondary',
+                                    )}
+                                    style={{
+                                        transform: 'skewX(-12deg)',
+                                    }}
+                                >
+                                    <span className="inline-block skew-x-12 tracking-[0.08em]">
+                                        {'...'}
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <p className="mt-2 min-h-14 text-base leading-7 text-cyan-50/88 sm:min-h-16 sm:text-lg sm:leading-8">
-                        {visibleDialogue}
-                    </p>
+                    <p className={dialogueTextClass()}>{visibleDialogue}</p>
 
-                    {hasChoices && (
-                        <div className="mt-auto flex max-w-4xl flex-col items-start gap-1.5 pt-2">
+                    <div
+                        className={[
+                            'mt-auto grid w-full max-w-full grid-cols-1 items-stretch gap-1.5 overflow-visible transition-[grid-template-rows,padding,opacity,transform] duration-420 ease-out sm:w-auto sm:grid-cols-[max-content]',
+                            hasChoices
+                                ? 'translate-y-0 grid-rows-[1fr] pt-3 pb-2 opacity-100 sm:pt-2 sm:pb-1'
+                                : 'pointer-events-none translate-y-3 grid-rows-[0fr] pt-0 pb-0 opacity-0',
+                        ].join(' ')}
+                    >
+                        <div className="grid min-h-0 gap-2 overflow-visible px-3 py-1">
                             {choices.map((choice, index) => {
                                 const isSelected =
                                     selectedChoiceId === choice.id;
@@ -563,7 +755,7 @@ function StoryDialogue({
                                                 : undefined
                                         }
                                         className={[
-                                            'group relative inline-flex max-w-full cursor-pointer items-center gap-2 overflow-visible border px-2.5 py-1.5 text-start text-sm font-semibold transition-all ease-out focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:outline-none',
+                                            'group relative flex w-full max-w-full cursor-pointer items-center gap-2 overflow-visible border px-2.5 py-1.5 text-start text-sm font-semibold transition-all ease-out focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:outline-none',
                                             isSelected
                                                 ? [
                                                       'scale-[1.02]',
@@ -585,6 +777,14 @@ function StoryDialogue({
                                                       ),
                                         ].join(' ')}
                                         style={{
+                                            animation:
+                                                !reducedMotion &&
+                                                !selectedChoiceId
+                                                    ? `story-stage-choice-enter ${CHOICE_ENTER_DURATION_MS}ms ease-out ${index * CHOICE_ENTER_STAGGER_MS}ms both`
+                                                    : undefined,
+                                            transform: isSelected
+                                                ? 'skewX(-10deg) scale(1.02)'
+                                                : 'skewX(-10deg)',
                                             transitionDuration: isSelected
                                                 ? isSelectedChoiceFading
                                                     ? `${CHOICE_SELECTED_FADE_MS}ms`
@@ -597,7 +797,7 @@ function StoryDialogue({
                                                 <span
                                                     aria-hidden="true"
                                                     className={[
-                                                        'pointer-events-none absolute -top-1 -left-1 h-3.5 w-3.5 border-t-2 border-l-2',
+                                                        'pointer-events-none absolute -top-1.5 -left-1.5 z-10 h-4 w-4 border-t-3 border-l-3',
                                                         choiceKindCornerClass(
                                                             choiceKind,
                                                         ),
@@ -611,7 +811,7 @@ function StoryDialogue({
                                                 <span
                                                     aria-hidden="true"
                                                     className={[
-                                                        'pointer-events-none absolute -right-1 -bottom-1 h-3.5 w-3.5 border-r-2 border-b-2',
+                                                        'pointer-events-none absolute -right-1.5 -bottom-1.5 z-10 h-4 w-4 border-r-3 border-b-3',
                                                         choiceKindCornerClass(
                                                             choiceKind,
                                                         ),
@@ -630,12 +830,20 @@ function StoryDialogue({
                                                 isSelected ||
                                                 index === activeChoiceIndex
                                                     ? 'border-current/42 bg-white/10 text-current'
-                                                    : 'border-cyan-100/20 bg-cyan-50/8 text-cyan-100/78',
+                                                    : 'border-black/35 bg-black/8 text-black/70',
                                             ].join(' ')}
+                                            style={{
+                                                transform: 'skewX(10deg)',
+                                            }}
                                         >
                                             {index + 1}
                                         </span>
-                                        <span className="min-w-0 leading-5">
+                                        <span
+                                            className="min-w-0 leading-5"
+                                            style={{
+                                                transform: 'skewX(10deg)',
+                                            }}
+                                        >
                                             <span>{choice.label}</span>
                                             {choice.description && (
                                                 <span className="mt-0.5 block text-xs leading-4 font-medium opacity-[.72]">
@@ -647,53 +855,186 @@ function StoryDialogue({
                                 );
                             })}
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
+            {isMenuVisible && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/46 px-4 backdrop-blur-[2px]"
+                    onClick={() => closeMenu()}
+                    style={{
+                        animation: reducedMotion
+                            ? undefined
+                            : isMenuClosing
+                              ? `story-stage-menu-backdrop-out ${STORY_MENU_ANIMATION_MS}ms ease-in both`
+                              : 'story-stage-menu-backdrop-in 160ms ease-out both',
+                    }}
+                >
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Story menu"
+                        className={dialogueMenuModalClass()}
+                        onClick={(event) => event.stopPropagation()}
+                        style={{
+                            animation: reducedMotion
+                                ? undefined
+                                : isMenuClosing
+                                  ? `story-stage-menu-out ${STORY_MENU_ANIMATION_MS}ms ease-in both`
+                                  : 'story-stage-menu-in 180ms cubic-bezier(.2,1,.2,1) both',
+                        }}
+                    >
+                        <div className="pointer-events-none absolute top-2 left-3 h-4 w-8 -skew-x-12 border-t-4 border-l-4 border-black" />
+                        <div className="pointer-events-none absolute right-3 bottom-2 h-4 w-8 -skew-x-12 border-r-4 border-b-4 border-black" />
+                        <div className="mb-2">
+                            <p className="mb-2 font-mono text-[0.65rem] font-black tracking-[0.18em] text-black uppercase">
+                                {labels.textSpeed}
+                            </p>
+                            <div className="grid grid-cols-3 gap-1.5">
+                                {(
+                                    [
+                                        ['slow', labels.textSpeedSlow],
+                                        ['fast', labels.textSpeedFast],
+                                        ['instant', labels.textSpeedInstant],
+                                    ] as const
+                                ).map(([speed, label]) => (
+                                    <button
+                                        key={speed}
+                                        type="button"
+                                        onClick={() => {
+                                            setActiveMenuIndex(
+                                                textSpeedToMenuIndex(speed),
+                                            );
+                                            changeTextSpeed(speed);
+                                        }}
+                                        onFocus={() =>
+                                            setActiveMenuIndex(
+                                                textSpeedToMenuIndex(speed),
+                                            )
+                                        }
+                                        aria-pressed={textSpeed === speed}
+                                        className={dialogueTextSpeedClass(
+                                            textSpeed === speed,
+                                            activeMenuIndex ===
+                                                textSpeedToMenuIndex(speed),
+                                        )}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onFocus={() => setActiveMenuIndex(3)}
+                            onClick={() => {
+                                closeMenu(onHistory);
+                            }}
+                            className={dialogueMenuItemClass(
+                                activeMenuIndex === 3,
+                            )}
+                            style={{
+                                transform: 'skewX(-10deg)',
+                            }}
+                        >
+                            <span className="inline-block skew-x-10">
+                                {labels.history}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onFocus={() => setActiveMenuIndex(4)}
+                            onClick={() => {
+                                closeMenu(onRestart);
+                            }}
+                            className={dialogueMenuItemClass(
+                                activeMenuIndex === 4,
+                            )}
+                            style={{
+                                transform: 'skewX(-10deg)',
+                            }}
+                        >
+                            <span className="inline-block skew-x-10">
+                                {labels.restart}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onFocus={() => setActiveMenuIndex(5)}
+                            onClick={() => {
+                                closeMenu(onClose);
+                            }}
+                            className={dialogueMenuItemClass(
+                                activeMenuIndex === 5,
+                            )}
+                            style={{
+                                transform: 'skewX(-10deg)',
+                            }}
+                        >
+                            <span className="inline-block skew-x-10">
+                                {labels.close}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
 function StorySprite({
     activeSpriteIds,
+    lift,
     reducedMotion,
     sprite,
 }: {
     activeSpriteIds?: string[];
+    lift: boolean;
     reducedMotion: boolean;
     sprite: StoryStageSprite;
 }) {
     const presence = resolveSpritePresence(sprite, activeSpriteIds);
     const presenceScale = spritePresenceScale(presence);
     const baseScale = sprite.scale ?? 1;
+    const hasCustomX = Boolean(sprite.mobileX || sprite.x);
     const style = {
-        bottom: sprite.bottom ?? '18%',
+        '--story-sprite-bottom': sprite.bottom ?? '18%',
+        '--story-sprite-max-height': sprite.maxHeight ?? '54vh',
+        '--story-sprite-max-width': sprite.maxWidth ?? '34vw',
+        '--story-sprite-mobile-bottom':
+            sprite.mobileBottom ?? sprite.bottom ?? '18%',
+        '--story-sprite-mobile-max-height':
+            sprite.mobileMaxHeight ?? sprite.maxHeight ?? '54vh',
+        '--story-sprite-mobile-max-width':
+            sprite.mobileMaxWidth ?? sprite.maxWidth ?? '34vw',
+        '--story-sprite-mobile-x': sprite.mobileX ?? sprite.x,
+        bottom: 'var(--story-sprite-mobile-bottom)',
         filter: spritePresenceFilter(presence, sprite.desaturation),
-        left: sprite.x,
-        transform: `translateX(-50%) scale(${baseScale * presenceScale})`,
-    };
+        left: sprite.mobileX ?? sprite.x,
+        transform: `translateX(-50%) translateY(${lift ? '-3rem' : '0'}) scale(${baseScale * presenceScale})`,
+    } as CSSProperties;
 
     return (
         <div
             className={[
-                'absolute transition-all duration-500 ease-out',
+                'story-stage-sprite absolute transition-all duration-500 ease-out sm:bottom-(--story-sprite-bottom)',
+                hasCustomX ? 'sm:left-(--story-sprite-x)' : '',
                 spritePresenceClass(presence),
-                sprite.x ? '' : spritePositionClass(sprite.position),
+                hasCustomX ? '' : spritePositionClass(sprite.position),
             ].join(' ')}
-            style={{
-                ...style,
-                transitionDuration: `${reducedMotion ? 0 : (sprite.durationMs ?? DEFAULT_SPRITE_DURATION_MS)}ms`,
-            }}
+            style={
+                {
+                    ...style,
+                    '--story-sprite-x': sprite.x,
+                    transitionDuration: `${reducedMotion ? 0 : (sprite.durationMs ?? DEFAULT_SPRITE_DURATION_MS)}ms`,
+                } as CSSProperties
+            }
         >
             {sprite.imageSrc ? (
                 <img
                     src={sprite.imageSrc}
                     alt={sprite.alt ?? sprite.name}
-                    className="object-contain drop-shadow-2xl"
-                    style={{
-                        maxHeight: sprite.maxHeight ?? '54vh',
-                        maxWidth: sprite.maxWidth ?? '34vw',
-                    }}
+                    className="max-h-(--story-sprite-mobile-max-height) max-w-(--story-sprite-mobile-max-width) object-contain drop-shadow-2xl sm:max-h-(--story-sprite-max-height) sm:max-w-(--story-sprite-max-width)"
                 />
             ) : (
                 <div
@@ -734,57 +1075,72 @@ function StoryBacklogModal({
 
     return (
         <div
-            className="absolute inset-0 z-40 grid place-items-center bg-slate-950/62 p-4 backdrop-blur-sm"
+            className="absolute inset-0 z-40 grid place-items-center bg-black/58 p-4 backdrop-blur-[2px]"
             onClick={onClose}
+            style={{
+                animation: 'story-stage-menu-backdrop-in 160ms ease-out both',
+            }}
         >
             <section
                 aria-labelledby="story-stage-history-title"
-                className="max-h-[74vh] w-full max-w-3xl overflow-hidden rounded border border-cyan-100/18 bg-slate-950/92 shadow-2xl shadow-black/50"
+                className={storyHistoryModalClass()}
                 onClick={(event) => event.stopPropagation()}
+                style={{
+                    animation:
+                        'story-stage-menu-in 180ms cubic-bezier(.2,1,.2,1) both',
+                }}
             >
-                <div className="flex items-center justify-between gap-3 border-b border-cyan-100/12 px-4 py-3">
+                <div className="pointer-events-none absolute top-3 left-3 h-5 w-12 -skew-x-12 border-t-4 border-l-4 border-black" />
+                <div className="pointer-events-none absolute right-4 bottom-4 h-4 w-10 -skew-x-12 border-r-4 border-b-4 border-black" />
+                <div className="flex items-center justify-between gap-3 border-b-4 border-black px-5 py-4">
                     <h2
                         id="story-stage-history-title"
-                        className="text-sm font-semibold tracking-[0.2em] text-cyan-100/82 uppercase"
+                        className="font-mono text-sm font-black tracking-[0.22em] text-black uppercase"
                     >
                         {labels.historyTitle}
                     </h2>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="cursor-pointer rounded border border-cyan-100/16 px-3 py-2 text-sm font-semibold text-cyan-50/78 transition hover:bg-cyan-50/10 focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:outline-none"
+                        className={dialogueControlClass('secondary')}
+                        style={{
+                            transform: 'skewX(-12deg)',
+                        }}
                     >
-                        {labels.close}
+                        <span className="inline-block skew-x-12">
+                            {labels.close}
+                        </span>
                     </button>
                 </div>
-                <div className="max-h-[calc(74vh-4rem)] overflow-y-auto p-4">
+                <div className="max-h-[calc(76vh-5.5rem)] overflow-y-auto bg-[repeating-linear-gradient(135deg,rgba(0,0,0,0.06)_0,rgba(0,0,0,0.06)_10px,transparent_10px,transparent_22px)] px-5 pt-5 pb-10">
                     {entries.length === 0 ? (
-                        <p className="text-sm text-cyan-50/62">
+                        <p className="border-2 border-black bg-white px-4 py-3 text-sm font-black text-black shadow-[5px_5px_0_rgba(0,0,0,0.9)]">
                             {labels.historyEmpty}
                         </p>
                     ) : (
-                        <ol className="space-y-4">
+                        <ol className="space-y-3">
                             {entries.map((entry) => (
                                 <li
                                     key={entry.id}
                                     className={[
-                                        'border-l-2 pl-4',
+                                        'relative border-2 border-black px-4 py-3 text-black shadow-[5px_5px_0_rgba(0,0,0,0.88)]',
                                         entry.type === 'choice'
-                                            ? 'border-emerald-200/54'
-                                            : 'border-cyan-200/44',
+                                            ? 'bg-emerald-100'
+                                            : 'bg-white',
                                     ].join(' ')}
                                 >
                                     {entry.speaker && (
-                                        <p className="text-xs font-semibold tracking-[0.16em] text-cyan-200/72 uppercase">
+                                        <p className="font-mono text-[0.65rem] font-black tracking-[0.18em] text-black/66 uppercase">
                                             {entry.speaker}
                                         </p>
                                     )}
                                     <p
                                         className={[
-                                            'mt-1 text-sm leading-6',
+                                            'text-sm leading-6 font-black',
+                                            entry.speaker ? 'mt-1' : '',
                                             entry.type === 'choice'
-                                                ? 'text-emerald-100/86'
-                                                : 'text-cyan-50/82',
+                                                ? 'text-emerald-950'
+                                                : 'text-black',
                                         ].join(' ')}
                                     >
                                         {entry.dialogue}
@@ -827,8 +1183,34 @@ function StoryStageKeyframes() {
                 }
 
                 @keyframes story-stage-choice-pulse {
-                    0%, 100% { opacity: 0.78; }
-                    50% { opacity: 1; }
+                    0%, 100% { opacity: 0.78; scale: 1; }
+                    50% { opacity: 1; scale: 1.16; }
+                }
+
+                @keyframes story-stage-choice-enter {
+                    from { opacity: 0; translate: -10px 0; }
+                    to { opacity: 1; translate: 0 0; }
+                }
+
+                @keyframes story-stage-menu-backdrop-in {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+
+                @keyframes story-stage-menu-backdrop-out {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+
+                @keyframes story-stage-menu-in {
+                    0% { opacity: 0; transform: translateY(10px) scale(0.94) skewX(-1deg); }
+                    70% { opacity: 1; transform: translateY(-2px) scale(1.02) skewX(0deg); }
+                    100% { opacity: 1; transform: translateY(0) scale(1) skewX(0deg); }
+                }
+
+                @keyframes story-stage-menu-out {
+                    from { opacity: 1; transform: translateY(0) scale(1); }
+                    to { opacity: 0; transform: translateY(8px) scale(0.96); }
                 }
             `}
         </style>
@@ -948,26 +1330,136 @@ function choiceKindClass(
 ): string {
     const inactiveClasses: Record<StoryStageChoiceKind, string> = {
         advance:
-            'border-transparent bg-transparent text-amber-100/88 hover:border-amber-100/38 hover:bg-amber-300/10',
-        info: 'border-transparent bg-transparent text-sky-100/88 hover:border-sky-100/38 hover:bg-sky-300/10',
+            'border-transparent bg-white text-black shadow-[5px_5px_0_rgba(0,0,0,0.86)] hover:-translate-y-0.5 hover:bg-amber-200',
+        info: 'border-transparent bg-white text-black shadow-[5px_5px_0_rgba(0,0,0,0.86)] hover:-translate-y-0.5 hover:bg-sky-100',
         navigation:
-            'border-transparent bg-transparent text-cyan-50/84 hover:border-cyan-200/34 hover:bg-cyan-100/10',
-        quiz: 'border-transparent bg-transparent text-emerald-100/88 hover:border-emerald-100/38 hover:bg-emerald-300/10',
+            'border-transparent bg-white text-black shadow-[5px_5px_0_rgba(0,0,0,0.86)] hover:-translate-y-0.5 hover:bg-cyan-100',
+        quiz: 'border-transparent bg-white text-black shadow-[5px_5px_0_rgba(0,0,0,0.86)] hover:-translate-y-0.5 hover:bg-emerald-100',
         reflection:
-            'border-transparent bg-transparent text-violet-100/88 hover:border-violet-100/38 hover:bg-violet-300/10',
+            'border-transparent bg-white text-black shadow-[5px_5px_0_rgba(0,0,0,0.86)] hover:-translate-y-0.5 hover:bg-violet-100',
     };
     const activeClasses: Record<StoryStageChoiceKind, string> = {
         advance:
-            'border-amber-100/66 bg-amber-300/18 text-amber-50 shadow-lg shadow-amber-950/20',
-        info: 'border-sky-100/66 bg-sky-300/16 text-sky-50 shadow-lg shadow-sky-950/20',
+            'border-amber-200 bg-amber-300 text-black shadow-[6px_6px_0_rgba(0,0,0,0.94)]',
+        info: 'border-sky-100 bg-sky-200 text-black shadow-[6px_6px_0_rgba(0,0,0,0.94)]',
         navigation:
-            'border-cyan-200/60 bg-cyan-200/14 text-cyan-50 shadow-lg shadow-cyan-950/20',
-        quiz: 'border-emerald-100/66 bg-emerald-300/16 text-emerald-50 shadow-lg shadow-emerald-950/20',
+            'border-cyan-100 bg-cyan-200 text-black shadow-[6px_6px_0_rgba(0,0,0,0.94)]',
+        quiz: 'border-emerald-100 bg-emerald-200 text-black shadow-[6px_6px_0_rgba(0,0,0,0.94)]',
         reflection:
-            'border-violet-100/66 bg-violet-300/16 text-violet-50 shadow-lg shadow-violet-950/20',
+            'border-violet-100 bg-violet-200 text-black shadow-[6px_6px_0_rgba(0,0,0,0.94)]',
     };
 
     return isActive ? activeClasses[kind] : inactiveClasses[kind];
+}
+
+function dialogueShellClass(): string {
+    return 'relative overflow-hidden border-t-4 border-black bg-black text-white shadow-[0_-28px_60px_rgba(0,0,0,0.42)]';
+}
+
+function dialogueTopRuleClass(): string {
+    return 'pointer-events-none absolute inset-x-0 top-0 h-1 bg-white';
+}
+
+function dialogueBottomRuleClass(): string {
+    return 'pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-white';
+}
+
+function dialogueAtmosphereClass(): string {
+    return 'pointer-events-none absolute inset-0 bg-[linear-gradient(110deg,rgba(255,255,255,0.16),transparent_18%,transparent_76%,rgba(255,255,255,0.08)),repeating-linear-gradient(135deg,rgba(255,255,255,0.05)_0,rgba(255,255,255,0.05)_10px,transparent_10px,transparent_22px)]';
+}
+
+function dialogueCornerClass(position: 'top' | 'bottom'): string {
+    return position === 'top'
+        ? 'pointer-events-none absolute top-2 left-3 h-4 w-8 -skew-x-12 border-t-4 border-l-4 border-white sm:left-8 sm:h-5 sm:w-12'
+        : 'pointer-events-none absolute right-3 bottom-2 h-4 w-8 -skew-x-12 border-r-4 border-b-4 border-white sm:right-8 sm:h-5 sm:w-12';
+}
+
+function dialogueContentClass(): string {
+    return 'relative mx-auto flex min-h-42 max-w-6xl flex-col px-8 pt-4 pb-3 sm:min-h-46 sm:px-12 sm:py-4';
+}
+
+function dialogueSpeakerClass(): string {
+    return 'min-w-0 border-2 border-black bg-white px-4 py-1 font-mono text-xs font-black tracking-[0.18em] text-black uppercase shadow-[5px_5px_0_rgba(0,0,0,0.95)]';
+}
+
+function dialogueControlClass(priority: 'primary' | 'secondary'): string {
+    return [
+        'cursor-pointer border-2 border-black px-3 py-1.5 font-mono text-xs font-black tracking-[0.18em] uppercase text-black shadow-[4px_4px_0_rgba(0,0,0,0.95)] transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-35',
+        priority === 'primary' ? 'bg-amber-300' : 'bg-white',
+    ].join(' ');
+}
+
+function dialogueMenuItemClass(isKeyboardActive = false): string {
+    return [
+        'cursor-pointer border-2 border-black px-3 py-2 font-mono text-xs font-black tracking-[0.16em] text-black uppercase shadow-[4px_4px_0_rgba(0,0,0,0.95)] transition hover:-translate-y-0.5 hover:bg-amber-200 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none',
+        isKeyboardActive ? 'bg-amber-300 -translate-y-0.5' : 'bg-white',
+    ].join(' ');
+}
+
+function dialogueMenuModalClass(): string {
+    return 'relative grid w-full max-w-64 gap-2 border-4 border-black bg-white px-6 py-7 shadow-[10px_10px_0_rgba(0,0,0,0.92)]';
+}
+
+function storyHistoryModalClass(): string {
+    return 'relative max-h-[76vh] w-full max-w-3xl overflow-hidden border-4 border-black bg-white shadow-[12px_12px_0_rgba(0,0,0,0.92)]';
+}
+
+function dialogueTextSpeedClass(
+    isActive: boolean,
+    isKeyboardActive = false,
+): string {
+    return [
+        'cursor-pointer border-2 px-2 py-1.5 font-mono text-[0.65rem] font-black tracking-[0.08em] text-black uppercase transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none',
+        isKeyboardActive
+            ? 'border-black bg-amber-300 shadow-[3px_3px_0_rgba(0,0,0,0.95)] -translate-y-0.5'
+            : isActive
+              ? 'border-black bg-amber-300 shadow-[3px_3px_0_rgba(0,0,0,0.95)]'
+              : 'border-black/45 bg-white hover:bg-cyan-100',
+    ].join(' ');
+}
+
+function textSpeedToMenuIndex(textSpeed: StoryStageTextSpeed): number {
+    const indexByTextSpeed: Record<StoryStageTextSpeed, number> = {
+        slow: 0,
+        fast: 1,
+        instant: 2,
+    };
+
+    return indexByTextSpeed[textSpeed];
+}
+
+function nextMenuIndex(
+    currentIndex: number,
+    key: string,
+    textSpeed: StoryStageTextSpeed,
+): number {
+    if (key === 'ArrowDown') {
+        return currentIndex <= 2
+            ? 3
+            : (currentIndex + 1) % STORY_MENU_ITEM_COUNT;
+    }
+
+    if (key === 'ArrowUp') {
+        if (currentIndex === 3) {
+            return textSpeedToMenuIndex(textSpeed);
+        }
+
+        return currentIndex > 3 ? currentIndex - 1 : STORY_MENU_ITEM_COUNT - 1;
+    }
+
+    if (key === 'ArrowRight') {
+        return currentIndex <= 2 ? (currentIndex + 1) % 3 : currentIndex;
+    }
+
+    if (key === 'ArrowLeft') {
+        return currentIndex <= 2 ? (currentIndex + 2) % 3 : currentIndex;
+    }
+
+    return currentIndex;
+}
+
+function dialogueTextClass(): string {
+    return 'mt-2 min-h-14 max-w-4xl text-base leading-6 font-black text-white [text-shadow:2px_2px_0_rgba(0,0,0,0.95)] sm:min-h-16 sm:text-lg sm:leading-7';
 }
 
 function choiceKindCornerClass(kind: StoryStageChoiceKind): string {
@@ -1066,6 +1558,32 @@ function clearResumeState(resumeKey: string | undefined) {
     }
 
     window.localStorage.removeItem(resumeKey);
+}
+
+function readTextSpeedState(): StoryStageTextSpeed {
+    if (typeof window === 'undefined') {
+        return DEFAULT_TEXT_SPEED;
+    }
+
+    const savedTextSpeed = window.localStorage.getItem(TEXT_SPEED_STORAGE_KEY);
+
+    if (
+        savedTextSpeed === 'slow' ||
+        savedTextSpeed === 'fast' ||
+        savedTextSpeed === 'instant'
+    ) {
+        return savedTextSpeed;
+    }
+
+    return DEFAULT_TEXT_SPEED;
+}
+
+function writeTextSpeedState(textSpeed: StoryStageTextSpeed) {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    window.localStorage.setItem(TEXT_SPEED_STORAGE_KEY, textSpeed);
 }
 
 function usePrefersReducedMotion(): boolean {

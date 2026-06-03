@@ -11,7 +11,7 @@
         @fonts
         <script>
             window.FontAwesomeConfig = {
-                autoReplaceSvg: 'nest',
+                autoReplaceSvg: false,
             };
         </script>
         <script src="https://kit.fontawesome.com/f22762bc1a.js" crossorigin="anonymous"></script>

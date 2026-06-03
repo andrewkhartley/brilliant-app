@@ -35,6 +35,10 @@ export interface StoryStageSprite {
     imageSrc?: string;
     maxHeight?: string;
     maxWidth?: string;
+    mobileBottom?: string;
+    mobileMaxHeight?: string;
+    mobileMaxWidth?: string;
+    mobileX?: string;
     name: string;
     position: StoryStageSpritePosition;
     presence?: StoryStageSpritePresence;
@@ -78,7 +82,13 @@ export interface StoryStageLabels {
     next: string;
     progress: (current: number, total: number) => string;
     restart: string;
+    textSpeed: string;
+    textSpeedFast: string;
+    textSpeedInstant: string;
+    textSpeedSlow: string;
 }
+
+export type StoryStageTextSpeed = 'fast' | 'instant' | 'slow';
 
 export interface StoryStageProps {
     active: boolean;

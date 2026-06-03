@@ -12,4 +12,5 @@ export type {
     StoryStageSpritePosition,
     StoryStageTransition,
     StoryStageTransitionKind,
+    StoryStageTextSpeed,
 } from './types';
