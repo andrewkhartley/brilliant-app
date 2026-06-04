@@ -9,12 +9,6 @@
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         @fonts
-        <script>
-            window.FontAwesomeConfig = {
-                autoReplaceSvg: false,
-            };
-        </script>
-        <script src="https://kit.fontawesome.com/f22762bc1a.js" crossorigin="anonymous"></script>
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])

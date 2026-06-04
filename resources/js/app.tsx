@@ -21,4 +21,19 @@ void createInertiaApp({
     progress: {
         color: '#4B5563',
     },
-});
+}).then(() => loadFontAwesomeKit());
+
+function loadFontAwesomeKit() {
+    if (import.meta.env.SSR || document.getElementById('fontawesome-kit')) {
+        return;
+    }
+
+    const script = document.createElement('script');
+
+    script.id = 'fontawesome-kit';
+    script.src = 'https://kit.fontawesome.com/f22762bc1a.js';
+    script.crossOrigin = 'anonymous';
+    script.async = true;
+
+    document.head.appendChild(script);
+}
