@@ -157,6 +157,37 @@ return [
         'bandNote' => 'For the habitat story, we simplify the livable surface to the curved inner wall: 2πrh.',
         'surfaceAreaNote' => 'The registry formula includes both circular end caps. This is useful for shell/material comparisons, but we are not counting those end pieces as normal livable ground in this version. Future versions may model them separately.',
     ],
+    'possibilities' => [
+        'eyebrow' => 'What else is possible',
+        'title' => 'A calculator can become a community prompt.',
+        'body' => 'The point is not only to calculate a cylinder. The point is to give curious people a shared object they can change, argue with, extend, and turn into something worth showing each other.',
+        'items' => [
+            'three' => [
+                'title' => 'A live Three.js habitat',
+                'body' => 'The page could render a 3D cylinder that follows the user\'s radius, length, gravity, density, and lighting choices in real time.',
+            ],
+            'community' => [
+                'title' => 'Community-built districts',
+                'body' => 'Learners could design neighborhoods, farms, transit lines, parks, or utility layers, then publish them as modular habitat resources.',
+            ],
+            'competitions' => [
+                'title' => 'Math-driven challenges',
+                'body' => 'Competitions could ask users to satisfy constraints: comfortable spin, food production, population, transit time, shielding, or material cost.',
+            ],
+            'lesson' => [
+                'title' => 'Branches from one model',
+                'body' => 'The same habitat can become lessons about geometry, angular velocity, ecology, civil planning, radiation, economics, and tradeoffs.',
+            ],
+            'gallery' => [
+                'title' => 'A public design gallery',
+                'body' => 'Finished worlds could become a browsable gallery where the best solutions explain the math and the story behind each design.',
+            ],
+            'experts' => [
+                'title' => 'Expert-guided prompts',
+                'body' => 'Engineers, architects, scientists, and educators could seed constraints that make each design challenge feel grounded and consequential.',
+            ],
+        ],
+    ],
     'comparisons' => [
         'metersFormat' => ':value m',
         'land' => [

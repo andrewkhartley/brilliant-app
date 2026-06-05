@@ -533,15 +533,16 @@ export default function HabitatPage() {
                     </div>
                 </div>
 
-                <section className="relative overflow-hidden bg-slate-950/52 py-14 sm:py-16">
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_20%,rgba(125,211,252,0.12),transparent_30%),radial-gradient(circle_at_18%_72%,rgba(168,85,247,0.08),transparent_28%),linear-gradient(180deg,rgba(15,23,42,0.36),rgba(8,17,31,0.62))]" />
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-0.75 bg-linear-to-r from-transparent via-cyan-200/68 to-transparent" />
+                <section className="relative overflow-hidden bg-[#171106] py-14 sm:py-16">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_20%,rgba(251,191,36,0.18),transparent_30%),radial-gradient(circle_at_18%_72%,rgba(245,158,11,0.12),transparent_28%),linear-gradient(180deg,rgba(30,20,6,0.92),rgba(12,10,6,0.96))]" />
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,rgba(251,191,36,0.22)_1px,transparent_1px)] bg-size-[46px_46px] opacity-18" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-0.75 bg-linear-to-r from-transparent via-amber-200/76 to-transparent" />
                     <div className="relative mx-auto grid max-w-6xl gap-5 px-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)]">
-                        <div className="rounded-lg border border-cyan-100/14 bg-cyan-50/7 p-5 shadow-xl shadow-black/24 backdrop-blur-md">
+                        <div className="rounded-lg border border-amber-100/20 bg-amber-100/10 p-5 shadow-xl shadow-black/24 backdrop-blur-md">
                             <h2 className="text-lg font-semibold tracking-normal text-white">
                                 {t('habitat.formula.registryTitle')}
                             </h2>
-                            <p className="mt-3 text-sm leading-7 text-cyan-50/72">
+                            <p className="mt-3 text-sm leading-7 text-amber-50/76">
                                 {t('habitat.formula.registryBody')}
                             </p>
                             <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -558,16 +559,86 @@ export default function HabitatPage() {
                                     formula={t('habitat.formula.tiltFormula')}
                                 />
                             </div>
-                            <p className="mt-4 text-xs leading-6 text-cyan-50/58">
+                            <p className="mt-4 text-xs leading-6 text-amber-50/62">
                                 {t('habitat.formula.bandNote')}
                             </p>
                         </div>
 
                         <div>
-                            <EquationCard equation={cylinderSurfaceArea} />
-                            <p className="mt-3 text-xs leading-6 text-cyan-50/58">
+                            <EquationCard
+                                equation={cylinderSurfaceArea}
+                                theme="amber"
+                            />
+                            <p className="mt-3 text-xs leading-6 text-amber-50/62">
                                 {t('habitat.formula.surfaceAreaNote')}
                             </p>
+                        </div>
+                    </div>
+
+                    <div className="relative mx-auto mt-10 max-w-6xl px-4">
+                        <div className="rounded-lg border border-amber-100/20 bg-amber-100/10 p-6 shadow-2xl shadow-black/30 backdrop-blur-md sm:p-7">
+                            <div>
+                                <p className="text-xs font-semibold tracking-[0.24em] text-amber-200/78 uppercase">
+                                    {t('habitat.possibilities.eyebrow')}
+                                </p>
+                                <h2 className="mt-3 text-2xl font-semibold tracking-normal text-white sm:text-3xl">
+                                    {t('habitat.possibilities.title')}
+                                </h2>
+                                <p className="mt-4 max-w-none text-sm leading-7 text-amber-50/76">
+                                    {t('habitat.possibilities.body')}
+                                </p>
+                            </div>
+
+                            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                <PossibilityCard
+                                    title={t(
+                                        'habitat.possibilities.items.three.title',
+                                    )}
+                                    body={t(
+                                        'habitat.possibilities.items.three.body',
+                                    )}
+                                />
+                                <PossibilityCard
+                                    title={t(
+                                        'habitat.possibilities.items.community.title',
+                                    )}
+                                    body={t(
+                                        'habitat.possibilities.items.community.body',
+                                    )}
+                                />
+                                <PossibilityCard
+                                    title={t(
+                                        'habitat.possibilities.items.competitions.title',
+                                    )}
+                                    body={t(
+                                        'habitat.possibilities.items.competitions.body',
+                                    )}
+                                />
+                                <PossibilityCard
+                                    title={t(
+                                        'habitat.possibilities.items.lesson.title',
+                                    )}
+                                    body={t(
+                                        'habitat.possibilities.items.lesson.body',
+                                    )}
+                                />
+                                <PossibilityCard
+                                    title={t(
+                                        'habitat.possibilities.items.gallery.title',
+                                    )}
+                                    body={t(
+                                        'habitat.possibilities.items.gallery.body',
+                                    )}
+                                />
+                                <PossibilityCard
+                                    title={t(
+                                        'habitat.possibilities.items.experts.title',
+                                    )}
+                                    body={t(
+                                        'habitat.possibilities.items.experts.body',
+                                    )}
+                                />
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -1097,13 +1168,24 @@ function GravityRow({
 
 function FormulaChip({ formula, title }: { formula: string; title: string }) {
     return (
-        <article className="rounded border border-cyan-100/12 bg-slate-950/62 p-3">
-            <h3 className="text-xs font-semibold tracking-[0.14em] text-cyan-200/72 uppercase">
+        <article className="rounded border border-amber-100/16 bg-[#120e08]/62 p-3 shadow-inner shadow-amber-950/20">
+            <h3 className="text-xs font-semibold tracking-[0.14em] text-amber-200/72 uppercase">
                 {title}
             </h3>
-            <p className="mt-2 font-mono text-sm font-semibold text-cyan-100">
+            <p className="mt-2 font-mono text-sm font-semibold text-amber-100">
                 {formula}
             </p>
+        </article>
+    );
+}
+
+function PossibilityCard({ body, title }: { body: string; title: string }) {
+    return (
+        <article className="rounded-lg border border-amber-100/16 bg-[#140f08]/58 p-4 shadow-lg shadow-black/18">
+            <h3 className="text-sm font-semibold tracking-normal text-white">
+                {title}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-amber-50/72">{body}</p>
         </article>
     );
 }

@@ -7,6 +7,7 @@ import type { Equation } from '@/lib/equations/types';
 interface EquationCardProps {
     equation: Equation;
     showLegend?: boolean;
+    theme?: 'cyan' | 'amber';
 }
 
 /**
@@ -59,8 +60,10 @@ interface EquationCardProps {
 export function EquationCard({
     equation,
     showLegend = true,
+    theme = 'cyan',
 }: EquationCardProps) {
     const { t } = useTranslation();
+    const styles = equationCardStyles[theme];
 
     // KaTeX render is input-stable: equation.latex never changes after mount
     // (the registry is bundle-time data). useMemo prevents re-renders from
@@ -79,14 +82,14 @@ export function EquationCard({
     const displayName = translate(t(nameKey), nameKey, equation.name);
 
     return (
-        <article className="rounded-lg border border-cyan-100/20 bg-slate-950/78 p-6 text-cyan-50 shadow-2xl shadow-black/35 backdrop-blur-md">
+        <article className={styles.card}>
             <header className="mb-4">
                 <h3 className="text-lg font-semibold text-white">
                     {displayName}
                 </h3>
             </header>
             <div
-                className="my-4 overflow-x-auto text-center text-cyan-50"
+                className={styles.formula}
                 aria-label={t('common.equations.formulaAriaLabel')}
                 dangerouslySetInnerHTML={{ __html: html }}
             />
@@ -99,23 +102,23 @@ export function EquationCard({
                             <th>{t('common.equations.unitHeading')}</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-cyan-100/10">
+                    <tbody className={styles.tableBody}>
                         {equation.variables.map((v) => {
                             const labelKey = `equations.${equation.id}.variables.${v.symbol}`;
 
                             return (
                                 <tr key={v.symbol}>
-                                    <td className="py-2 font-serif font-bold text-cyan-100">
+                                    <td className={styles.symbol}>
                                         {v.symbol}
                                     </td>
-                                    <td className="py-2 text-slate-200">
+                                    <td className={styles.label}>
                                         {translate(
                                             t(labelKey),
                                             labelKey,
                                             v.label,
                                         )}
                                     </td>
-                                    <td className="py-2 text-cyan-100/58">
+                                    <td className={styles.unit}>
                                         {v.units ?? ''}
                                     </td>
                                 </tr>
@@ -127,6 +130,25 @@ export function EquationCard({
         </article>
     );
 }
+
+const equationCardStyles = {
+    cyan: {
+        card: 'rounded-lg border border-cyan-100/20 bg-slate-950/78 p-6 text-cyan-50 shadow-2xl shadow-black/35 backdrop-blur-md',
+        formula: 'my-4 overflow-x-auto text-center text-cyan-50',
+        tableBody: 'divide-y divide-cyan-100/10',
+        symbol: 'py-2 font-serif font-bold text-cyan-100',
+        label: 'py-2 text-slate-200',
+        unit: 'py-2 text-cyan-100/58',
+    },
+    amber: {
+        card: 'rounded-lg border border-amber-100/18 bg-[#100d08]/78 p-6 text-amber-50 shadow-2xl shadow-black/35 backdrop-blur-md',
+        formula: 'my-4 overflow-x-auto text-center text-amber-50',
+        tableBody: 'divide-y divide-amber-100/10',
+        symbol: 'py-2 font-serif font-bold text-amber-100',
+        label: 'py-2 text-amber-50/82',
+        unit: 'py-2 text-amber-100/58',
+    },
+} as const;
 
 /**
  * Translation fallback shim. The project's useTranslation hook returns the
