@@ -27,17 +27,19 @@ const HABITAT_BACKGROUND = {
 
 const CYLINDER_INTERIOR_BACKGROUND = {
     imageAlt: "Interior view of a large O'Neill Cylinder habitat",
-    imageSrc: '/assets/img/bg/habitat-cylinder-interior-v3.png',
+    imageSrc: '/assets/img/bg/habitat-cylinder-rendered.png',
 };
 
 const REALTOR_SPRITE = {
     id: 'realtor',
-    bottom: '13%',
-    maxHeight: '54vh',
-    maxWidth: '30vw',
-    mobileBottom: '25%',
-    mobileMaxHeight: '42vh',
-    mobileMaxWidth: '48vw',
+    alt: 'Nisha, Nepalese habitat realtor',
+    bottom: '-8%',
+    imageSrc: '/assets/sprites/nisha/nisha.webp',
+    maxHeight: '75vh',
+    maxWidth: '42vw',
+    mobileBottom: '7%',
+    mobileMaxHeight: '60vh',
+    mobileMaxWidth: '66vw',
     mobileX: '30%',
     name: 'Realtor',
     position: 'left',
@@ -53,14 +55,14 @@ const CENTERED_REALTOR_SPRITE = {
     x: '50%',
 } satisfies StoryStageSprite;
 
-const CENTERED_MARIS_SPRITE = {
+const CENTERED_NISHA_SPRITE = {
     ...CENTERED_REALTOR_SPRITE,
-    name: 'Maris',
+    name: 'Nisha',
 } satisfies StoryStageSprite;
 
-const MARIS_SPRITE = {
+const NISHA_SPRITE = {
     ...REALTOR_SPRITE,
-    name: 'Maris',
+    name: 'Nisha',
 } satisfies StoryStageSprite;
 
 const CYLINDER_SPRITE = {
@@ -122,7 +124,7 @@ export function buildHabitatStoryScenes({
             dialogue: t('habitat.stage.scenes.introduction.dialogue'),
             activeSpriteIds: ['realtor'],
             nextSceneId: 'habitat-upside-down',
-            sprites: [CENTERED_MARIS_SPRITE],
+            sprites: [CENTERED_NISHA_SPRITE],
             transition: {
                 kind: 'fade',
             },
@@ -136,7 +138,7 @@ export function buildHabitatStoryScenes({
             nextSceneId: 'habitat-torus',
             sprites: [
                 {
-                    ...MARIS_SPRITE,
+                    ...NISHA_SPRITE,
                     presence: 'idle',
                 },
                 CYLINDER_SPRITE,
@@ -155,7 +157,7 @@ export function buildHabitatStoryScenes({
             nextSceneId: 'habitat-readout',
             sprites: [
                 {
-                    ...MARIS_SPRITE,
+                    ...NISHA_SPRITE,
                     presence: 'idle',
                 },
                 TORUS_SPRITE,
@@ -177,7 +179,7 @@ export function buildHabitatStoryScenes({
             activeSpriteIds: ['realtor'],
             nextSceneId: 'habitat-choice',
             sprites: [
-                MARIS_SPRITE,
+                NISHA_SPRITE,
                 {
                     ...CYLINDER_SPRITE,
                     presence: 'idle',
@@ -210,7 +212,7 @@ export function buildHabitatStoryScenes({
                 },
             ],
             sprites: [
-                MARIS_SPRITE,
+                NISHA_SPRITE,
                 {
                     ...CYLINDER_SPRITE,
                     presence: 'idle',

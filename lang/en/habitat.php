@@ -26,7 +26,7 @@ return [
         'populationNote' => 'Density turns floor area into a rough community scale.',
     ],
     'stage' => [
-        'openButton' => 'Step inside the story',
+        'openButton' => 'Meet the Realtor',
         'replayButton' => 'Replay the habitat story',
         'scenes' => [
             'arrival' => [
@@ -35,25 +35,25 @@ return [
             ],
             'introduction' => [
                 'speaker' => 'Realtor',
-                'dialogue' => 'I should introduce myself before I start pricing imaginary skylines. Maris Voss, habitat placement.',
+                'dialogue' => 'I should introduce myself before I start pricing imaginary skylines. Nisha, habitat placement.',
             ],
             'upsideDown' => [
-                'speaker' => 'Maris',
+                'speaker' => 'Nisha',
                 'dialogue' => 'We call the big O\'Neill cylinders can cities. The name is silly, but there\'s a lot of space, and on the outside, they look like cans.',
             ],
             'torus' => [
-                'speaker' => 'Maris',
+                'speaker' => 'Nisha',
                 'dialogue' => 'The Stanford Torus is the practical cousin: tighter, social, efficient, and much less committed to pretending the horizon goes on forever.',
             ],
             'readout' => [
-                'speaker' => 'Maris',
+                'speaker' => 'Nisha',
                 'dialogue' => 'With these settings, the living band is :area and the rough population is :population. That is enough to stop thinking in rooms and start thinking in districts.',
             ],
             'choice' => [
-                'speaker' => 'Maris',
+                'speaker' => 'Nisha',
                 'dialogue' => 'Now you get the fun part. Change the numbers and watch the property become a different world.',
-                'openControls' => 'Tune the habitat',
-                'stayInStory' => 'Show me the world again',
+                'openControls' => 'Let\'s build our new home!',
+                'stayInStory' => 'Tell me again!',
             ],
         ],
     ],
@@ -62,7 +62,6 @@ return [
         'stepTwo' => '02',
         'stepThree' => '03',
         'stepFour' => '04',
-        'action' => 'Change the premise',
     ],
     'life' => [
         'eyebrow' => 'Life inside',
@@ -145,16 +144,18 @@ return [
     'formula' => [
         'title' => 'Why these numbers matter',
         'spinTitle' => 'Spin gravity',
-        'spinFormula' => 'g = omega^2 r',
+        'spinFormula' => 'g = ω²r',
         'spinBody' => 'A larger radius needs a slower spin for the same felt gravity. That is why scale makes the world easier on the body.',
         'bandTitle' => 'Living band',
-        'bandFormula' => 'A = 2 pi r h',
+        'bandFormula' => 'A = 2πrh',
         'bandBody' => 'The useful floor wraps around the cylinder wall. The end caps count for structure and light, but not as normal spin-gravity ground.',
         'tiltTitle' => 'Acceleration',
-        'tiltFormula' => 'theta = atan(a / g)',
+        'tiltFormula' => 'θ = atan(a / g)',
         'tiltBody' => 'If the whole vessel accelerates, the apparent down direction tilts. The faster the burn, the more the interior has to account for it.',
-        'registryTitle' => 'Registry comparison',
-        'registryBody' => 'The shared equation registry also tracks the closed-cylinder surface area, useful when the question is material or shell size instead of living band.',
+        'registryTitle' => 'Equation registry check',
+        'registryBody' => 'The page uses the lateral band for livable area, while the shared equation registry also keeps the closed-cylinder surface area for material and shell questions.',
+        'bandNote' => 'For the habitat story, we simplify the livable surface to the curved inner wall: 2πrh.',
+        'surfaceAreaNote' => 'The registry formula includes both circular end caps. This is useful for shell/material comparisons, but we are not counting those end pieces as normal livable ground in this version. Future versions may model them separately.',
     ],
     'comparisons' => [
         'metersFormat' => ':value m',

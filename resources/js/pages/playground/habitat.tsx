@@ -359,6 +359,8 @@ export default function HabitatPage() {
                     </div>
                 </section>
 
+                <div className="pointer-events-none relative h-0.75 bg-linear-to-r from-transparent via-cyan-200/72 to-transparent" />
+
                 <div className="relative mx-auto max-w-6xl px-4 pb-16 sm:pb-20">
                     <section className="mx-auto max-w-5xl py-12 sm:py-16">
                         <p className="text-xs font-semibold tracking-[0.24em] text-cyan-200/76 uppercase">
@@ -372,12 +374,6 @@ export default function HabitatPage() {
                             <p>{t('habitat.introduction.bodyB')}</p>
                             <p>{t('habitat.introduction.bodyC')}</p>
                         </div>
-                        <SceneLaunchButton
-                            className="mt-7"
-                            onClick={() => setIsStoryOpen(true)}
-                        >
-                            {t('habitat.stage.replayButton')}
-                        </SceneLaunchButton>
                     </section>
 
                     <div className="mt-4 space-y-16">
@@ -386,8 +382,6 @@ export default function HabitatPage() {
                             eyebrow={t('habitat.builder.kicker')}
                             title={t('habitat.builder.heading')}
                             body={t('habitat.builder.intro')}
-                            actionLabel={t('habitat.lesson.action')}
-                            onAction={() => setIsSettingsOpen(true)}
                         >
                             <div className="grid gap-4 lg:grid-cols-3">
                                 <PrimaryMetric
@@ -479,8 +473,6 @@ export default function HabitatPage() {
                             eyebrow={t('habitat.life.eyebrow')}
                             title={t('habitat.life.title')}
                             body={t('habitat.life.body')}
-                            actionLabel={t('habitat.lesson.action')}
-                            onAction={() => setIsSettingsOpen(true)}
                         >
                             <div className="grid gap-4 md:grid-cols-3">
                                 <LifeCard
@@ -505,8 +497,6 @@ export default function HabitatPage() {
                             eyebrow={t('habitat.comparisons.land.eyebrow')}
                             title={t('habitat.comparisons.land.title')}
                             body={t('habitat.comparisons.land.body')}
-                            actionLabel={t('habitat.lesson.action')}
-                            onAction={() => setIsSettingsOpen(true)}
                         >
                             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                                 {landComparisons.map((item) => (
@@ -525,8 +515,6 @@ export default function HabitatPage() {
                             eyebrow={t('habitat.comparisons.gravity.eyebrow')}
                             title={t('habitat.comparisons.gravity.title')}
                             body={t('habitat.comparisons.gravity.body')}
-                            actionLabel={t('habitat.lesson.action')}
-                            onAction={() => setIsSettingsOpen(true)}
                         >
                             <div className="space-y-3">
                                 {heightComparisons.map((item) => (
@@ -542,40 +530,47 @@ export default function HabitatPage() {
                             </div>
                         </LearningStep>
 
-                        <section className="grid gap-5 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
-                            <div className="rounded-lg border border-cyan-100/14 bg-cyan-50/7 p-5 shadow-xl shadow-black/24 backdrop-blur-md">
-                                <h2 className="text-lg font-semibold tracking-normal text-white">
-                                    {t('habitat.formula.registryTitle')}
-                                </h2>
-                                <p className="mt-3 text-sm leading-7 text-cyan-50/72">
-                                    {t('habitat.formula.registryBody')}
-                                </p>
-                                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                                    <FormulaChip
-                                        title={t('habitat.formula.spinTitle')}
-                                        formula={t(
-                                            'habitat.formula.spinFormula',
-                                        )}
-                                    />
-                                    <FormulaChip
-                                        title={t('habitat.formula.bandTitle')}
-                                        formula={t(
-                                            'habitat.formula.bandFormula',
-                                        )}
-                                    />
-                                    <FormulaChip
-                                        title={t('habitat.formula.tiltTitle')}
-                                        formula={t(
-                                            'habitat.formula.tiltFormula',
-                                        )}
-                                    />
-                                </div>
-                            </div>
-
-                            <EquationCard equation={cylinderSurfaceArea} />
-                        </section>
                     </div>
                 </div>
+
+                <section className="relative overflow-hidden bg-slate-950/52 py-14 sm:py-16">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_20%,rgba(125,211,252,0.12),transparent_30%),radial-gradient(circle_at_18%_72%,rgba(168,85,247,0.08),transparent_28%),linear-gradient(180deg,rgba(15,23,42,0.36),rgba(8,17,31,0.62))]" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-0.75 bg-linear-to-r from-transparent via-cyan-200/68 to-transparent" />
+                    <div className="relative mx-auto grid max-w-6xl gap-5 px-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)]">
+                        <div className="rounded-lg border border-cyan-100/14 bg-cyan-50/7 p-5 shadow-xl shadow-black/24 backdrop-blur-md">
+                            <h2 className="text-lg font-semibold tracking-normal text-white">
+                                {t('habitat.formula.registryTitle')}
+                            </h2>
+                            <p className="mt-3 text-sm leading-7 text-cyan-50/72">
+                                {t('habitat.formula.registryBody')}
+                            </p>
+                            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                                <FormulaChip
+                                    title={t('habitat.formula.spinTitle')}
+                                    formula={t('habitat.formula.spinFormula')}
+                                />
+                                <FormulaChip
+                                    title={t('habitat.formula.bandTitle')}
+                                    formula={t('habitat.formula.bandFormula')}
+                                />
+                                <FormulaChip
+                                    title={t('habitat.formula.tiltTitle')}
+                                    formula={t('habitat.formula.tiltFormula')}
+                                />
+                            </div>
+                            <p className="mt-4 text-xs leading-6 text-cyan-50/58">
+                                {t('habitat.formula.bandNote')}
+                            </p>
+                        </div>
+
+                        <div>
+                            <EquationCard equation={cylinderSurfaceArea} />
+                            <p className="mt-3 text-xs leading-6 text-cyan-50/58">
+                                {t('habitat.formula.surfaceAreaNote')}
+                            </p>
+                        </div>
+                    </div>
+                </section>
 
                 <button
                     type="button"
@@ -951,45 +946,40 @@ function SceneLaunchButton({
 }
 
 function LearningStep({
-    actionLabel,
     body,
     children,
     eyebrow,
-    onAction,
     step,
     title,
 }: {
-    actionLabel: string;
     body: string;
     children: ReactNode;
     eyebrow: string;
-    onAction: () => void;
     step: string;
     title: string;
 }) {
     return (
         <section className="relative overflow-hidden border-t border-cyan-100/18 pt-10">
-            <div className="grid gap-7 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)]">
-                <div className="lg:sticky lg:top-24 lg:self-start">
-                    <p className="font-mono text-sm font-semibold text-cyan-200/72">
-                        {step}
-                    </p>
-                    <p className="mt-4 text-xs font-semibold tracking-[0.24em] text-cyan-200/76 uppercase">
-                        {eyebrow}
-                    </p>
+            <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)]">
+                <div className="lg:self-start">
+                    <div className="inline-flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded border border-cyan-100/16 bg-cyan-50/8 px-3 py-2 shadow-lg shadow-black/18 backdrop-blur-sm">
+                        <p className="font-mono text-sm font-semibold text-cyan-100">
+                            {step}
+                        </p>
+                        <span
+                            aria-hidden="true"
+                            className="h-4 w-px bg-cyan-100/24"
+                        />
+                        <p className="text-xs font-semibold tracking-[0.2em] text-cyan-50/78 uppercase">
+                            {eyebrow}
+                        </p>
+                    </div>
                     <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white">
                         {title}
                     </h2>
                     <p className="mt-4 text-sm leading-7 text-cyan-50/72">
                         {body}
                     </p>
-                    <button
-                        type="button"
-                        onClick={onAction}
-                        className="mt-5 rounded border border-cyan-100/18 bg-cyan-50/8 px-4 py-2 text-sm font-semibold text-cyan-50/82 transition hover:border-cyan-200/42 hover:bg-cyan-100/12 focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:outline-none"
-                    >
-                        {actionLabel}
-                    </button>
                 </div>
                 <div>{children}</div>
             </div>

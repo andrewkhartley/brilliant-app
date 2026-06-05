@@ -102,6 +102,8 @@ function StoryStagePlayer({
         readTextSpeedState(),
     );
 
+    useLockedBodyScroll();
+
     const sceneIndex = useMemo(
         () => scenes.findIndex((scene) => scene.id === sceneId),
         [sceneId, scenes],
@@ -265,6 +267,21 @@ function StoryStagePlayer({
             </div>
 
             {children}
+
+            <button
+                type="button"
+                aria-label={labels.close}
+                onClick={onClose}
+                className="group absolute top-4 right-4 z-40 grid h-11 w-14 -skew-x-10 cursor-pointer place-items-center border border-cyan-100/34 bg-slate-950/78 text-cyan-50 shadow-2xl shadow-cyan-950/32 backdrop-blur-md transition hover:border-cyan-100/70 hover:bg-cyan-300/18 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none sm:top-6 sm:right-6 sm:h-12 sm:w-15"
+                style={{
+                    transform: 'skewX(-10deg)',
+                }}
+            >
+                <i
+                    aria-hidden="true"
+                    className="fa-solid fa-xmark skew-x-10 text-lg transition group-hover:scale-110"
+                />
+            </button>
 
             <StoryDialogue
                 key={`dialogue-${scene.id}-${history.length}`}
@@ -1615,4 +1632,39 @@ function usePrefersReducedMotion(): boolean {
     }, []);
 
     return prefersReducedMotion;
+}
+
+function useLockedBodyScroll() {
+    useEffect(() => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        const scrollY = window.scrollY;
+        const originalBodyStyles = {
+            left: document.body.style.left,
+            overflow: document.body.style.overflow,
+            position: document.body.style.position,
+            right: document.body.style.right,
+            top: document.body.style.top,
+            width: document.body.style.width,
+        };
+
+        document.body.style.left = '0';
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.right = '0';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = '100%';
+
+        return () => {
+            document.body.style.left = originalBodyStyles.left;
+            document.body.style.overflow = originalBodyStyles.overflow;
+            document.body.style.position = originalBodyStyles.position;
+            document.body.style.right = originalBodyStyles.right;
+            document.body.style.top = originalBodyStyles.top;
+            document.body.style.width = originalBodyStyles.width;
+            window.scrollTo(0, scrollY);
+        };
+    }, []);
 }
