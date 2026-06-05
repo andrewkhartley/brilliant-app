@@ -18,7 +18,7 @@
  */
 
 return [
-    'pageTitle' => 'Interstellar — Brilliant',
+    'pageTitle' => 'Interstellar',
     'pageDescription' => 'A relativity travel agency. Pick a destination, set your acceleration, watch time dilation play out.',
     'heading' => 'Interstellar',
     'intro' => 'A relativity travel agency. Pick a destination, set your acceleration, and watch time dilation reshape the trip.',

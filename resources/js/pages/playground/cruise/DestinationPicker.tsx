@@ -152,10 +152,7 @@ export function DestinationPicker({
                 <div className="rounded border border-dashed border-cyan-200/35 bg-cyan-50/8 px-4 py-5 text-sm text-slate-300">
                     <div className="flex items-center gap-3">
                         <span className="flex size-10 items-center justify-center rounded bg-cyan-200/12 text-cyan-100">
-                            <i
-                                aria-hidden="true"
-                                className="fa-solid fa-route"
-                            />
+                            <EmptyRouteIcon />
                         </span>
                         <p>{t('cruise.form.destinations.emptyState')}</p>
                     </div>
@@ -242,6 +239,16 @@ export function DestinationPicker({
                 </ul>
             </div>
         </div>
+    );
+}
+
+function EmptyRouteIcon() {
+    return (
+        <span aria-hidden="true" className="relative block size-5">
+            <span className="absolute top-0.5 left-0 size-2 rounded-full border-2 border-current bg-current/12" />
+            <span className="absolute right-0 bottom-0.5 size-2 rounded-full border-2 border-current bg-current/12" />
+            <span className="absolute top-[0.58rem] left-[0.55rem] h-0.5 w-3 rotate-45 rounded-full bg-current" />
+        </span>
     );
 }
 

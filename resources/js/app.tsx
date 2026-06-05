@@ -2,6 +2,15 @@ import { createInertiaApp } from '@inertiajs/react';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+declare global {
+    interface Window {
+        FontAwesomeConfig?: {
+            autoReplaceSvg?: boolean;
+            observeMutations?: boolean;
+        };
+    }
+}
+
 if (import.meta.env.DEV && !import.meta.env.SSR) {
     void (async () => {
         const [{ default: React }, { default: ReactDOM }, { default: axe }] =
@@ -28,12 +37,19 @@ function loadFontAwesomeKit() {
         return;
     }
 
+    window.FontAwesomeConfig = {
+        autoReplaceSvg: false,
+        observeMutations: false,
+    };
+
     const script = document.createElement('script');
 
     script.id = 'fontawesome-kit';
     script.src = 'https://kit.fontawesome.com/f22762bc1a.js';
     script.crossOrigin = 'anonymous';
     script.async = true;
+    script.dataset.autoReplaceSvg = 'false';
+    script.dataset.observeMutations = 'false';
 
     document.head.appendChild(script);
 }

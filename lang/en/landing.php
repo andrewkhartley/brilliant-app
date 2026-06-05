@@ -9,7 +9,7 @@
  */
 
 return [
-    'pageTitle' => 'Andrew Hartley :.: Brilliant Application',
+    'pageTitle' => 'Andrew Hartley',
     'pageDescription' => 'Multi-plane scenes, interactive equations, and the craft behind the application.',
 
     'hero' => [

@@ -74,7 +74,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
                             'mx-auto flex h-12 w-full max-w-16 cursor-pointer items-center justify-center rounded-full text-lg font-semibold text-slate-300 transition-colors hover:bg-cyan-200/12 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 disabled:cursor-not-allowed',
                         selected:
                             '[&>button]:bg-cyan-200 [&>button]:text-slate-950 [&>button]:shadow-[0_0_18px_rgba(103,232,249,0.35)]',
-                        today: '[&>button]:border [&>button]:border-cyan-200/70',
+                        today: '[&>button]:border-2 [&>button]:border-cyan-200/85',
                         disabled: 'opacity-25',
                         outside: 'text-slate-600',
                     }}

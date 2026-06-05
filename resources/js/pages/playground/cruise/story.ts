@@ -8,14 +8,8 @@ type TranslationFunction = (
     replacements?: Record<string, string | number>,
 ) => string;
 
-interface CruiseStoryState {
-    departure: string;
-    route: string;
-}
-
 interface CruiseStoryOptions {
     onStartPlanning: () => void;
-    state: CruiseStoryState;
     t: TranslationFunction;
 }
 
@@ -25,34 +19,25 @@ const CRUISE_BACKGROUND = {
 };
 
 const GUIDE_SPRITE = {
-    id: 'guide',
-    alt: 'Andrew',
-    bottom: '9%',
-    imageSrc: '/assets/sprites/andrew/andrew.webp',
-    maxHeight: '64vh',
-    maxWidth: '36vw',
-    mobileBottom: '25%',
-    mobileMaxHeight: '50vh',
-    mobileMaxWidth: '52vw',
+    id: 'mateo',
+    alt: 'Mateo Silva, Sol Cruise travel agent',
+    bottom: '-8%',
+    imageSrc: '/assets/sprites/mateo/mateo.webp',
+    maxHeight: '75vh',
+    maxWidth: '42vw',
+    mobileBottom: '7%',
+    mobileMaxHeight: '60vh',
+    mobileMaxWidth: '66vw',
     mobileX: '29%',
-    name: 'Andrew',
+    name: 'Mateo',
     position: 'left',
     scale: 1.06,
     tone: 'cyan',
     x: '27%',
 } satisfies StoryStageSprite;
 
-const ROUTE_SPRITE = {
-    id: 'route',
-    mobileBottom: '24%',
-    name: 'Route desk',
-    position: 'right',
-    tone: 'amber',
-} satisfies StoryStageSprite;
-
 export function buildCruiseStoryScenes({
     onStartPlanning,
-    state,
     t,
 }: CruiseStoryOptions): StoryStageScene[] {
     return [
@@ -61,16 +46,9 @@ export function buildCruiseStoryScenes({
             background: CRUISE_BACKGROUND,
             speaker: t('cruise.stage.scenes.desk.speaker'),
             dialogue: t('cruise.stage.scenes.desk.dialogue'),
-            activeSpriteIds: ['guide'],
+            activeSpriteIds: ['mateo'],
             nextSceneId: 'cruise-motion',
-            sprites: [
-                GUIDE_SPRITE,
-                {
-                    ...ROUTE_SPRITE,
-                    presence: 'dormant',
-                    desaturation: 0.72,
-                },
-            ],
+            sprites: [GUIDE_SPRITE],
             transition: {
                 kind: 'fade',
             },
@@ -80,7 +58,7 @@ export function buildCruiseStoryScenes({
             background: CRUISE_BACKGROUND,
             speaker: t('cruise.stage.scenes.motion.speaker'),
             dialogue: t('cruise.stage.scenes.motion.dialogue'),
-            activeSpriteIds: ['route'],
+            activeSpriteIds: ['mateo'],
             nextSceneId: 'cruise-manifest',
             sprites: [
                 {
@@ -88,9 +66,7 @@ export function buildCruiseStoryScenes({
                     position: 'center',
                     x: '37%',
                     mobileX: '35%',
-                    presence: 'idle',
                 },
-                ROUTE_SPRITE,
             ],
             transition: {
                 durationMs: 520,
@@ -101,19 +77,10 @@ export function buildCruiseStoryScenes({
             id: 'cruise-manifest',
             background: CRUISE_BACKGROUND,
             speaker: t('cruise.stage.scenes.manifest.speaker'),
-            dialogue: t('cruise.stage.scenes.manifest.dialogue', {
-                departure: state.departure,
-                route: state.route,
-            }),
-            activeSpriteIds: ['guide'],
+            dialogue: t('cruise.stage.scenes.manifest.dialogue'),
+            activeSpriteIds: ['mateo'],
             nextSceneId: 'cruise-choice',
-            sprites: [
-                GUIDE_SPRITE,
-                {
-                    ...ROUTE_SPRITE,
-                    presence: 'idle',
-                },
-            ],
+            sprites: [GUIDE_SPRITE],
             transition: {
                 kind: 'fade',
             },
@@ -123,7 +90,7 @@ export function buildCruiseStoryScenes({
             background: CRUISE_BACKGROUND,
             speaker: t('cruise.stage.scenes.choice.speaker'),
             dialogue: t('cruise.stage.scenes.choice.dialogue'),
-            activeSpriteIds: ['guide'],
+            activeSpriteIds: ['mateo'],
             choices: [
                 {
                     id: 'planner',
@@ -140,13 +107,7 @@ export function buildCruiseStoryScenes({
                     resultTone: 'cyan',
                 },
             ],
-            sprites: [
-                GUIDE_SPRITE,
-                {
-                    ...ROUTE_SPRITE,
-                    presence: 'idle',
-                },
-            ],
+            sprites: [GUIDE_SPRITE],
             transition: {
                 kind: 'fade',
             },

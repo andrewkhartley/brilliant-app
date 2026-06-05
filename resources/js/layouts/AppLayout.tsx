@@ -11,7 +11,7 @@ interface AppLayoutProps {
     children: ReactNode;
     /**
      * Optional page-specific title appended to the site name in <title>.
-     * Example: pageTitle="Playground" → "<title>Playground — Brilliant</title>"
+     * Example: pageTitle="Playground" -> "<title>Playground :.: Brilliant</title>"
      */
     pageTitle?: string;
 }
@@ -44,7 +44,7 @@ interface AppLayoutProps {
 export function AppLayout({ children, pageTitle }: AppLayoutProps) {
     const { t } = useTranslation();
     const siteName = t('common.siteName');
-    const fullTitle = pageTitle ? `${pageTitle} — ${siteName}` : siteName;
+    const fullTitle = pageTitle ? `${pageTitle} :.: ${siteName}` : siteName;
 
     return (
         <>

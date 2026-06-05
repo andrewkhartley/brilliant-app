@@ -8,6 +8,7 @@ import { cruise as cruiseRoute } from '@/routes/playground';
 import { CruiseLaunchOverlay } from './cruise/CruiseLaunchOverlay';
 import type { Destination, SelectedSlot } from './cruise/DestinationPicker';
 import { HorizonsError } from './cruise/HorizonsError';
+import { CruisePossibilitiesSection } from './cruise/PossibilitiesSection';
 import type { Coordinates, CruiseInput, Leg, Trip } from './cruise/types';
 
 /**
@@ -105,10 +106,7 @@ export default function CruiseReviewPage({
                     <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
                         <div className="max-w-3xl">
                             <div className="inline-flex items-center gap-3 rounded-full border border-cyan-200/30 bg-cyan-50/10 px-4 py-2 text-sm font-semibold text-cyan-100">
-                                <i
-                                    aria-hidden="true"
-                                    className="fa-solid fa-ticket-airline text-cyan-200"
-                                />
+                                <ReviewIcon icon="ticket" />
                                 {t('cruise.review.kicker')}
                             </div>
                             <h1 className="mt-5 text-4xl font-semibold tracking-normal text-white sm:text-6xl">
@@ -122,15 +120,12 @@ export default function CruiseReviewPage({
                             href={cruiseRoute.url()}
                             className="inline-flex items-center gap-2 self-start rounded border border-cyan-100/20 bg-cyan-50/10 px-4 py-2 text-sm font-semibold text-cyan-100 transition-colors hover:bg-cyan-50/16 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
                         >
-                            <i
-                                aria-hidden="true"
-                                className="fa-solid fa-arrow-left text-xs"
-                            />
+                            <ReviewIcon icon="back" />
                             {t('cruise.review.backToForm')}
                         </Link>
                     </div>
 
-                    <div className="mt-10 overflow-hidden rounded-lg border border-cyan-100/20 bg-slate-950/72 p-5 text-cyan-50 shadow-2xl shadow-black/35 backdrop-blur-md sm:p-7">
+                    <div className="mt-10 text-cyan-50">
                         {horizonsError ? (
                             <HorizonsError
                                 cruise={cruise}
@@ -146,7 +141,29 @@ export default function CruiseReviewPage({
                     </div>
                 </div>
             </section>
+
+            <CruisePossibilitiesSection context="review" />
         </AppLayout>
+    );
+}
+
+function ReviewIcon({ icon }: { icon: 'back' | 'ticket' }) {
+    if (icon === 'back') {
+        return (
+            <span aria-hidden="true" className="relative block h-3 w-4">
+                <span className="absolute top-1/2 left-0 h-0.5 w-full -translate-y-1/2 rounded-full bg-current" />
+                <span className="absolute top-1/2 left-0 size-2 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-current" />
+            </span>
+        );
+    }
+
+    return (
+        <span aria-hidden="true" className="relative block h-4 w-5">
+            <span className="absolute inset-x-0 top-1/2 h-3 -translate-y-1/2 rounded-sm border-2 border-current bg-current/10" />
+            <span className="absolute top-1/2 left-1/2 h-3 -translate-x-1/2 -translate-y-1/2 border-l-2 border-dashed border-current/70" />
+            <span className="absolute top-0.5 left-1/2 size-1.5 -translate-x-1/2 rounded-full bg-[#08111f]" />
+            <span className="absolute bottom-0.5 left-1/2 size-1.5 -translate-x-1/2 rounded-full bg-[#08111f]" />
+        </span>
     );
 }
 

@@ -14,6 +14,7 @@ import { CruiseLaunchOverlay } from './cruise/CruiseLaunchOverlay';
 import { DatePicker } from './cruise/DatePicker';
 import { DestinationPicker } from './cruise/DestinationPicker';
 import type { Destination, SelectedSlot } from './cruise/DestinationPicker';
+import { CruisePossibilitiesSection } from './cruise/PossibilitiesSection';
 import { buildCruiseStoryScenes } from './cruise/story';
 
 interface CruisePageProps {
@@ -223,10 +224,7 @@ export default function CruisePage({
                 )?.name,
         )
         .filter((name): name is string => name !== undefined);
-    const selectedRoute =
-        selectedDestinationNames.length > 0
-            ? selectedDestinationNames.join(' -> ')
-            : t('cruise.form.planner.noRouteSelected');
+    const selectedRoute = selectedDestinationNames.join(' -> ');
     const storyLabels = useMemo(() => buildStoryStageLabels(t), [t]);
     const storyScenes = useMemo(
         () =>
@@ -237,13 +235,9 @@ export default function CruisePage({
                         tripStart === undefined ? 'date' : 'destinations',
                     );
                 },
-                state: {
-                    departure: selectedDeparture,
-                    route: selectedRoute,
-                },
                 t,
             }),
-        [selectedDeparture, selectedRoute, t, tripStart],
+        [t, tripStart],
     );
 
     return (
@@ -264,38 +258,115 @@ export default function CruisePage({
                 />
             )}
             <section className="relative overflow-hidden bg-[#08111f] text-white">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(125,211,252,0.16),transparent_28%),radial-gradient(circle_at_18%_78%,rgba(34,211,238,0.1),transparent_24%),linear-gradient(135deg,rgba(8,17,31,0.88),rgba(15,23,42,0.96))]" />
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_74%_14%,rgba(125,211,252,0.18),transparent_30%),radial-gradient(circle_at_18%_74%,rgba(20,184,166,0.12),transparent_26%),linear-gradient(135deg,rgba(8,17,31,0.9),rgba(15,23,42,0.98))]" />
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.42)_1px,transparent_1px)] [background-size:42px_42px] opacity-40"
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,rgba(255,255,255,0.32)_1px,transparent_1px)] bg-size-[44px_44px] opacity-25"
                 />
 
-                <div className="relative mx-auto max-w-6xl px-4 py-8 sm:py-10">
-                    <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-                        <div>
-                            <div className="inline-flex items-center gap-3 rounded-full border border-cyan-200/30 bg-cyan-50/10 px-4 py-2 text-sm font-semibold text-cyan-100">
-                                <i
-                                    aria-hidden="true"
-                                    className="fa-solid fa-shuttle-space text-cyan-200"
-                                />
+                <section className="relative min-h-[74vh] overflow-hidden">
+                    <img
+                        src="/assets/img/bg/stars.jpg"
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover opacity-48"
+                    />
+                    <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,17,31,0.98),rgba(8,17,31,0.78)_42%,rgba(8,17,31,0.3)),linear-gradient(180deg,rgba(8,17,31,0.18),rgba(8,17,31,0.98)_92%),radial-gradient(circle_at_72%_42%,rgba(125,211,252,0.18),transparent_34%)]" />
+                    <div className="relative mx-auto flex min-h-[74vh] max-w-6xl items-center px-4 py-20 sm:py-24">
+                        <div className="max-w-3xl">
+                            <p className="text-xs font-semibold tracking-[0.28em] text-cyan-200/78 uppercase">
                                 {t('cruise.launchOverlay.kicker')}
-                            </div>
-                            <h1 className="mt-4 text-4xl font-semibold tracking-normal text-white sm:text-5xl">
+                            </p>
+                            <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-normal text-white sm:text-6xl">
                                 {t('cruise.title')}
                             </h1>
-                            <button
-                                type="button"
-                                onClick={() => setIsStoryOpen(true)}
-                                className="mt-5 cursor-pointer rounded-full border border-cyan-100/24 bg-cyan-200 px-5 py-3 text-sm font-semibold text-slate-950 shadow-xl shadow-cyan-950/24 transition hover:bg-cyan-100 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none"
-                            >
-                                {t('cruise.stage.openButton')}
-                            </button>
+                            <p className="mt-6 max-w-2xl text-lg leading-9 text-cyan-50/82">
+                                {t('cruise.storyIntro.bodyA')}
+                            </p>
+                            <div className="mt-8 flex flex-wrap gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsStoryOpen(true)}
+                                    className="inline-flex cursor-pointer items-center gap-3 rounded-full border border-cyan-100/24 bg-cyan-200 px-5 py-3 text-sm font-semibold text-slate-950 shadow-xl shadow-cyan-950/24 transition hover:bg-cyan-100 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none"
+                                >
+                                    <span className="grid size-7 place-items-center rounded-full bg-slate-950/92 text-cyan-100 shadow-inner shadow-cyan-300/24">
+                                        <DialogueIcon />
+                                    </span>
+                                    <span>{t('cruise.stage.openButton')}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
+                </section>
 
+                <div className="pointer-events-none relative h-0.75 bg-linear-to-r from-transparent via-cyan-200/72 to-transparent" />
+
+                <div className="relative mx-auto max-w-6xl px-4 pb-16 sm:pb-20">
+                    <section className="mx-auto max-w-5xl py-12 sm:py-16">
+                        <div>
+                            <p className="text-xs font-semibold tracking-[0.24em] text-cyan-200/76 uppercase">
+                                {t('cruise.storyIntro.eyebrow')}
+                            </p>
+                            <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
+                                {t('cruise.storyIntro.title')}
+                            </h2>
+                            <div className="mt-5 max-w-4xl space-y-5 text-base leading-8 text-cyan-50/74">
+                                <p>{t('cruise.storyIntro.bodyB')}</p>
+                                <p>{t('cruise.storyIntro.bodyC')}</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 rounded-lg border border-cyan-100/18 bg-slate-950/48 p-4 shadow-2xl shadow-black/24 backdrop-blur-md sm:p-5">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                                <div>
+                                    <p className="text-xs font-semibold tracking-[0.24em] text-cyan-200/76 uppercase">
+                                        {t('cruise.storyIntro.callout.eyebrow')}
+                                    </p>
+                                    <h3 className="mt-1.5 text-2xl font-semibold tracking-normal text-white">
+                                        {t('cruise.storyIntro.callout.title')}
+                                    </h3>
+                                </div>
+                            </div>
+
+                            <ol className="mt-4 grid gap-3 md:grid-cols-3">
+                                {['date', 'horizons', 'itinerary'].map(
+                                    (stepKey, index) => (
+                                        <li
+                                            key={stepKey}
+                                            className="rounded border border-cyan-100/14 bg-cyan-50/6 p-3.5"
+                                        >
+                                            <span className="text-xs font-bold tracking-[0.18em] text-cyan-200/74 uppercase">
+                                                {String(index + 1).padStart(
+                                                    2,
+                                                    '0',
+                                                )}
+                                            </span>
+                                            <p className="mt-2 text-sm leading-6 text-cyan-50/78">
+                                                {t(
+                                                    `cruise.storyIntro.callout.steps.${stepKey}`,
+                                                )}
+                                            </p>
+                                        </li>
+                                    ),
+                                )}
+                            </ol>
+
+                            <div className="mt-4 border-t border-cyan-100/12 pt-4">
+                                <p className="max-w-4xl text-sm leading-7 text-cyan-50/68">
+                                    {t('cruise.storyIntro.callout.body')}
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section className="relative overflow-hidden bg-[#09101d] py-10 text-white sm:py-12">
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,31,0.96),rgba(15,23,42,0.98))]" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-0.75 bg-linear-to-r from-transparent via-cyan-200/72 to-transparent" />
+                <div className="relative mx-auto max-w-6xl px-4">
                     <form
                         onSubmit={handleSubmit}
-                        className="mt-7 overflow-hidden rounded-lg border border-cyan-100/20 bg-slate-950/78 p-4 shadow-2xl shadow-black/35 backdrop-blur-md sm:p-5"
+                        className="space-y-5"
                     >
                         <div className="grid gap-5 lg:grid-cols-[minmax(220px,0.618fr)_minmax(0,1fr)]">
                             <div className="rounded border border-cyan-100/15 bg-slate-900/80 p-4 text-slate-100">
@@ -306,7 +377,7 @@ export default function CruisePage({
                                     <StepButton
                                         step="date"
                                         activeStep={plannerStep}
-                                        icon="fa-calendar-days"
+                                        icon="calendar"
                                         label={t(
                                             'cruise.form.planner.dateStep',
                                         )}
@@ -316,7 +387,7 @@ export default function CruisePage({
                                     <StepButton
                                         step="destinations"
                                         activeStep={plannerStep}
-                                        icon="fa-route"
+                                        icon="route"
                                         label={t(
                                             'cruise.form.planner.destinationsStep',
                                         )}
@@ -545,6 +616,8 @@ export default function CruisePage({
                     </form>
                 </div>
             </section>
+
+            <CruisePossibilitiesSection context="planner" />
         </AppLayout>
     );
 }
@@ -552,7 +625,7 @@ export default function CruisePage({
 interface StepButtonProps {
     step: PlannerStep;
     activeStep: PlannerStep;
-    icon: string;
+    icon: 'calendar' | 'route';
     label: string;
     meta: string;
     disabled?: boolean;
@@ -576,7 +649,7 @@ function StepButton({
             disabled={disabled}
             aria-current={isActive ? 'step' : undefined}
             onClick={onClick}
-            className={`grid w-full grid-cols-[40px_1fr] gap-3 rounded border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:opacity-45 ${
+            className={`grid w-full cursor-pointer grid-cols-[40px_1fr] gap-3 rounded border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:opacity-45 ${
                 isActive
                     ? 'border-cyan-200 bg-cyan-200 text-slate-950 shadow-[0_0_22px_rgba(103,232,249,0.22)]'
                     : 'border-cyan-100/15 bg-white/5 text-slate-100 hover:bg-white/10'
@@ -589,7 +662,7 @@ function StepButton({
                         : 'bg-cyan-50/10 text-cyan-200'
                 }`}
             >
-                <i aria-hidden="true" className={`fa-solid ${icon}`} />
+                <StepIcon icon={icon} />
             </span>
             <span>
                 <span className="block text-sm font-bold">{label}</span>
@@ -602,6 +675,41 @@ function StepButton({
                 </span>
             </span>
         </button>
+    );
+}
+
+function StepIcon({ icon }: { icon: 'calendar' | 'route' }) {
+    if (icon === 'calendar') {
+        return (
+            <span
+                aria-hidden="true"
+                className="relative block size-5 rounded-[3px] border-2 border-current"
+            >
+                <span className="absolute -top-1 left-1 h-2 w-0.5 rounded-full bg-current" />
+                <span className="absolute -top-1 right-1 h-2 w-0.5 rounded-full bg-current" />
+                <span className="absolute top-1.5 left-0 h-0.5 w-full bg-current" />
+                <span className="absolute top-3 left-1 h-0.5 w-2.5 bg-current opacity-75" />
+            </span>
+        );
+    }
+
+    return (
+        <span aria-hidden="true" className="relative block size-5">
+            <span className="absolute top-0.5 left-1/2 size-3.5 -translate-x-1/2 rounded-full border-2 border-current bg-current/12" />
+            <span className="absolute top-2.5 left-1/2 h-3 w-2.5 -translate-x-1/2 rotate-45 border-r-2 border-b-2 border-current" />
+            <span className="absolute top-[0.38rem] left-1/2 size-1.5 -translate-x-1/2 rounded-full bg-current" />
+        </span>
+    );
+}
+
+function DialogueIcon() {
+    return (
+        <span aria-hidden="true" className="relative block h-4 w-4">
+            <span className="absolute inset-x-0 top-0 h-3 rounded-sm border-2 border-current" />
+            <span className="absolute bottom-0 left-1 h-1.5 w-1.5 rotate-45 border-r-2 border-b-2 border-current bg-slate-950/92" />
+            <span className="absolute top-1.5 left-1 h-0.5 w-2.5 rounded-full bg-current" />
+            <span className="absolute top-2.5 left-1 h-0.5 w-1.5 rounded-full bg-current" />
+        </span>
     );
 }
 

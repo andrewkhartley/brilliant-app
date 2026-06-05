@@ -18,26 +18,89 @@ return [
     'lead' => "Pick your destinations and a departure date. We'll calculate the trip.",
     'scaffoldNote' => 'Scaffolded with :count destinations loaded from the database.',
 
+    'storyIntro' => [
+        'eyebrow' => 'A route through moving worlds',
+        'title' => 'Planning with Physics',
+        'bodyA' => 'A Sol Cruise should feel like a vacation planner, and one day, it might! This guide will make sure there\'s always something at your desetination..',
+        'bodyB' => 'That is a teaching hook: an itinerary becomes a living model of timing, distance, acceleration, and tradeoffs. The form stays simple on purpose, so curiosity can lead and the math will shape it.',
+        'bodyC' => 'Each stop adds a leg, a layover, and a new set of positions to solve against: the route is a sequence of moving targets. The calculator turns a travel wish into distance, duration, top speed, and a wee bit of time dilation.',
+        'cards' => [
+            'window' => [
+                'title' => 'Start with the launch window',
+                'body' => 'A date anchors the solar system at that moment in time. Change it, and each of the legs will need to adjust to reach their new targets..',
+            ],
+            'route' => [
+                'title' => 'Build a route, not a line',
+                'body' => 'Each stop adds a leg, a layover, and a new set of planetary positions to solve against.',
+            ],
+            'motion' => [
+                'title' => 'Let motion answer back',
+                'body' => 'The calculator turns a travel wish into distance, duration, top speed, and time dilation.',
+            ],
+        ],
+        'callout' => [
+            'eyebrow' => 'Live data path',
+            'title' => 'This version shows the API at work.',
+            'steps' => [
+                'date' => 'Pick a departure date and route.',
+                'horizons' => 'The server asks NASA Horizons where each world is in space.',
+                'itinerary' => 'Those positions become leg estimates for distance, duration, speed, and dilation.',
+            ],
+            'body' => 'A production version could use an ephemeris-driven cache so the experience feels faster and can support richer route experiments, saved comparisons, and community challenges. This version keeps the live API path visible on purpose, because part of the point is showing how real data can become a playful learning interface.',
+        ],
+    ],
+
     'stage' => [
         'openButton' => 'Open the travel desk',
         'scenes' => [
             'desk' => [
-                'speaker' => 'Andrew',
-                'dialogue' => 'A Sol Cruise sounds like a map problem: pick a place, draw a line, go. The solar system is less polite than that.',
+                'speaker' => 'Travel agent',
+                'dialogue' => 'Welcome to the Sol Cruise desk. Most vacations start with a destination. Ours start with a small complication: the destinations are always on the move.',
             ],
             'motion' => [
-                'speaker' => 'Route desk',
-                'dialogue' => 'The destinations move while you plan, while you launch, and while you travel. The trip is not to planets on a poster. It is to worlds in motion.',
+                'speaker' => 'Mateo',
+                'dialogue' => 'Mateo Silva, route concierge. The trip is to worlds in motion, and good timing can be the difference between an elegant transfer and an expensive scenic detour.',
             ],
             'manifest' => [
-                'speaker' => 'Andrew',
-                'dialogue' => 'Right now the departure is :departure and the route is :route. Once those are real, the planner can ask where each world will actually be.',
+                'speaker' => 'Mateo',
+                'dialogue' => 'Once the traveler chooses a date and a route, the planner can ask where each world will actually be when they arrive.',
             ],
             'choice' => [
-                'speaker' => 'Andrew',
-                'dialogue' => 'That is the story this form is trying to tell: an itinerary is a physics problem wearing the clothes of a vacation.',
-                'planner' => 'Start planning',
-                'motion' => 'Explain moving worlds again',
+                'speaker' => 'Mateo',
+                'dialogue' => 'That is the story this experience is trying to tell: your itinerary requires a bit of strategy.',
+                'planner' => 'Start planning!',
+                'motion' => 'Can you repeat that?',
+            ],
+        ],
+    ],
+
+    'possibilities' => [
+        'planner' => [
+            'eyebrow' => 'What else is possible',
+            'title' => 'A route planner can become a lesson about timing.',
+            'body' => 'The form is only the first layer. A stronger version could teach learners to compare launch windows, fuel costs, transfer arcs, and community-designed routes without making the interface feel like homework.',
+        ],
+        'review' => [
+            'eyebrow' => 'Beyond this itinerary',
+            'title' => 'The result can become a design challenge.',
+            'body' => 'Once a trip exists, the next question is how to improve it. Learners could test whether a different date, destination order, layover, or transfer strategy makes the same journey faster, cheaper, or safer.',
+        ],
+        'items' => [
+            'windows' => [
+                'title' => 'Optimized launch windows',
+                'body' => 'Assess each leg against planetary alignment so the route can favor lower fuel use instead of simply accepting the first available path.',
+            ],
+            'fuel' => [
+                'title' => 'Fuel and mission budgets',
+                'body' => 'Let learners trade time, acceleration, propellant, shielding, and comfort, then see which constraint becomes the real bottleneck.',
+            ],
+            'missions' => [
+                'title' => 'Scenario-based routes',
+                'body' => 'Turn the same engine into rescue missions, cargo runs, research tours, or school competitions with different success conditions.',
+            ],
+            'community' => [
+                'title' => 'Community route design',
+                'body' => 'Invite users to publish itineraries, compare strategies, explain their assumptions, and remix routes created by other learners.',
             ],
         ],
     ],
@@ -69,9 +132,9 @@ return [
     ],
 
     'review' => [
-        'title' => 'Your trip',
+        'title' => 'Your trip is ready!',
         'kicker' => 'Itinerary received',
-        'lead' => 'Here is the trip we plotted. Each leg shows the distance, time, and top speed under constant 1g acceleration.',
+        'lead' => 'Here is the trip we plotted. Each leg shows the distance, time, and top speed that balance acceleration, cruise, and deceleration. Starting and ending speeds match what is needed for the destination\'s orbit.',
         'backToForm' => 'Plan a different trip',
         'summary' => [
             'heading' => 'Trip summary',
@@ -87,7 +150,7 @@ return [
             'label' => 'Trip itinerary, leg by leg',
         ],
         'leg' => [
-            'heading' => 'Leg :number — :departure to :arrival',
+            'heading' => 'Leg :number :.: :departure to :arrival',
             'timeRange' => ':departure → :arrival',
             'distance' => [
                 'label' => 'Distance',
@@ -128,7 +191,7 @@ return [
 
     'form' => [
         'planner' => [
-            'kicker' => 'Mission planner',
+            'kicker' => 'Plan Your Itinerary',
             'dateStep' => 'Departure date',
             'destinationsStep' => 'Destinations',
             'destinationCount' => ':count selected',
@@ -151,7 +214,7 @@ return [
             'plotting' => 'Plotting trajectory…',
         ],
         'submitDisabledHint' => 'Pick at least one destination and a departure date to plan a trip.',
-        'plottingAriaLabel' => 'Plotting your trip — please wait',
+        'plottingAriaLabel' => 'Plotting your trip :.: please wait',
 
         'destinations' => [
             'label' => 'Destinations',

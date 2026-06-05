@@ -53,7 +53,7 @@ return [
     ],
 
     'equationsDebug' => [
-        'pageTitle' => 'Equations debug — Brilliant',
+        'pageTitle' => 'Equations debug',
         'heading' => 'Equations debug',
         'intro' => 'Live PHP-vs-TypeScript parity verification for the equation registry. Each case shows the inputs, the PHP-computed value from the fixture, the TypeScript-computed value at runtime, the difference, and pass/fail status.',
         'fixturePathLabel' => 'Fixture source',
@@ -71,10 +71,10 @@ return [
     ],
 
     'componentsDebug' => [
-        'title' => 'Phase 6 shared UI components — debug view',
+        'title' => 'Phase 6 shared UI components :.: debug view',
         'intro' => 'Each shipped component is rendered here in isolation so its real-browser behavior can be verified. Sections grow as new components land; placeholders mark the components still in flight.',
         'chromeSection' => [
-            'title' => 'Chrome — Nav + Footer',
+            'title' => 'Chrome :.: Nav + Footer',
             'note' => 'The sticky header at the top of this page is Nav.tsx; the centered footer at the bottom is Footer.tsx. Both are composed by AppLayout, so they appear on every page in the app. Verify: sticky behavior on scroll, two primary links, copyright + license text, GitHub + Email contact links.',
         ],
         'equationsSection' => [

@@ -399,10 +399,7 @@ export function CruiseLaunchOverlay({
             <div className="relative z-10 flex min-h-full flex-col justify-between gap-8 px-4 pt-12 pb-5 sm:px-8 sm:pt-16">
                 <div data-hero-copy className="max-w-2xl">
                     <div className="inline-flex items-center gap-3 rounded-full border border-cyan-200/30 bg-cyan-50/10 px-4 py-2 text-sm font-semibold text-cyan-100">
-                        <i
-                            aria-hidden="true"
-                            className="fa-solid fa-shuttle-space text-cyan-200"
-                        />
+                        <CruiseOverlayIcon icon="shuttle" />
                         {t('cruise.launchOverlay.kicker')}
                     </div>
                     <div
@@ -445,10 +442,7 @@ export function CruiseLaunchOverlay({
                                 onClick={onViewDetails}
                                 className="relative inline-flex cursor-pointer items-center gap-3 rounded bg-cyan-200 px-6 py-3 text-base font-bold text-slate-950 shadow-[0_0_34px_rgba(103,232,249,0.34)] transition-colors hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-200"
                             >
-                                <i
-                                    aria-hidden="true"
-                                    className="fa-solid fa-route text-sm"
-                                />
+                                <CruiseOverlayIcon icon="route" />
                                 {t('cruise.launchOverlay.viewDetails')}
                             </button>
                         </div>
@@ -551,6 +545,27 @@ function copyHeading(
     }
 
     return t('cruise.launchOverlay.heading');
+}
+
+function CruiseOverlayIcon({ icon }: { icon: 'route' | 'shuttle' }) {
+    if (icon === 'route') {
+        return (
+            <span aria-hidden="true" className="relative block size-4">
+                <span className="absolute top-0.5 left-0 size-1.5 rounded-full bg-current" />
+                <span className="absolute right-0 bottom-0 size-1.5 rounded-full bg-current" />
+                <span className="absolute top-[0.42rem] left-[0.35rem] h-0.5 w-3 rotate-45 rounded-full bg-current" />
+            </span>
+        );
+    }
+
+    return (
+        <span aria-hidden="true" className="relative block h-4 w-5">
+            <span className="absolute top-1/2 left-0 h-2.5 w-4 -translate-y-1/2 rounded-full border-2 border-current bg-current/12" />
+            <span className="absolute top-1/2 right-0 h-1.5 w-2 -translate-y-1/2 rounded-r-full bg-current" />
+            <span className="absolute top-0 left-1.5 h-1.5 w-1.5 rounded-t-full border-t-2 border-l-2 border-current" />
+            <span className="absolute bottom-0 left-1.5 h-1.5 w-1.5 rounded-b-full border-b-2 border-l-2 border-current" />
+        </span>
+    );
 }
 
 function createDestinationMarker(
