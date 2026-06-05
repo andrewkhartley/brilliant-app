@@ -73,7 +73,7 @@ class CruiseController extends Controller
             // `session()->keep(['cruise'])` extends it one request).
             // A user navigating back to plan a NEW trip wants a blank form.
             'preparedCruise' => $cruiseReady && is_array($preparedCruise) ? $preparedCruise : null,
-            'translations' => translations(['cruise']),
+            'translations' => translations(['cruise', 'storyStage']),
         ]);
     }
 
@@ -175,7 +175,7 @@ class CruiseController extends Controller
                 'trip' => null,
                 'horizonsError' => true,
                 'attemptedDestinationNames' => $attemptedDestinationNames,
-                'translations' => translations(['cruise']),
+                'translations' => translations(['cruise', 'storyStage']),
             ]);
         }
 
@@ -184,7 +184,7 @@ class CruiseController extends Controller
             'trip' => $this->presentTrip($computedTrip),
             'horizonsError' => false,
             'attemptedDestinationNames' => [],
-            'translations' => translations(['cruise']),
+            'translations' => translations(['cruise', 'storyStage']),
         ]);
     }
 

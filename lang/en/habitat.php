@@ -25,6 +25,38 @@ return [
         'spinNote' => 'The larger the radius, the gentler the rotation can be.',
         'populationNote' => 'Density turns floor area into a rough community scale.',
     ],
+    'stage' => [
+        'openButton' => 'Step inside the story',
+        'replayButton' => 'Replay the habitat story',
+        'scenes' => [
+            'arrival' => [
+                'speaker' => 'Realtor',
+                'dialogue' => 'Welcome to the showroom. Habitat placement starts with scale: some clients need a neighborhood, some need a district, and some... well, a little bigger!',
+            ],
+            'introduction' => [
+                'speaker' => 'Realtor',
+                'dialogue' => 'I should introduce myself before I start pricing imaginary skylines. Maris Voss, habitat placement.',
+            ],
+            'upsideDown' => [
+                'speaker' => 'Maris',
+                'dialogue' => 'We call the big O\'Neill cylinders can cities. The name is silly, but there\'s a lot of space, and on the outside, they look like cans.',
+            ],
+            'torus' => [
+                'speaker' => 'Maris',
+                'dialogue' => 'The Stanford Torus is the practical cousin: tighter, social, efficient, and much less committed to pretending the horizon goes on forever.',
+            ],
+            'readout' => [
+                'speaker' => 'Maris',
+                'dialogue' => 'With these settings, the living band is :area and the rough population is :population. That is enough to stop thinking in rooms and start thinking in districts.',
+            ],
+            'choice' => [
+                'speaker' => 'Maris',
+                'dialogue' => 'Now you get the fun part. Change the numbers and watch the property become a different world.',
+                'openControls' => 'Tune the habitat',
+                'stayInStory' => 'Show me the world again',
+            ],
+        ],
+    ],
     'lesson' => [
         'stepOne' => '01',
         'stepTwo' => '02',
@@ -61,7 +93,7 @@ return [
         'radiusFormat' => ':value km',
         'lengthFormat' => ':value km',
         'gravityFormat' => ':value g',
-        'densityFormat' => ':value people / km2',
+        'densityFormat' => ':value people / km²',
         'accelerationFormat' => ':value g',
         'radiusAria' => ':value kilometers radius',
         'lengthAria' => ':value kilometers length',
@@ -103,7 +135,7 @@ return [
         'population' => 'Population at density',
         'tilt' => 'Acceleration tilt',
         'kmFormat' => ':value km',
-        'areaFormat' => ':value km2',
+        'areaFormat' => ':value km²',
         'rpmFormat' => ':value rpm',
         'secondsFormat' => ':value seconds',
         'speedFormat' => ':value m/s',

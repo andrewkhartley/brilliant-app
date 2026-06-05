@@ -109,6 +109,7 @@ function StoryStagePlayer({
     const scene = scenes[sceneIndex] ?? scenes[0];
     const hasPrevious = history.length > 0;
     const hasNext = Boolean(resolveNextSceneId(scene, scenes, sceneIndex));
+
     useEffect(() => {
         if (scene) {
             onSceneChange?.(scene);
@@ -237,7 +238,7 @@ function StoryStagePlayer({
             <StoryStageKeyframes />
 
             <div
-                key={`scene-${scene.id}-${history.length}`}
+                key={scene.background.imageSrc}
                 className="absolute inset-0"
                 style={{
                     animation: sceneTransitionAnimation(scene, reducedMotion),

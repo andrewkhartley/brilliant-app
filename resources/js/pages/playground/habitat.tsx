@@ -2,10 +2,14 @@ import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { EquationCard } from '@/components/equations/EquationCard';
+import { StoryStage } from '@/components/story-stage';
+import { buildStoryStageLabels } from '@/components/story-stage/labels';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
 import { STANDARD_GRAVITY } from '@/lib/constants';
 import { cylinderSurfaceArea } from '@/lib/equations';
+
+import { buildHabitatStoryScenes } from './habitat/story';
 
 const DEFAULT_RADIUS_METERS = 3_200;
 const DEFAULT_LENGTH_METERS = 32_000;
@@ -101,6 +105,7 @@ export default function HabitatPage() {
     const [editingControl, setEditingControl] =
         useState<EditableControlId | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isStoryOpen, setIsStoryOpen] = useState(false);
 
     const metrics = useMemo(() => {
         const targetGravity = gravityMultiplier * STANDARD_GRAVITY;
@@ -224,6 +229,7 @@ export default function HabitatPage() {
 
     const activeControl =
         controls.find((control) => control.id === editingControl) ?? null;
+    const storyLabels = useMemo(() => buildStoryStageLabels(t), [t]);
 
     const landComparisons = LAND_COMPARISONS.map((item) => ({
         id: item.id,
@@ -259,6 +265,33 @@ export default function HabitatPage() {
             isBeyondRadius: remainingRadius < 0,
         };
     });
+    const storyScenes = useMemo(
+        () =>
+            buildHabitatStoryScenes({
+                metrics: {
+                    innerBand: t('habitat.results.areaFormat', {
+                        value: formatNumber(metrics.innerBandSquareKm, 0),
+                    }),
+                    population: t('habitat.results.populationFormat', {
+                        value: formatNumber(metrics.population, 0),
+                    }),
+                    spinRate: t('habitat.results.rpmFormat', {
+                        value: formatNumber(metrics.rotationsPerMinute, 2),
+                    }),
+                },
+                onOpenControls: () => {
+                    setIsStoryOpen(false);
+                    setIsSettingsOpen(true);
+                },
+                t,
+            }),
+        [
+            metrics.innerBandSquareKm,
+            metrics.population,
+            metrics.rotationsPerMinute,
+            t,
+        ],
+    );
 
     const applyPreset = (presetId: string) => {
         const preset = PRESETS.find((candidate) => candidate.id === presetId);
@@ -276,6 +309,13 @@ export default function HabitatPage() {
 
     return (
         <AppLayout pageTitle={t('habitat.pageTitle')}>
+            <StoryStage
+                active={isStoryOpen}
+                labels={storyLabels}
+                onClose={() => setIsStoryOpen(false)}
+                scenes={storyScenes}
+            />
+
             <section className="relative overflow-hidden bg-[#08111f] text-white">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_74%_14%,rgba(125,211,252,0.18),transparent_30%),radial-gradient(circle_at_18%_74%,rgba(20,184,166,0.12),transparent_26%),linear-gradient(135deg,rgba(8,17,31,0.9),rgba(15,23,42,0.98))]" />
                 <div
@@ -301,6 +341,20 @@ export default function HabitatPage() {
                             <p className="mt-6 max-w-2xl text-lg leading-9 text-cyan-50/82">
                                 {t('habitat.hero.intro')}
                             </p>
+                            <div className="mt-8 flex flex-wrap gap-3">
+                                <SceneLaunchButton
+                                    onClick={() => setIsStoryOpen(true)}
+                                >
+                                    {t('habitat.stage.openButton')}
+                                </SceneLaunchButton>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsSettingsOpen(true)}
+                                    className="cursor-pointer rounded-full border border-cyan-100/22 bg-cyan-50/8 px-5 py-3 text-sm font-semibold text-cyan-50 transition hover:bg-cyan-50/14 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none"
+                                >
+                                    {t('habitat.controls.open')}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -318,6 +372,12 @@ export default function HabitatPage() {
                             <p>{t('habitat.introduction.bodyB')}</p>
                             <p>{t('habitat.introduction.bodyC')}</p>
                         </div>
+                        <SceneLaunchButton
+                            className="mt-7"
+                            onClick={() => setIsStoryOpen(true)}
+                        >
+                            {t('habitat.stage.replayButton')}
+                        </SceneLaunchButton>
                     </section>
 
                     <div className="mt-4 space-y-16">
@@ -859,6 +919,34 @@ function ExactValueModal({
                 </div>
             </div>
         </div>
+    );
+}
+
+function SceneLaunchButton({
+    children,
+    className = '',
+    onClick,
+}: {
+    children: ReactNode;
+    className?: string;
+    onClick: () => void;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={[
+                'group inline-flex cursor-pointer items-center gap-3 rounded-full border border-fuchsia-200/32 bg-fuchsia-300 px-5 py-3 text-sm font-semibold text-slate-950 shadow-xl shadow-fuchsia-950/28 transition hover:border-fuchsia-100/70 hover:bg-fuchsia-200 focus-visible:ring-2 focus-visible:ring-fuchsia-100 focus-visible:outline-none',
+                className,
+            ]
+                .filter(Boolean)
+                .join(' ')}
+        >
+            <span className="grid size-7 place-items-center rounded-full bg-slate-950/92 text-fuchsia-100 shadow-inner shadow-fuchsia-300/24 transition group-hover:bg-slate-900">
+                <i aria-hidden="true" className="fa-solid fa-message-lines" />
+            </span>
+            <span>{children}</span>
+        </button>
     );
 }
 

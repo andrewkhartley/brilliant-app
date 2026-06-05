@@ -1,7 +1,9 @@
 import { router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { SubmitEvent } from 'react';
 
+import { StoryStage } from '@/components/story-stage';
+import { buildStoryStageLabels } from '@/components/story-stage/labels';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
 import { cruiseFormSchema } from '@/lib/validation/cruise-form-schema';
@@ -12,6 +14,7 @@ import { CruiseLaunchOverlay } from './cruise/CruiseLaunchOverlay';
 import { DatePicker } from './cruise/DatePicker';
 import { DestinationPicker } from './cruise/DestinationPicker';
 import type { Destination, SelectedSlot } from './cruise/DestinationPicker';
+import { buildCruiseStoryScenes } from './cruise/story';
 
 interface CruisePageProps {
     /**
@@ -99,6 +102,7 @@ export default function CruisePage({
     const [plannerStep, setPlannerStep] = useState<PlannerStep>(() =>
         preparedCruise?.tripStart ? 'destinations' : 'date',
     );
+    const [isStoryOpen, setIsStoryOpen] = useState(false);
 
     // Server-side errors come in via Inertia's shared `errors` prop
     // (Inertia v3 auto-shares them after a 302-with-errors). Merge
@@ -219,9 +223,38 @@ export default function CruisePage({
                 )?.name,
         )
         .filter((name): name is string => name !== undefined);
+    const selectedRoute =
+        selectedDestinationNames.length > 0
+            ? selectedDestinationNames.join(' -> ')
+            : t('cruise.form.planner.noRouteSelected');
+    const storyLabels = useMemo(() => buildStoryStageLabels(t), [t]);
+    const storyScenes = useMemo(
+        () =>
+            buildCruiseStoryScenes({
+                onStartPlanning: () => {
+                    setIsStoryOpen(false);
+                    setPlannerStep(
+                        tripStart === undefined ? 'date' : 'destinations',
+                    );
+                },
+                state: {
+                    departure: selectedDeparture,
+                    route: selectedRoute,
+                },
+                t,
+            }),
+        [selectedDeparture, selectedRoute, t, tripStart],
+    );
 
     return (
         <AppLayout pageTitle={t('cruise.title')}>
+            <StoryStage
+                active={isStoryOpen}
+                labels={storyLabels}
+                onClose={() => setIsStoryOpen(false)}
+                scenes={storyScenes}
+            />
+
             {launchState !== 'idle' && (
                 <CruiseLaunchOverlay
                     destinations={destinations}
@@ -250,6 +283,13 @@ export default function CruisePage({
                             <h1 className="mt-4 text-4xl font-semibold tracking-normal text-white sm:text-5xl">
                                 {t('cruise.title')}
                             </h1>
+                            <button
+                                type="button"
+                                onClick={() => setIsStoryOpen(true)}
+                                className="mt-5 cursor-pointer rounded-full border border-cyan-100/24 bg-cyan-200 px-5 py-3 text-sm font-semibold text-slate-950 shadow-xl shadow-cyan-950/24 transition hover:bg-cyan-100 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none"
+                            >
+                                {t('cruise.stage.openButton')}
+                            </button>
                         </div>
                     </div>
 
@@ -319,9 +359,7 @@ export default function CruisePage({
                                             <dd className="font-semibold text-white">
                                                 {selectedDestinationNames.length >
                                                 0
-                                                    ? selectedDestinationNames.join(
-                                                          ' -> ',
-                                                      )
+                                                    ? selectedRoute
                                                     : t(
                                                           'cruise.form.planner.noRouteSelected',
                                                       )}

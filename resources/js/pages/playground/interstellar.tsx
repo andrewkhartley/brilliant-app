@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { EquationCard } from '@/components/equations/EquationCard';
 import { SliderInput } from '@/components/equations/SliderInput';
+import { StoryStage } from '@/components/story-stage';
+import { buildStoryStageLabels } from '@/components/story-stage/labels';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
 import { SPEED_OF_LIGHT, STANDARD_GRAVITY } from '@/lib/constants';
@@ -23,6 +25,7 @@ import { MaxSpeedSlider } from './interstellar/MaxSpeedSlider';
 import { ModeToggle } from './interstellar/ModeToggle';
 import { ResultPanel } from './interstellar/ResultPanel';
 import { StopToggle } from './interstellar/StopToggle';
+import { buildInterstellarStoryScenes } from './interstellar/story';
 
 /**
  * One light-year in meters. Constant lives at module scope (rather than
@@ -88,6 +91,7 @@ export default function InterstellarPage() {
     const [interfaceMode, setInterfaceMode] = useState<'beginner' | 'math'>(
         'beginner',
     );
+    const [isStoryOpen, setIsStoryOpen] = useState(false);
 
     const destination =
         destinations.find((d) => d.id === destinationId) ?? destinations[0];
@@ -160,9 +164,51 @@ export default function InterstellarPage() {
     const cruiseDurationYears = phases
         ? phases.cruiseDuration / SECONDS_PER_YEAR
         : 0;
+    const storyLabels = useMemo(() => buildStoryStageLabels(t), [t]);
+    const storyScenes = useMemo(
+        () =>
+            buildInterstellarStoryScenes({
+                metrics: {
+                    destination: destination.name,
+                    earthTime: t('interstellar.resultPanel.yearsFormat', {
+                        value: formatStoryYears(earthTimeYears),
+                    }),
+                    fuel: fuel.name,
+                    massRatio:
+                        massRatio > 100_000
+                            ? t('interstellar.fuelVisualization.offChartLabel')
+                            : t(
+                                  'interstellar.fuelVisualization.massRatioFormat',
+                                  {
+                                      value: formatStoryNumber(massRatio),
+                                  },
+                              ),
+                    travelerTime: t('interstellar.resultPanel.yearsFormat', {
+                        value: formatStoryYears(properTimeYears),
+                    }),
+                },
+                onReturnToCalculator: () => setIsStoryOpen(false),
+                t,
+            }),
+        [
+            destination.name,
+            earthTimeYears,
+            fuel.name,
+            massRatio,
+            properTimeYears,
+            t,
+        ],
+    );
 
     return (
         <AppLayout pageTitle={t('interstellar.pageTitle')}>
+            <StoryStage
+                active={isStoryOpen}
+                labels={storyLabels}
+                onClose={() => setIsStoryOpen(false)}
+                scenes={storyScenes}
+            />
+
             <section className="relative overflow-hidden bg-[#08111f] text-white">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(125,211,252,0.16),transparent_28%),radial-gradient(circle_at_18%_78%,rgba(34,211,238,0.1),transparent_24%),linear-gradient(135deg,rgba(8,17,31,0.88),rgba(15,23,42,0.96))]" />
                 <div
@@ -176,6 +222,13 @@ export default function InterstellarPage() {
                     <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
                         {t('interstellar.intro')}
                     </p>
+                    <button
+                        type="button"
+                        onClick={() => setIsStoryOpen(true)}
+                        className="mt-7 cursor-pointer rounded-full border border-cyan-100/24 bg-cyan-200 px-5 py-3 text-sm font-semibold text-slate-950 shadow-xl shadow-cyan-950/24 transition hover:bg-cyan-100 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none"
+                    >
+                        {t('interstellar.stage.openButton')}
+                    </button>
 
                     <div className="mt-8">
                         <ModeToggle
@@ -267,4 +320,24 @@ export default function InterstellarPage() {
             </section>
         </AppLayout>
     );
+}
+
+function formatStoryNumber(value: number): string {
+    if (value >= 1000) {
+        return value.toExponential(2);
+    }
+
+    return value.toFixed(value < 10 ? 2 : 1);
+}
+
+function formatStoryYears(value: number): string {
+    if (value >= 100_000) {
+        return value.toExponential(2);
+    }
+
+    if (value >= 100) {
+        return value.toFixed(0);
+    }
+
+    return value.toFixed(value < 10 ? 2 : 1);
 }

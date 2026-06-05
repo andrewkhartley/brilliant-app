@@ -18,6 +18,30 @@ return [
     'lead' => "Pick your destinations and a departure date. We'll calculate the trip.",
     'scaffoldNote' => 'Scaffolded with :count destinations loaded from the database.',
 
+    'stage' => [
+        'openButton' => 'Open the travel desk',
+        'scenes' => [
+            'desk' => [
+                'speaker' => 'Andrew',
+                'dialogue' => 'A Sol Cruise sounds like a map problem: pick a place, draw a line, go. The solar system is less polite than that.',
+            ],
+            'motion' => [
+                'speaker' => 'Route desk',
+                'dialogue' => 'The destinations move while you plan, while you launch, and while you travel. The trip is not to planets on a poster. It is to worlds in motion.',
+            ],
+            'manifest' => [
+                'speaker' => 'Andrew',
+                'dialogue' => 'Right now the departure is :departure and the route is :route. Once those are real, the planner can ask where each world will actually be.',
+            ],
+            'choice' => [
+                'speaker' => 'Andrew',
+                'dialogue' => 'That is the story this form is trying to tell: an itinerary is a physics problem wearing the clothes of a vacation.',
+                'planner' => 'Start planning',
+                'motion' => 'Explain moving worlds again',
+            ],
+        ],
+    ],
+
     'launchOverlay' => [
         'ariaLabel' => 'Plotting your Sol Cruise route',
         'kicker' => 'Journey preparation',

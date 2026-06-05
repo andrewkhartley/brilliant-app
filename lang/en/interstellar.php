@@ -23,6 +23,30 @@ return [
     'heading' => 'Interstellar',
     'intro' => 'A relativity travel agency. Pick a destination, set your acceleration, and watch time dilation reshape the trip.',
 
+    'stage' => [
+        'openButton' => 'Open the mission brief',
+        'scenes' => [
+            'arrival' => [
+                'speaker' => 'Andrew',
+                'dialogue' => 'Start with :destination. It sounds like a place on a list, but an interstellar trip is not only about distance. It is about what distance does to time.',
+            ],
+            'time' => [
+                'speaker' => 'Ship clock',
+                'dialogue' => 'With the current settings, Earth waits about :earthTime while the traveler experiences about :travelerTime. Relativity turns the itinerary into two honest clocks.',
+            ],
+            'energy' => [
+                'speaker' => 'Andrew',
+                'dialogue' => 'The selected fuel is :fuel, and the fuel mass ratio reads :massRatio. That is where the dream stops being a poster and starts becoming engineering.',
+            ],
+            'choice' => [
+                'speaker' => 'Andrew',
+                'dialogue' => 'Now change the premise. A little more acceleration, a different fuel, or a flyby instead of arrival can completely rewrite the story.',
+                'calculator' => 'Back to the calculator',
+                'timeAgain' => 'Explain the two clocks again',
+            ],
+        ],
+    ],
+
     'modeToggle' => [
         'label' => 'Interface mode',
         'ariaLabel' => 'Choose interface mode',

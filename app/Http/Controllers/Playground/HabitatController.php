@@ -14,7 +14,7 @@ class HabitatController extends Controller
     public function __invoke(): Response
     {
         return Inertia::render('playground/habitat', [
-            'translations' => translations(['habitat']),
+            'translations' => translations(['habitat', 'storyStage']),
         ]);
     }
 }

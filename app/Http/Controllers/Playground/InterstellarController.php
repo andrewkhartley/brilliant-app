@@ -27,7 +27,7 @@ class InterstellarController extends Controller
     public function __invoke(): Response
     {
         return Inertia::render('playground/interstellar', [
-            'translations' => translations(['interstellar']),
+            'translations' => translations(['interstellar', 'storyStage']),
         ]);
     }
 }
