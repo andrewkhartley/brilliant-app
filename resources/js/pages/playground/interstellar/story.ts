@@ -28,29 +28,21 @@ const INTERSTELLAR_BACKGROUND = {
 };
 
 const GUIDE_SPRITE = {
-    id: 'guide',
-    alt: 'Andrew',
-    bottom: '9%',
-    imageSrc: '/assets/sprites/andrew/andrew.webp',
-    maxHeight: '64vh',
-    maxWidth: '36vw',
-    mobileBottom: '25%',
-    mobileMaxHeight: '50vh',
-    mobileMaxWidth: '52vw',
-    mobileX: '29%',
-    name: 'Andrew',
+    id: 'planner',
+    alt: 'Nisha, interstellar settlement planner',
+    bottom: '-8%',
+    imageSrc: '/assets/sprites/nisha/nisha.webp',
+    maxHeight: '75vh',
+    maxWidth: '42vw',
+    mobileBottom: '7%',
+    mobileMaxHeight: '60vh',
+    mobileMaxWidth: '66vw',
+    mobileX: '32%',
+    name: 'Nisha',
     position: 'left',
     scale: 1.06,
     tone: 'cyan',
     x: '27%',
-} satisfies StoryStageSprite;
-
-const CLOCK_SPRITE = {
-    id: 'clock',
-    mobileBottom: '24%',
-    name: 'Ship clock',
-    position: 'right',
-    tone: 'violet',
 } satisfies StoryStageSprite;
 
 export function buildInterstellarStoryScenes({
@@ -66,16 +58,9 @@ export function buildInterstellarStoryScenes({
             dialogue: t('interstellar.stage.scenes.arrival.dialogue', {
                 destination: metrics.destination,
             }),
-            activeSpriteIds: ['guide'],
+            activeSpriteIds: ['planner'],
             nextSceneId: 'interstellar-time',
-            sprites: [
-                GUIDE_SPRITE,
-                {
-                    ...CLOCK_SPRITE,
-                    presence: 'dormant',
-                    desaturation: 0.75,
-                },
-            ],
+            sprites: [GUIDE_SPRITE],
             transition: {
                 kind: 'fade',
             },
@@ -88,7 +73,7 @@ export function buildInterstellarStoryScenes({
                 earthTime: metrics.earthTime,
                 travelerTime: metrics.travelerTime,
             }),
-            activeSpriteIds: ['clock'],
+            activeSpriteIds: ['planner'],
             nextSceneId: 'interstellar-energy',
             sprites: [
                 {
@@ -96,9 +81,7 @@ export function buildInterstellarStoryScenes({
                     position: 'center',
                     x: '37%',
                     mobileX: '35%',
-                    presence: 'idle',
                 },
-                CLOCK_SPRITE,
             ],
             transition: {
                 durationMs: 520,
@@ -113,15 +96,9 @@ export function buildInterstellarStoryScenes({
                 fuel: metrics.fuel,
                 massRatio: metrics.massRatio,
             }),
-            activeSpriteIds: ['guide'],
+            activeSpriteIds: ['planner'],
             nextSceneId: 'interstellar-choice',
-            sprites: [
-                GUIDE_SPRITE,
-                {
-                    ...CLOCK_SPRITE,
-                    presence: 'idle',
-                },
-            ],
+            sprites: [GUIDE_SPRITE],
             transition: {
                 kind: 'fade',
             },
@@ -131,7 +108,7 @@ export function buildInterstellarStoryScenes({
             background: INTERSTELLAR_BACKGROUND,
             speaker: t('interstellar.stage.scenes.choice.speaker'),
             dialogue: t('interstellar.stage.scenes.choice.dialogue'),
-            activeSpriteIds: ['guide'],
+            activeSpriteIds: ['planner'],
             choices: [
                 {
                     id: 'calculator',
@@ -148,13 +125,7 @@ export function buildInterstellarStoryScenes({
                     resultTone: 'cyan',
                 },
             ],
-            sprites: [
-                GUIDE_SPRITE,
-                {
-                    ...CLOCK_SPRITE,
-                    presence: 'idle',
-                },
-            ],
+            sprites: [GUIDE_SPRITE],
             transition: {
                 kind: 'fade',
             },

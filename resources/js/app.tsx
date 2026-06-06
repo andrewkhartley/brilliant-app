@@ -5,7 +5,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 declare global {
     interface Window {
         FontAwesomeConfig?: {
-            autoReplaceSvg?: boolean;
+            autoReplaceSvg?: boolean | 'nest';
             observeMutations?: boolean;
         };
     }
@@ -38,8 +38,8 @@ function loadFontAwesomeKit() {
     }
 
     window.FontAwesomeConfig = {
-        autoReplaceSvg: false,
-        observeMutations: false,
+        autoReplaceSvg: 'nest',
+        observeMutations: true,
     };
 
     const script = document.createElement('script');
@@ -48,8 +48,8 @@ function loadFontAwesomeKit() {
     script.src = 'https://kit.fontawesome.com/f22762bc1a.js';
     script.crossOrigin = 'anonymous';
     script.async = true;
-    script.dataset.autoReplaceSvg = 'false';
-    script.dataset.observeMutations = 'false';
+    script.dataset.autoReplaceSvg = 'nest';
+    script.dataset.observeMutations = 'true';
 
     document.head.appendChild(script);
 }

@@ -76,7 +76,7 @@ export function ResultPanel({
             </h2>
 
             {/* Primary zones */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4">
                 {/* Earth coordinate time */}
                 <div
                     className={`rounded-lg border p-4 ${
@@ -88,7 +88,7 @@ export function ResultPanel({
                     <p className="text-xs font-bold tracking-[0.18em] text-cyan-200/70 uppercase">
                         {t('interstellar.resultPanel.earthTimeLabel')}
                     </p>
-                    <p className="mt-2 font-mono text-3xl font-semibold text-white">
+                    <p className="mt-2 font-mono text-2xl font-semibold text-white">
                         {t('interstellar.resultPanel.yearsFormat', {
                             value: formatYears(earthTimeYears),
                         })}
@@ -106,7 +106,7 @@ export function ResultPanel({
                     <p className="text-xs font-bold tracking-[0.18em] text-cyan-200/70 uppercase">
                         {t('interstellar.resultPanel.properTimeLabel')}
                     </p>
-                    <p className="mt-2 font-mono text-3xl font-semibold text-white">
+                    <p className="mt-2 font-mono text-2xl font-semibold text-white">
                         {t('interstellar.resultPanel.yearsFormat', {
                             value: formatYears(properTimeYears),
                         })}
@@ -118,7 +118,7 @@ export function ResultPanel({
                     <p className="text-xs font-bold tracking-[0.18em] text-cyan-200/70 uppercase">
                         {t('interstellar.resultPanel.dilationLabel')}
                     </p>
-                    <p className="mt-2 font-mono text-3xl font-semibold text-white">
+                    <p className="mt-2 font-mono text-2xl font-semibold text-white">
                         {t('interstellar.resultPanel.dilationFormat', {
                             value: dilationFactor.toFixed(2),
                         })}
@@ -130,7 +130,7 @@ export function ResultPanel({
                     <p className="text-xs font-bold tracking-[0.18em] text-cyan-200/70 uppercase">
                         {t('interstellar.resultPanel.exhaustVelocityLabel')}
                     </p>
-                    <p className="mt-2 font-mono text-3xl font-semibold text-white">
+                    <p className="mt-2 font-mono text-xl font-semibold text-white sm:text-2xl">
                         {t('interstellar.resultPanel.exhaustVelocityFormat', {
                             fraction: exhaustVelocityFraction,
                             mps: exhaustVelocityKmps,

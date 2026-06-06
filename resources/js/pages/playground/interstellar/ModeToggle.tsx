@@ -22,14 +22,14 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
     const mathSelected = mode === 'math';
 
     return (
-        <div className="space-y-2 rounded-lg border border-cyan-100/15 bg-slate-950/72 p-4 backdrop-blur-md">
+        <div className="space-y-2 rounded-lg border border-cyan-100/15 bg-slate-950/72 p-4 text-center backdrop-blur-md">
             <p className="text-sm font-semibold text-cyan-100">
                 {t('interstellar.modeToggle.label')}
             </p>
             <div
                 role="radiogroup"
                 aria-label={t('interstellar.modeToggle.ariaLabel')}
-                className="inline-flex rounded border border-cyan-100/25 bg-slate-950/80 p-1"
+                className="mx-auto inline-flex rounded border border-cyan-100/25 bg-slate-950/80 p-1"
             >
                 <button
                     type="button"

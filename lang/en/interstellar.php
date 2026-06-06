@@ -20,29 +20,67 @@
 return [
     'pageTitle' => 'Interstellar',
     'pageDescription' => 'A relativity travel agency. Pick a destination, set your acceleration, watch time dilation play out.',
-    'heading' => 'Interstellar',
-    'intro' => 'A relativity travel agency. Pick a destination, set your acceleration, and watch time dilation reshape the trip.',
+    'heading' => 'Interstellar Settlement Planner',
+    'intro' => 'A planning room for possible homes beyond the solar system. Pick a destination, set the propulsion assumptions, and watch time, energy, and arrival strategy reshape the mission.',
+
+    'introduction' => [
+        'eyebrow' => 'Before the calculator',
+        'title' => 'A settlement plan starts as a destination, then becomes a constraint map.',
+        'bodyA' => 'Interstellar travel is easy to imagine as a line between two stars. The harder question is whether humans can arrive with time, energy, and enough remaining mass for the trip to mean anything.',
+        'bodyB' => 'That makes relativity a useful storytelling engine. A traveler can experience one timeline while Earth experiences another, and both are true. The calculator keeps those clocks side by side.',
+        'bodyC' => 'The controls are deliberately practical: choose a target, set the acceleration, cap the cruise speed, pick a fuel, and decide whether this is a flyby or an arrival. Every setting changes what kind of settlement story is still plausible.',
+    ],
 
     'stage' => [
         'openButton' => 'Open the mission brief',
         'scenes' => [
             'arrival' => [
-                'speaker' => 'Andrew',
-                'dialogue' => 'Start with :destination. It sounds like a place on a list, but an interstellar trip is not only about distance. It is about what distance does to time.',
+                'speaker' => 'Nisha',
+                'dialogue' => 'Settlement planning starts with a name on a star chart. Today that name is :destination. The question is not only whether we can reach it, but what the trip asks us to become on the way.',
             ],
             'time' => [
-                'speaker' => 'Ship clock',
-                'dialogue' => 'With the current settings, Earth waits about :earthTime while the traveler experiences about :travelerTime. Relativity turns the itinerary into two honest clocks.',
+                'speaker' => 'Nisha',
+                'dialogue' => 'With the current settings, Earth waits about :earthTime while the traveler experiences about :travelerTime. Relativity turns one mission into two honest clocks.',
             ],
             'energy' => [
-                'speaker' => 'Andrew',
-                'dialogue' => 'The selected fuel is :fuel, and the fuel mass ratio reads :massRatio. That is where the dream stops being a poster and starts becoming engineering.',
+                'speaker' => 'Nisha',
+                'dialogue' => 'The selected fuel is :fuel, and the fuel mass ratio reads :massRatio. That is where a settlement proposal stops being a poster and starts becoming engineering.',
             ],
             'choice' => [
-                'speaker' => 'Andrew',
-                'dialogue' => 'Now change the premise. A little more acceleration, a different fuel, or a flyby instead of arrival can completely rewrite the story.',
+                'speaker' => 'Nisha',
+                'dialogue' => 'Now change the premise. A little more acceleration, a different fuel, or a flyby instead of arrival can completely rewrite the plan.',
                 'calculator' => 'Back to the calculator',
                 'timeAgain' => 'Explain the two clocks again',
+            ],
+        ],
+    ],
+
+    'planner' => [
+        'eyebrow' => 'Mission constraints',
+        'title' => 'Tune the settlement premise',
+        'body' => 'The inputs stay close together because the variables are not independent. Fuel limits speed, speed changes time dilation, and the arrival profile decides whether this is a visit or a high-speed look through the window.',
+    ],
+
+    'possibilities' => [
+        'eyebrow' => 'What else is possible',
+        'title' => 'A starship calculator can become a community design studio.',
+        'body' => 'This proof of concept treats the math as a planning surface. A fuller version could turn destination choices into scenarios, debates, and design challenges where learners justify assumptions instead of only reading results.',
+        'items' => [
+            'settlements' => [
+                'title' => 'Settlement proposals',
+                'body' => 'Learners could compare candidate stars, define mission goals, and argue which constraints make a destination worth pursuing.',
+            ],
+            'shipDesign' => [
+                'title' => 'Ship design tradeoffs',
+                'body' => 'Acceleration, fuel, shielding, cruise speed, and arrival strategy could become an optimization challenge with visible consequences.',
+            ],
+            'storyScenarios' => [
+                'title' => 'Scenario-driven lessons',
+                'body' => 'A rescue mission, generation ship, research probe, or first-colony attempt can use the same equations with different stakes.',
+            ],
+            'community' => [
+                'title' => 'Community mission reviews',
+                'body' => 'Users could publish mission plans, critique assumptions, remix routes, and compete to meet constraints with clearer explanations.',
             ],
         ],
     ],

@@ -23,6 +23,7 @@ import { FuelSelector } from './interstellar/FuelSelector';
 import { FuelVisualization } from './interstellar/FuelVisualization';
 import { MaxSpeedSlider } from './interstellar/MaxSpeedSlider';
 import { ModeToggle } from './interstellar/ModeToggle';
+import { InterstellarPossibilitiesSection } from './interstellar/PossibilitiesSection';
 import { ResultPanel } from './interstellar/ResultPanel';
 import { StopToggle } from './interstellar/StopToggle';
 import { buildInterstellarStoryScenes } from './interstellar/story';
@@ -210,40 +211,93 @@ export default function InterstellarPage() {
             />
 
             <section className="relative overflow-hidden bg-[#08111f] text-white">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(125,211,252,0.16),transparent_28%),radial-gradient(circle_at_18%_78%,rgba(34,211,238,0.1),transparent_24%),linear-gradient(135deg,rgba(8,17,31,0.88),rgba(15,23,42,0.96))]" />
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_74%_14%,rgba(125,211,252,0.18),transparent_30%),radial-gradient(circle_at_18%_74%,rgba(20,184,166,0.12),transparent_26%),linear-gradient(135deg,rgba(8,17,31,0.9),rgba(15,23,42,0.98))]" />
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.42)_1px,transparent_1px)] [background-size:42px_42px] opacity-40"
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,rgba(255,255,255,0.32)_1px,transparent_1px)] bg-size-[44px_44px] opacity-25"
                 />
-                <div className="relative mx-auto max-w-6xl px-4 py-12 sm:py-16">
-                    <h1 className="text-4xl font-semibold tracking-normal text-white sm:text-5xl">
-                        {t('interstellar.heading')}
-                    </h1>
-                    <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
-                        {t('interstellar.intro')}
-                    </p>
-                    <button
-                        type="button"
-                        onClick={() => setIsStoryOpen(true)}
-                        className="mt-7 cursor-pointer rounded-full border border-cyan-100/24 bg-cyan-200 px-5 py-3 text-sm font-semibold text-slate-950 shadow-xl shadow-cyan-950/24 transition hover:bg-cyan-100 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none"
-                    >
-                        {t('interstellar.stage.openButton')}
-                    </button>
 
-                    <div className="mt-8">
-                        <ModeToggle
-                            mode={interfaceMode}
-                            onChange={setInterfaceMode}
-                        />
+                <section className="relative min-h-[74vh] overflow-hidden">
+                    <img
+                        src="/assets/img/bg/jwst-nebula.jpg"
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover opacity-48"
+                    />
+                    <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,17,31,0.98),rgba(8,17,31,0.78)_42%,rgba(8,17,31,0.32)),linear-gradient(180deg,rgba(8,17,31,0.12),rgba(8,17,31,0.98)_92%),radial-gradient(circle_at_72%_42%,rgba(125,211,252,0.18),transparent_34%)]" />
+                    <div className="relative mx-auto flex min-h-[74vh] max-w-6xl items-center px-4 py-20 sm:py-24">
+                        <div className="max-w-3xl">
+                            <p className="text-xs font-semibold tracking-[0.28em] text-cyan-200/78 uppercase">
+                                {t('interstellar.planner.eyebrow')}
+                            </p>
+                            <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-normal text-white sm:text-6xl">
+                                {t('interstellar.heading')}
+                            </h1>
+                            <p className="mt-6 max-w-2xl text-lg leading-9 text-cyan-50/82">
+                                {t('interstellar.intro')}
+                            </p>
+                            <div className="mt-8 flex flex-wrap gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsStoryOpen(true)}
+                                    className="inline-flex cursor-pointer items-center gap-3 rounded-full border border-cyan-100/24 bg-cyan-200 px-5 py-3 text-sm font-semibold text-slate-950 shadow-xl shadow-cyan-950/24 transition hover:bg-cyan-100 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none"
+                                >
+                                    <span className="grid size-7 place-items-center rounded-full bg-slate-950/92 text-cyan-100 shadow-inner shadow-cyan-300/24">
+                                        <DialogueIcon />
+                                    </span>
+                                    <span>
+                                        {t('interstellar.stage.openButton')}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div className="pointer-events-none relative h-0.75 bg-linear-to-r from-transparent via-cyan-200/72 to-transparent" />
+
+                <div className="relative mx-auto max-w-6xl px-4 pb-16 sm:pb-20">
+                    <section className="mx-auto max-w-5xl py-12 sm:py-16">
+                        <p className="text-xs font-semibold tracking-[0.24em] text-cyan-200/76 uppercase">
+                            {t('interstellar.introduction.eyebrow')}
+                        </p>
+                        <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
+                            {t('interstellar.introduction.title')}
+                        </h2>
+                        <div className="mt-5 grid gap-6 text-base leading-8 text-cyan-50/74 md:grid-cols-3">
+                            <p>{t('interstellar.introduction.bodyA')}</p>
+                            <p>{t('interstellar.introduction.bodyB')}</p>
+                            <p>{t('interstellar.introduction.bodyC')}</p>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section className="relative overflow-hidden bg-[#09101d] py-10 text-white sm:py-12">
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,31,0.96),rgba(15,23,42,0.98))]" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-0.75 bg-linear-to-r from-transparent via-cyan-200/72 to-transparent" />
+                <div className="relative mx-auto max-w-6xl px-4">
+                    <div className="mb-8 max-w-4xl">
+                        <p className="text-xs font-semibold tracking-[0.24em] text-cyan-200/76 uppercase">
+                            {t('interstellar.planner.eyebrow')}
+                        </p>
+                        <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
+                            {t('interstellar.planner.title')}
+                        </h2>
+                        <p className="mt-4 text-base leading-8 text-cyan-50/74">
+                            {t('interstellar.planner.body')}
+                        </p>
                     </div>
 
-                    <div className="mt-8 space-y-6">
-                        <DestinationSelect
-                            destinationId={destinationId}
-                            onChange={setDestinationId}
-                        />
-
-                        <div className="grid gap-6 md:grid-cols-2">
+                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.618fr)] xl:items-start">
+                        <div className="grid gap-5 md:grid-cols-2">
+                            <ModeToggle
+                                mode={interfaceMode}
+                                onChange={setInterfaceMode}
+                            />
+                            <DestinationSelect
+                                destinationId={destinationId}
+                                onChange={setDestinationId}
+                            />
                             <FuelSelector
                                 fuelId={fuelId}
                                 onChange={setFuelId}
@@ -252,73 +306,87 @@ export default function InterstellarPage() {
                                 efficiency={efficiency}
                                 onChange={setEfficiency}
                             />
-                        </div>
-
-                        <div className="grid gap-6 md:grid-cols-2">
                             <StopToggle stop={stop} onChange={setStop} />
                             <DurationToggle
                                 mode={durationMode}
                                 onChange={setDurationMode}
                             />
+                            <SliderInput
+                                id="acceleration-slider"
+                                label={t(
+                                    'interstellar.accelerationSlider.label',
+                                )}
+                                min={0.1}
+                                max={100}
+                                step={0.1}
+                                value={acceleration}
+                                onChange={setAcceleration}
+                                formatValue={(v) =>
+                                    t(
+                                        'interstellar.accelerationSlider.valueFormat',
+                                        {
+                                            value: v.toFixed(1),
+                                            g: (
+                                                v / STANDARD_GRAVITY
+                                            ).toFixed(2),
+                                        },
+                                    )
+                                }
+                                formatAriaValueText={(v) =>
+                                    t(
+                                        'interstellar.accelerationSlider.ariaValueText',
+                                        {
+                                            value: v.toFixed(1),
+                                        },
+                                    )
+                                }
+                            />
+                            <MaxSpeedSlider
+                                maxSpeed={clampedMaxSpeed}
+                                fuelMaxVelocityMps={fuel.maxVelocityMps}
+                                onChange={setMaxSpeed}
+                            />
                         </div>
 
-                        <SliderInput
-                            id="acceleration-slider"
-                            label={t('interstellar.accelerationSlider.label')}
-                            min={0.1}
-                            max={100}
-                            step={0.1}
-                            value={acceleration}
-                            onChange={setAcceleration}
-                            formatValue={(v) =>
-                                t(
-                                    'interstellar.accelerationSlider.valueFormat',
-                                    {
-                                        value: v.toFixed(1),
-                                        g: (v / STANDARD_GRAVITY).toFixed(2),
-                                    },
-                                )
-                            }
-                            formatAriaValueText={(v) =>
-                                t(
-                                    'interstellar.accelerationSlider.ariaValueText',
-                                    {
-                                        value: v.toFixed(1),
-                                    },
-                                )
-                            }
-                        />
+                        <div className="space-y-6">
+                            {interfaceMode === 'math' && (
+                                <EquationCard equation={relativisticSpeed} />
+                            )}
 
-                        <MaxSpeedSlider
-                            maxSpeed={clampedMaxSpeed}
-                            fuelMaxVelocityMps={fuel.maxVelocityMps}
-                            onChange={setMaxSpeed}
-                        />
+                            <ResultPanel
+                                durationMode={durationMode}
+                                earthTimeYears={earthTimeYears}
+                                properTimeYears={properTimeYears}
+                                dilationFactor={dilationFactor}
+                                effectiveExhaustVelocityMps={
+                                    effectiveExhaustVelocityMps
+                                }
+                                accelerationDistanceLy={accelDistanceLy}
+                                accelerationDurationYears={accelDurationYears}
+                                cruiseDistanceLy={cruiseDistanceLy}
+                                cruiseDurationYears={cruiseDurationYears}
+                                isNoCruise={phases?.isNoCruise ?? true}
+                            />
 
-                        {interfaceMode === 'math' && (
-                            <EquationCard equation={relativisticSpeed} />
-                        )}
-
-                        <ResultPanel
-                            durationMode={durationMode}
-                            earthTimeYears={earthTimeYears}
-                            properTimeYears={properTimeYears}
-                            dilationFactor={dilationFactor}
-                            effectiveExhaustVelocityMps={
-                                effectiveExhaustVelocityMps
-                            }
-                            accelerationDistanceLy={accelDistanceLy}
-                            accelerationDurationYears={accelDurationYears}
-                            cruiseDistanceLy={cruiseDistanceLy}
-                            cruiseDurationYears={cruiseDurationYears}
-                            isNoCruise={phases?.isNoCruise ?? true}
-                        />
-
-                        <FuelVisualization massRatio={massRatio} />
+                            <FuelVisualization massRatio={massRatio} />
+                        </div>
                     </div>
                 </div>
             </section>
+
+            <InterstellarPossibilitiesSection />
         </AppLayout>
+    );
+}
+
+function DialogueIcon() {
+    return (
+        <span aria-hidden="true" className="relative block h-4 w-4">
+            <span className="absolute inset-x-0 top-0 h-3 rounded-sm border-2 border-current" />
+            <span className="absolute bottom-0 left-1 h-1.5 w-1.5 rotate-45 border-r-2 border-b-2 border-current bg-slate-950/92" />
+            <span className="absolute top-1.5 left-1 h-0.5 w-2.5 rounded-full bg-current" />
+            <span className="absolute top-2.5 left-1 h-0.5 w-1.5 rounded-full bg-current" />
+        </span>
     );
 }
 

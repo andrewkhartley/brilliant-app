@@ -33,25 +33,32 @@ export function FuelSelector({ fuelId, onChange }: FuelSelectorProps) {
             >
                 {t('interstellar.fuelSelector.label')}
             </label>
-            <select
-                id="fuel-select"
-                value={fuelId}
-                onChange={(event) => onChange(event.target.value)}
-                aria-label={t('interstellar.fuelSelector.ariaLabel')}
-                className="block w-full rounded border border-cyan-100/25 bg-slate-950/80 px-3 py-2 text-base text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
-            >
-                {interstellarFuels.map((fuel) => (
-                    <option key={fuel.id} value={fuel.id}>
-                        {t('interstellar.fuelSelector.optionFormat', {
-                            name: fuel.name,
-                            percent: fuel.comparisonPercent.toLocaleString(
-                                undefined,
-                                { maximumFractionDigits: 4 },
-                            ),
-                        })}
-                    </option>
-                ))}
-            </select>
+            <div className="relative">
+                <select
+                    id="fuel-select"
+                    value={fuelId}
+                    onChange={(event) => onChange(event.target.value)}
+                    aria-label={t('interstellar.fuelSelector.ariaLabel')}
+                    className="block w-full cursor-pointer appearance-none rounded border border-cyan-100/25 bg-slate-950/80 py-2 ps-3 pe-14 text-base text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                >
+                    {interstellarFuels.map((fuel) => (
+                        <option key={fuel.id} value={fuel.id}>
+                            {t('interstellar.fuelSelector.optionFormat', {
+                                name: fuel.name,
+                                percent:
+                                    fuel.comparisonPercent.toLocaleString(
+                                        undefined,
+                                        { maximumFractionDigits: 4 },
+                                    ),
+                            })}
+                        </option>
+                    ))}
+                </select>
+                <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-1/2 end-4 size-2.5 -translate-y-1/2 rotate-45 border-r-2 border-b-2 border-cyan-200/78"
+                />
+            </div>
             <p className="text-xs text-cyan-100/58">
                 {t('interstellar.fuelSelector.hint')}
             </p>
