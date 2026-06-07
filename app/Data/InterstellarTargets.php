@@ -128,6 +128,15 @@ class InterstellarTargets
                 'source' => 'Seeded Gaia-style target',
             ],
             [
+                'id' => 'polaris',
+                'name' => 'Polaris',
+                'aliases' => ['North Star', 'Alpha Ursae Minoris', 'Polaris Aa'],
+                'ra' => 37.95456,
+                'dec' => 89.26411,
+                'distanceLy' => 447.0,
+                'source' => 'Seeded Gaia-style target',
+            ],
+            [
                 'id' => 'trappist-1',
                 'name' => 'TRAPPIST-1',
                 'aliases' => ['2MASS J23062928-0502285'],

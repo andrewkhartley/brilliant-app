@@ -94,14 +94,25 @@ return [
         'optionFormat' => ':name (:distance ly)',
     ],
 
+    'destinationPicker' => [
+        'label' => 'Destination',
+        'summary' => ':distance ly / :source',
+        'presetSource' => 'Preset destination',
+        'modalEyebrow' => 'Target selection',
+        'modalTitle' => 'Choose a destination',
+        'modalBody' => 'Use one of the prepared targets or search for a star. Gaia-backed results can update the trip distance using RA, Dec, and parallax.',
+        'close' => 'Close destination picker',
+    ],
+
     'starSearch' => [
         'label' => 'Search a star',
         'placeholder' => 'Try Proxima, Barnard, Sirius...',
-        'hint' => 'This uses a seeded Gaia-style target list for now: name, RA, Dec, and distance. A live Gaia archive lookup can replace this endpoint later.',
+        'hint' => 'Nearby targets appear first. Search resolves names to sky coordinates, then asks Gaia DR3 for RA, Dec, and parallax-based distance when the archive responds.',
         'loading' => 'Searching targets...',
         'error' => 'The target search did not answer. Try one of the preset destinations.',
         'suggestionsLabel' => 'Nearby targets',
         'resultsLabel' => 'Matching targets',
+        'empty' => 'No matching targets came back. Try a common star name like Polaris, Vega, Sirius, or Proxima.',
         'selectedLabel' => 'Selected target',
         'coordinateFormat' => 'RA :ra deg / Dec :dec deg / :distance ly',
         'resultFormat' => ':distance ly / RA :ra / Dec :dec',
@@ -118,6 +129,16 @@ return [
         'ariaLabel' => 'Choose a fuel type',
         'hint' => 'Each fuel shows its specific energy as a percentage of matter-antimatter annihilation.',
         'optionFormat' => ':name (:percent% of antimatter)',
+    ],
+
+    'fuelPicker' => [
+        'label' => 'Fuel and energy',
+        'efficiencySummary' => ':value% efficiency',
+        'massRatioSummary' => 'Mass ratio :value',
+        'modalEyebrow' => 'Fuel budget',
+        'modalTitle' => 'Tune the fuel premise',
+        'modalBody' => 'Fuel choice and energy-conversion efficiency decide the practical ceiling for speed and the mass ratio required to make the trip.',
+        'close' => 'Close fuel settings',
     ],
 
     'efficiencySlider' => [

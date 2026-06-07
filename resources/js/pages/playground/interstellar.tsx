@@ -16,14 +16,11 @@ import { interstellarTripDuration } from '@/lib/equations/interstellar-trip-dura
 import { interstellarTripDurationDilation } from '@/lib/equations/interstellar-trip-duration-dilation';
 import { relativisticSpeed } from '@/lib/equations/relativistic-speed';
 
-import { DestinationSelect } from './interstellar/DestinationSelect';
-import { EfficiencySlider } from './interstellar/EfficiencySlider';
-import { FuelSelector } from './interstellar/FuelSelector';
-import { FuelVisualization } from './interstellar/FuelVisualization';
+import { DestinationPicker } from './interstellar/DestinationPicker';
+import { FuelPicker } from './interstellar/FuelPicker';
 import { MaxSpeedSlider } from './interstellar/MaxSpeedSlider';
 import { InterstellarPossibilitiesSection } from './interstellar/PossibilitiesSection';
 import { ResultPanel } from './interstellar/ResultPanel';
-import { StarSearch } from './interstellar/StarSearch';
 import type { InterstellarTarget } from './interstellar/StarSearch';
 import { StopToggle } from './interstellar/StopToggle';
 import { buildInterstellarStoryScenes } from './interstellar/story';
@@ -90,6 +87,8 @@ export default function InterstellarPage() {
         destinations.find((d) => d.id === destinationId) ?? destinations[0];
     const activeDestinationName = selectedTarget?.name ?? destination.name;
     const activeDistanceLy = selectedTarget?.distanceLy ?? destination.distanceLy;
+    const activeDestinationSource =
+        selectedTarget?.source ?? t('interstellar.destinationPicker.presetSource');
     const distanceMeters = activeDistanceLy * LIGHT_YEAR_METERS;
 
     const fuel =
@@ -293,29 +292,30 @@ export default function InterstellarPage() {
 
                             <div className="mt-5 grid gap-5">
                                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-1">
-                                    <DestinationSelect
+                                    <DestinationPicker
+                                        activeDistanceLy={activeDistanceLy}
+                                        activeName={activeDestinationName}
+                                        activeSource={activeDestinationSource}
                                         destinationId={destinationId}
-                                        onChange={(id) => {
+                                        selectedTarget={selectedTarget}
+                                        onDestinationChange={(id) => {
                                             setDestinationId(id);
                                             setSelectedTarget(null);
                                         }}
+                                        onTargetSelect={setSelectedTarget}
                                     />
                                     <StopToggle
                                         stop={stop}
                                         onChange={setStop}
                                     />
                                 </div>
-                                <StarSearch
-                                    selectedTarget={selectedTarget}
-                                    onSelect={setSelectedTarget}
-                                />
-                                <FuelSelector
-                                    fuelId={fuelId}
-                                    onChange={setFuelId}
-                                />
-                                <EfficiencySlider
+                                <FuelPicker
                                     efficiency={efficiency}
-                                    onChange={setEfficiency}
+                                    fuel={fuel}
+                                    fuelId={fuelId}
+                                    massRatio={massRatio}
+                                    onEfficiencyChange={setEfficiency}
+                                    onFuelChange={setFuelId}
                                 />
                                 <SliderInput
                                     id="acceleration-slider"
@@ -371,8 +371,6 @@ export default function InterstellarPage() {
                                 cruiseDurationYears={cruiseDurationYears}
                                 isNoCruise={phases?.isNoCruise ?? true}
                             />
-
-                            <FuelVisualization massRatio={massRatio} />
                         </div>
                     </div>
                 </div>

@@ -9,6 +9,7 @@ export interface InterstellarTarget {
     dec: number;
     distanceLy: number;
     source: string;
+    sourceId?: string;
 }
 
 interface StarSearchProps {
@@ -84,12 +85,18 @@ export function StarSearch({ onSelect, selectedTarget }: StarSearchProps) {
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder={t('interstellar.starSearch.placeholder')}
-                    className="block w-full rounded border border-cyan-100/25 bg-slate-950/80 py-2 ps-10 pe-3 text-base text-white placeholder:text-cyan-50/38 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                    className="block w-full rounded border border-cyan-100/25 bg-slate-950/80 py-2 ps-10 pe-10 text-base text-white placeholder:text-cyan-50/38 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
                 />
                 <i
                     aria-hidden="true"
                     className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 start-3 -translate-y-1/2 text-sm text-cyan-200/70"
                 />
+                {isLoading && (
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute top-1/2 end-3 size-4 -translate-y-1/2 rounded-full border-2 border-cyan-100/24 border-t-cyan-100 motion-safe:animate-spin"
+                    />
+                )}
             </div>
             <p className="text-xs leading-5 text-cyan-100/58">
                 {t('interstellar.starSearch.hint')}
@@ -109,6 +116,9 @@ export function StarSearch({ onSelect, selectedTarget }: StarSearchProps) {
                             dec: selectedTarget.dec.toFixed(4),
                             distance: selectedTarget.distanceLy.toFixed(2),
                         })}
+                    </p>
+                    <p className="mt-1 text-xs text-amber-50/58">
+                        {selectedTarget.source}
                     </p>
                 </div>
             )}
@@ -148,10 +158,19 @@ export function StarSearch({ onSelect, selectedTarget }: StarSearchProps) {
                                         dec: target.dec.toFixed(3),
                                     })}
                                 </span>
+                                <span className="mt-0.5 block text-[0.68rem] leading-4 text-cyan-100/48">
+                                    {target.source}
+                                </span>
                             </button>
                         ))}
                     </div>
                 </div>
+            )}
+
+            {!isLoading && !error && query.trim().length > 0 && results.length === 0 && (
+                <p className="rounded border border-cyan-100/12 bg-cyan-50/5 p-3 text-xs leading-5 text-cyan-50/66">
+                    {t('interstellar.starSearch.empty')}
+                </p>
             )}
         </div>
     );
