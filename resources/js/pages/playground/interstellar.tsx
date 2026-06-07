@@ -456,15 +456,9 @@ function formatStoryNumber(value: number): string {
 }
 
 function formatStoryYears(value: number): string {
-    if (value >= 100_000) {
-        return value.toExponential(2);
-    }
-
-    if (value >= 100) {
-        return value.toFixed(0);
-    }
-
-    return value.toFixed(value < 10 ? 2 : 1);
+    return value.toLocaleString(undefined, {
+        maximumFractionDigits: value < 10 ? 2 : value < 100 ? 1 : 0,
+    });
 }
 
 function defaultInterstellarSettings(): InterstellarPlannerSettings {

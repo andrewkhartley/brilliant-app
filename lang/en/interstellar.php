@@ -201,7 +201,7 @@ return [
         'massRatioLabel' => 'Initial / final mass',
         'massRatioFormat' => ':value×',
         'ariaLabel' => 'Mass ratio visualization: initial-to-final mass is :value times',
-        'offChartLabel' => 'Off the chart — Δv approaches the speed of light.',
+        'offChartLabel' => 'off the chart because delta-v approaches the speed of light',
         'caption' => 'Mass ratio of fuelled-up ship to dry ship at arrival. Lower is better; 100× and beyond is unrealistic.',
     ],
 ];
