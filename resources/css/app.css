@@ -27,6 +27,14 @@
     }
 }
 
+@layer utilities {
+    .story-glow-emphasis {
+        color: var(--color-cyan-100);
+        font-weight: 600;
+        text-shadow: 0 0 18px rgb(125 211 252 / 0.36);
+    }
+}
+
 /*
  * Phase 10 T5.5 — Cruise review per-leg reveal animation.
  *

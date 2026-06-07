@@ -28,54 +28,73 @@ import { useTranslation } from '@/hooks/useTranslation';
  * px-*, and text-center are bidirectional by definition; flex-wrap + gap-* +
  * justify-center handle horizontal spacing locale-independently.
  */
-export function Footer() {
+interface FooterProps {
+    showLinks?: boolean;
+}
+
+export function Footer({ showLinks = true }: FooterProps) {
     const { t } = useTranslation();
     const currentYear = new Date().getFullYear();
 
     return (
         <div className="mx-auto max-w-6xl px-4 py-7 text-center text-sm text-cyan-100/68">
-            <ul className="flex flex-wrap justify-center gap-2">
-                <li>
-                    <a
-                        href={t('common.footer.githubUrl')}
-                        aria-label={t('common.footer.githubAriaLabel')}
-                        className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
-                    >
-                        <i
-                            aria-hidden="true"
-                            className="fa-brands fa-github text-cyan-200"
-                        />
-                        {t('common.footer.githubLinkText')}
-                    </a>
-                </li>
-                <li>
-                    <a
-                        href={t('common.footer.linkedinUrl')}
-                        aria-label={t('common.footer.linkedinAriaLabel')}
-                        className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
-                    >
-                        <i
-                            aria-hidden="true"
-                            className="fa-brands fa-linkedin text-cyan-200"
-                        />
-                        {t('common.footer.linkedinLinkText')}
-                    </a>
-                </li>
-                <li>
-                    <a
-                        href={`mailto:${t('common.footer.email')}`}
-                        aria-label={t('common.footer.emailAriaLabel')}
-                        className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
-                    >
-                        <i
-                            aria-hidden="true"
-                            className="fa-solid fa-envelope text-cyan-200"
-                        />
-                        {t('common.footer.emailLinkText')}
-                    </a>
-                </li>
-            </ul>
-            <p className="mt-3 text-cyan-50/82">
+            {showLinks && (
+                <ul className="flex flex-wrap justify-center gap-2">
+                    <li>
+                        <a
+                            href={t('common.footer.githubUrl')}
+                            aria-label={t('common.footer.githubAriaLabel')}
+                            className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
+                        >
+                            <i
+                                aria-hidden="true"
+                                className="fa-brands fa-github text-cyan-200"
+                            />
+                            {t('common.footer.githubLinkText')}
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href={t('common.footer.linkedinUrl')}
+                            aria-label={t('common.footer.linkedinAriaLabel')}
+                            className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
+                        >
+                            <i
+                                aria-hidden="true"
+                                className="fa-brands fa-linkedin text-cyan-200"
+                            />
+                            {t('common.footer.linkedinLinkText')}
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href={`mailto:${t('common.footer.email')}`}
+                            aria-label={t('common.footer.emailAriaLabel')}
+                            className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
+                        >
+                            <i
+                                aria-hidden="true"
+                                className="fa-solid fa-envelope text-cyan-200"
+                            />
+                            {t('common.footer.emailLinkText')}
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href={t('common.footer.cvUrl')}
+                            aria-label={t('common.footer.cvAriaLabel')}
+                            className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
+                        >
+                            <i
+                                aria-hidden="true"
+                                className="fa-solid fa-file-lines text-cyan-200"
+                            />
+                            {t('common.footer.cvLinkText')}
+                        </a>
+                    </li>
+                </ul>
+            )}
+            <p className={showLinks ? 'mt-3 text-cyan-50/82' : 'text-cyan-50/82'}>
                 {t('common.copyright')} {t('common.copyrightWord')}{' '}
                 {currentYear} {t('common.attribution')}
                 {'. '}

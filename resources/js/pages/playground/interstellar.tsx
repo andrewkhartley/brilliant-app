@@ -17,12 +17,10 @@ import { interstellarTripDurationDilation } from '@/lib/equations/interstellar-t
 import { relativisticSpeed } from '@/lib/equations/relativistic-speed';
 
 import { DestinationSelect } from './interstellar/DestinationSelect';
-import { DurationToggle } from './interstellar/DurationToggle';
 import { EfficiencySlider } from './interstellar/EfficiencySlider';
 import { FuelSelector } from './interstellar/FuelSelector';
 import { FuelVisualization } from './interstellar/FuelVisualization';
 import { MaxSpeedSlider } from './interstellar/MaxSpeedSlider';
-import { ModeToggle } from './interstellar/ModeToggle';
 import { InterstellarPossibilitiesSection } from './interstellar/PossibilitiesSection';
 import { ResultPanel } from './interstellar/ResultPanel';
 import { StopToggle } from './interstellar/StopToggle';
@@ -53,10 +51,6 @@ const SECONDS_PER_YEAR = 31_557_600;
  *  - stop: true → decelerate to rest; false → fly past
  *  - fuelId: selected fuel (default = antimatter)
  *  - efficiency: 0.01–1.0 fraction (default = 1.0 = 100%)
- *  - durationMode: highlight Earth vs traveler clock in ResultPanel
- *  - interfaceMode: Beginner (hide math) vs Just the math (show
- *    EquationCard prominent)
- *
  * Computation pipeline (T4.8): pure derived values, no useEffect.
  *  1. Resolve destination → distance in meters
  *  2. Resolve fuel → clamp maxSpeed to fuel.maxVelocityMps
@@ -86,12 +80,6 @@ export default function InterstellarPage() {
     const [stop, setStop] = useState(true);
     const [fuelId, setFuelId] = useState(interstellarFuels[0].id);
     const [efficiency, setEfficiency] = useState(1.0);
-    const [durationMode, setDurationMode] = useState<'subjective' | 'earth'>(
-        'subjective',
-    );
-    const [interfaceMode, setInterfaceMode] = useState<'beginner' | 'math'>(
-        'beginner',
-    );
     const [isStoryOpen, setIsStoryOpen] = useState(false);
 
     const destination =
@@ -288,73 +276,76 @@ export default function InterstellarPage() {
                         </p>
                     </div>
 
-                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.618fr)] xl:items-start">
-                        <div className="grid gap-5 md:grid-cols-2">
-                            <ModeToggle
-                                mode={interfaceMode}
-                                onChange={setInterfaceMode}
-                            />
-                            <DestinationSelect
-                                destinationId={destinationId}
-                                onChange={setDestinationId}
-                            />
-                            <FuelSelector
-                                fuelId={fuelId}
-                                onChange={setFuelId}
-                            />
-                            <EfficiencySlider
-                                efficiency={efficiency}
-                                onChange={setEfficiency}
-                            />
-                            <StopToggle stop={stop} onChange={setStop} />
-                            <DurationToggle
-                                mode={durationMode}
-                                onChange={setDurationMode}
-                            />
-                            <SliderInput
-                                id="acceleration-slider"
-                                label={t(
-                                    'interstellar.accelerationSlider.label',
-                                )}
-                                min={0.1}
-                                max={100}
-                                step={0.1}
-                                value={acceleration}
-                                onChange={setAcceleration}
-                                formatValue={(v) =>
-                                    t(
-                                        'interstellar.accelerationSlider.valueFormat',
-                                        {
-                                            value: v.toFixed(1),
-                                            g: (
-                                                v / STANDARD_GRAVITY
-                                            ).toFixed(2),
-                                        },
-                                    )
-                                }
-                                formatAriaValueText={(v) =>
-                                    t(
-                                        'interstellar.accelerationSlider.ariaValueText',
-                                        {
-                                            value: v.toFixed(1),
-                                        },
-                                    )
-                                }
-                            />
-                            <MaxSpeedSlider
-                                maxSpeed={clampedMaxSpeed}
-                                fuelMaxVelocityMps={fuel.maxVelocityMps}
-                                onChange={setMaxSpeed}
-                            />
+                    <div className="grid gap-6 xl:grid-cols-[minmax(320px,0.618fr)_minmax(0,1fr)] xl:items-start">
+                        <div className="rounded-lg border border-cyan-100/16 bg-slate-950/72 p-5 shadow-2xl shadow-black/28 backdrop-blur-md sm:p-6">
+                            <p className="text-xs font-semibold tracking-[0.22em] text-cyan-200/76 uppercase">
+                                {t('interstellar.planner.controlsEyebrow')}
+                            </p>
+                            <h3 className="mt-2 text-xl font-semibold tracking-normal text-white">
+                                {t('interstellar.planner.controlsTitle')}
+                            </h3>
+
+                            <div className="mt-5 grid gap-5">
+                                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-1">
+                                    <DestinationSelect
+                                        destinationId={destinationId}
+                                        onChange={setDestinationId}
+                                    />
+                                    <StopToggle
+                                        stop={stop}
+                                        onChange={setStop}
+                                    />
+                                </div>
+                                <FuelSelector
+                                    fuelId={fuelId}
+                                    onChange={setFuelId}
+                                />
+                                <EfficiencySlider
+                                    efficiency={efficiency}
+                                    onChange={setEfficiency}
+                                />
+                                <SliderInput
+                                    id="acceleration-slider"
+                                    label={t(
+                                        'interstellar.accelerationSlider.label',
+                                    )}
+                                    min={0.1}
+                                    max={100}
+                                    step={0.1}
+                                    value={acceleration}
+                                    onChange={setAcceleration}
+                                    formatValue={(v) =>
+                                        t(
+                                            'interstellar.accelerationSlider.valueFormat',
+                                            {
+                                                value: v.toFixed(1),
+                                                g: (
+                                                    v / STANDARD_GRAVITY
+                                                ).toFixed(2),
+                                            },
+                                        )
+                                    }
+                                    formatAriaValueText={(v) =>
+                                        t(
+                                            'interstellar.accelerationSlider.ariaValueText',
+                                            {
+                                                value: v.toFixed(1),
+                                            },
+                                        )
+                                    }
+                                />
+                                <MaxSpeedSlider
+                                    maxSpeed={clampedMaxSpeed}
+                                    fuelMaxVelocityMps={fuel.maxVelocityMps}
+                                    onChange={setMaxSpeed}
+                                />
+                            </div>
                         </div>
 
                         <div className="space-y-6">
-                            {interfaceMode === 'math' && (
-                                <EquationCard equation={relativisticSpeed} />
-                            )}
+                            <EquationCard equation={relativisticSpeed} />
 
                             <ResultPanel
-                                durationMode={durationMode}
                                 earthTimeYears={earthTimeYears}
                                 properTimeYears={properTimeYears}
                                 dilationFactor={dilationFactor}

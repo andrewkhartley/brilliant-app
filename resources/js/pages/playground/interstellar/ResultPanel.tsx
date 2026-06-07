@@ -2,7 +2,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { SPEED_OF_LIGHT } from '@/lib/constants';
 
 interface ResultPanelProps {
-    durationMode: 'subjective' | 'earth';
     earthTimeYears: number;
     properTimeYears: number;
     dilationFactor: number;
@@ -23,10 +22,6 @@ interface ResultPanelProps {
  *  3. Dilation factor (γ ≈ X.XX)
  *  4. Effective exhaust velocity (fraction of c + km/s)
  *
- * `durationMode` highlights either the Earth or traveler clock with a
- * blue border + light fill. The other clock stays visible because the
- * headline insight is the divergence between them.
- *
  * Secondary "Trip breakdown" section below the primary grid shows the
  * acceleration distance + duration and cruise distance + duration
  * pulled from the 3-phase decomposition. When `isNoCruise` is true
@@ -39,7 +34,6 @@ interface ResultPanelProps {
  * Logical Tailwind classes only — no ml-/mr-/pl-/pr-/left-/right-.
  */
 export function ResultPanel({
-    durationMode,
     earthTimeYears,
     properTimeYears,
     dilationFactor,
@@ -51,9 +45,6 @@ export function ResultPanel({
     isNoCruise,
 }: ResultPanelProps) {
     const { t } = useTranslation();
-
-    const earthIsPrimary = durationMode === 'earth';
-    const travelerIsPrimary = !earthIsPrimary;
 
     const formatYears = (years: number) =>
         years.toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -75,71 +66,6 @@ export function ResultPanel({
                 {t('interstellar.resultPanel.title')}
             </h2>
 
-            {/* Primary zones */}
-            <div className="grid gap-4">
-                {/* Earth coordinate time */}
-                <div
-                    className={`rounded-lg border p-4 ${
-                        earthIsPrimary
-                            ? 'border-cyan-200/60 bg-cyan-200/12 shadow-[0_0_22px_rgba(103,232,249,0.18)]'
-                            : 'border-cyan-100/15 bg-slate-900/72'
-                    }`}
-                >
-                    <p className="text-xs font-bold tracking-[0.18em] text-cyan-200/70 uppercase">
-                        {t('interstellar.resultPanel.earthTimeLabel')}
-                    </p>
-                    <p className="mt-2 font-mono text-2xl font-semibold text-white">
-                        {t('interstellar.resultPanel.yearsFormat', {
-                            value: formatYears(earthTimeYears),
-                        })}
-                    </p>
-                </div>
-
-                {/* Traveler proper time */}
-                <div
-                    className={`rounded-lg border p-4 ${
-                        travelerIsPrimary
-                            ? 'border-cyan-200/60 bg-cyan-200/12 shadow-[0_0_22px_rgba(103,232,249,0.18)]'
-                            : 'border-cyan-100/15 bg-slate-900/72'
-                    }`}
-                >
-                    <p className="text-xs font-bold tracking-[0.18em] text-cyan-200/70 uppercase">
-                        {t('interstellar.resultPanel.properTimeLabel')}
-                    </p>
-                    <p className="mt-2 font-mono text-2xl font-semibold text-white">
-                        {t('interstellar.resultPanel.yearsFormat', {
-                            value: formatYears(properTimeYears),
-                        })}
-                    </p>
-                </div>
-
-                {/* Dilation factor */}
-                <div className="rounded-lg border border-cyan-100/15 bg-slate-900/72 p-4">
-                    <p className="text-xs font-bold tracking-[0.18em] text-cyan-200/70 uppercase">
-                        {t('interstellar.resultPanel.dilationLabel')}
-                    </p>
-                    <p className="mt-2 font-mono text-2xl font-semibold text-white">
-                        {t('interstellar.resultPanel.dilationFormat', {
-                            value: dilationFactor.toFixed(2),
-                        })}
-                    </p>
-                </div>
-
-                {/* Effective exhaust velocity */}
-                <div className="rounded-lg border border-cyan-100/15 bg-slate-900/72 p-4">
-                    <p className="text-xs font-bold tracking-[0.18em] text-cyan-200/70 uppercase">
-                        {t('interstellar.resultPanel.exhaustVelocityLabel')}
-                    </p>
-                    <p className="mt-2 font-mono text-xl font-semibold text-white sm:text-2xl">
-                        {t('interstellar.resultPanel.exhaustVelocityFormat', {
-                            fraction: exhaustVelocityFraction,
-                            mps: exhaustVelocityKmps,
-                        })}
-                    </p>
-                </div>
-            </div>
-
-            {/* Secondary breakdown */}
             <div className="rounded-lg border border-cyan-100/15 bg-cyan-50/8 p-4">
                 <h3 className="text-sm font-semibold tracking-tight text-cyan-100">
                     {t('interstellar.resultPanel.cruiseBreakdownTitle')}
@@ -208,6 +134,60 @@ export function ResultPanel({
                         </div>
                     </dl>
                 )}
+            </div>
+
+            <div className="rounded-lg border border-cyan-100/15 bg-cyan-50/8 p-4">
+                <h3 className="text-sm font-semibold tracking-tight text-cyan-100">
+                    {t('interstellar.resultPanel.relativityTitle')}
+                </h3>
+                <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div>
+                        <dt className="text-xs font-medium tracking-wide text-cyan-100/58 uppercase">
+                            {t('interstellar.resultPanel.earthTimeLabel')}
+                        </dt>
+                        <dd className="font-mono text-base text-white">
+                            {t('interstellar.resultPanel.yearsFormat', {
+                                value: formatYears(earthTimeYears),
+                            })}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt className="text-xs font-medium tracking-wide text-cyan-100/58 uppercase">
+                            {t('interstellar.resultPanel.properTimeLabel')}
+                        </dt>
+                        <dd className="font-mono text-base text-white">
+                            {t('interstellar.resultPanel.yearsFormat', {
+                                value: formatYears(properTimeYears),
+                            })}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt className="text-xs font-medium tracking-wide text-cyan-100/58 uppercase">
+                            {t('interstellar.resultPanel.dilationLabel')}
+                        </dt>
+                        <dd className="font-mono text-base text-white">
+                            {t('interstellar.resultPanel.dilationFormat', {
+                                value: dilationFactor.toFixed(2),
+                            })}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt className="text-xs font-medium tracking-wide text-cyan-100/58 uppercase">
+                            {t(
+                                'interstellar.resultPanel.exhaustVelocityLabel',
+                            )}
+                        </dt>
+                        <dd className="font-mono text-base text-white">
+                            {t('interstellar.resultPanel.exhaustVelocityFormat', {
+                                fraction: exhaustVelocityFraction,
+                                mps: exhaustVelocityKmps,
+                            })}
+                        </dd>
+                    </div>
+                </dl>
             </div>
         </div>
     );

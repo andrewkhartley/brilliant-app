@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import CruisePage from '../cruise';
 
@@ -28,7 +28,7 @@ vi.mock('@inertiajs/react', () => ({
                 },
                 nav: {
                     playground: 'Playground',
-                    about: 'About',
+                    projects: 'Projects',
                 },
                 cruise: {
                     title: 'Plan a Cruise',
@@ -86,6 +86,22 @@ vi.mock('@inertiajs/react', () => ({
 }));
 
 describe('CruisePage planner flow', () => {
+    beforeEach(() => {
+        Object.defineProperty(window, 'matchMedia', {
+            configurable: true,
+            value: vi.fn().mockImplementation((query: string) => ({
+                addEventListener: vi.fn(),
+                addListener: vi.fn(),
+                dispatchEvent: vi.fn(),
+                matches: false,
+                media: query,
+                onchange: null,
+                removeEventListener: vi.fn(),
+                removeListener: vi.fn(),
+            })),
+        });
+    });
+
     afterEach(() => {
         cleanup();
     });
@@ -100,15 +116,7 @@ describe('CruisePage planner flow', () => {
             />,
         );
 
-        const todayButton = screen
-            .getByRole('gridcell', { name: '31' })
-            .querySelector('button');
-
-        if (todayButton === null) {
-            throw new Error('Expected today cell to contain a date button.');
-        }
-
-        fireEvent.click(todayButton);
+        fireEvent.click(screen.getByRole('button', { name: /^Today,/ }));
         fireEvent.click(
             screen.getByRole('button', { name: /choose destinations/i }),
         );

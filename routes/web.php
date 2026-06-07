@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AboutController;
 use App\Http\Controllers\API\HorizonController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Playground\AnimationDebugController;
@@ -16,8 +15,6 @@ use App\Http\Controllers\ProjectsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
-
-Route::get('/about', AboutController::class)->name('about.index');
 
 Route::get('/projects', ProjectsController::class)->name('projects.index');
 

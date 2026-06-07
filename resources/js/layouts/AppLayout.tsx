@@ -9,6 +9,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 interface AppLayoutProps {
     /** Page body content rendered inside <main>. */
     children: ReactNode;
+    /** Hide the global footer links when a page has its own contact CTA. */
+    hideFooterLinks?: boolean;
     /**
      * Optional page-specific title appended to the site name in <title>.
      * Example: pageTitle="Playground" -> "<title>Playground :.: Brilliant</title>"
@@ -41,7 +43,11 @@ interface AppLayoutProps {
  * Even decorative strings (© and attribution name) flow
  * through t() so a future locale can re-style them if needed.
  */
-export function AppLayout({ children, pageTitle }: AppLayoutProps) {
+export function AppLayout({
+    children,
+    hideFooterLinks = false,
+    pageTitle,
+}: AppLayoutProps) {
     const { t } = useTranslation();
     const siteName = t('common.siteName');
     const fullTitle = pageTitle ? `${pageTitle} :.: ${siteName}` : siteName;
@@ -91,7 +97,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                         aria-hidden="true"
                         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/34 to-transparent"
                     />
-                    <Footer />
+                    <Footer showLinks={!hideFooterLinks} />
                 </footer>
             </div>
         </>

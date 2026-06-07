@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 interface LiveResultProps {
     label?: string;
     children: ReactNode;
+    stacked?: boolean;
 }
 
 /**
@@ -28,7 +29,7 @@ interface LiveResultProps {
  * Logical Tailwind classes only — `me-2` (margin-end) flips correctly
  * under RTL without per-locale overrides.
  */
-export function LiveResult({ label, children }: LiveResultProps) {
+export function LiveResult({ label, children, stacked = false }: LiveResultProps) {
     return (
         <div
             role="status"
@@ -37,11 +38,13 @@ export function LiveResult({ label, children }: LiveResultProps) {
             className="rounded-lg border border-cyan-200/30 bg-cyan-50/8 p-6 text-center text-lg shadow-[0_0_26px_rgba(103,232,249,0.12)] backdrop-blur-md"
         >
             {label && (
-                <span className="me-2 text-sm font-semibold tracking-wide text-cyan-200/70 uppercase">
+                <span
+                    className={`${stacked ? 'mb-2 block' : 'me-2'} text-sm font-semibold tracking-wide text-cyan-200/70 uppercase`}
+                >
                     {label}
                 </span>
             )}
-            <span className="font-mono text-2xl font-semibold text-white">
+            <span className="block font-mono text-2xl font-semibold text-white">
                 {children}
             </span>
         </div>

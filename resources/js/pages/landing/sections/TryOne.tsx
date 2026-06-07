@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { EquationCard } from '@/components/equations/EquationCard';
 import { LiveResult } from '@/components/equations/LiveResult';
 import { SliderInput } from '@/components/equations/SliderInput';
+import { GlowPhrase } from '@/components/GlowPhrase';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
     GRAVITATIONAL_CONSTANT,
@@ -73,7 +74,7 @@ export function TryOne() {
             />
 
             <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-24">
-                <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.618fr)] lg:items-start">
+                <div className="grid gap-8 lg:grid-cols-[minmax(0,0.618fr)_minmax(0,1fr)] lg:items-start">
                     <div>
                         <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
                             {t('landing.tryOne.kicker')}
@@ -87,19 +88,16 @@ export function TryOne() {
 
                         <div className="mt-7 space-y-4 text-sm leading-7 text-cyan-50/72 sm:text-base sm:leading-8">
                             <p>{t('landing.tryOne.paragraph1')}</p>
-                            <p>{t('landing.tryOne.paragraph2')}</p>
+                            <p>
+                                <GlowPhrase
+                                    text={t('landing.tryOne.paragraph2')}
+                                    phrase={t(
+                                        'landing.tryOne.potentialEnergyPhrase',
+                                    )}
+                                />
+                            </p>
                             <p>{t('landing.tryOne.paragraph3')}</p>
                         </div>
-                        <p className="mt-6 rounded border border-cyan-100/14 bg-cyan-50/7 p-4 text-sm leading-7 font-semibold text-cyan-50/86 shadow-lg shadow-black/20">
-                            {t('landing.tryOne.capstonePrefix')}{' '}
-                            <a
-                                href="/projects"
-                                className="text-cyan-100 underline decoration-cyan-200/45 underline-offset-4 transition hover:text-white hover:decoration-cyan-100"
-                            >
-                                {t('landing.tryOne.alexandriaLinkLabel')}
-                            </a>{' '}
-                            {t('landing.tryOne.capstoneSuffix')}
-                        </p>
                     </div>
 
                     <div className="relative">
@@ -118,7 +116,7 @@ export function TryOne() {
                                 {t('landing.tryOne.demoIntro')}
                             </p>
 
-                            <div className="mt-6 space-y-6">
+                            <div className="mt-6 space-y-5">
                                 <div
                                     role="tablist"
                                     aria-label={t(
@@ -280,6 +278,17 @@ export function TryOne() {
                             </div>
                         </div>
                     </div>
+
+                    <p className="rounded border border-cyan-100/14 bg-cyan-50/7 p-4 text-sm leading-7 font-semibold text-cyan-50/86 shadow-lg shadow-black/20 lg:col-span-2">
+                        {t('landing.tryOne.capstonePrefix')}{' '}
+                        <a
+                            href="/projects"
+                            className="text-cyan-100 underline decoration-cyan-200/45 underline-offset-4 transition hover:text-white hover:decoration-cyan-100"
+                        >
+                            {t('landing.tryOne.alexandriaLinkLabel')}
+                        </a>{' '}
+                        {t('landing.tryOne.capstoneSuffix')}
+                    </p>
                 </div>
             </div>
         </section>
@@ -304,9 +313,15 @@ function FormulaPanel({
             <p className="rounded border border-cyan-100/12 bg-cyan-50/5 p-3 text-sm leading-6 text-cyan-50/72">
                 {description}
             </p>
-            {equation}
-            <div className="space-y-4">{children}</div>
-            <LiveResult label={resultLabel}>{result}</LiveResult>
+            <div className="grid gap-5 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-start">
+                <div className="space-y-4 md:pt-1">{equation}</div>
+                <div className="space-y-4">
+                    {children}
+                    <LiveResult label={resultLabel} stacked>
+                        {result}
+                    </LiveResult>
+                </div>
+            </div>
         </div>
     );
 }
@@ -364,14 +379,14 @@ function TimeDilationSummary({ lorentzFactor }: { lorentzFactor: number }) {
 
 function GravityOrbitPeriodCard() {
     return (
-        <div className="rounded border border-cyan-100/12 bg-slate-950/50 p-4">
+        <div className="rounded border border-cyan-100/12 bg-slate-950/50 p-5">
             <p className="text-xs font-semibold tracking-[0.18em] text-cyan-200/70 uppercase">
                 {'Circular orbit period'}
             </p>
-            <div className="mt-3 overflow-x-auto text-center text-xl text-white">
+            <div className="my-5 overflow-x-auto text-center text-xl text-white">
                 {'T = 2π √(r³ / GM)'}
             </div>
-            <p className="mt-3 text-xs leading-5 text-cyan-50/58">
+            <p className="text-xs leading-5 text-cyan-50/58">
                 {
                     "M is Earth's mass in this example. For natural orbits, period follows from radius, central mass, and gravity."
                 }

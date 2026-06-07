@@ -22,26 +22,28 @@ import { useTranslation } from '@/hooks/useTranslation';
  * href value is itself a translation key so a future locale could
  * swap to a localized CV.
  *
- * The border-t against ClosingScene is intentional: it marks the
- * dark → light transition from the O'Neill dawn into the CTA close.
- *
  * Copy is placeholder; Andrew refines over the weekend.
  */
 export function ContactFooter() {
     const { t } = useTranslation();
 
     return (
-        <section className="relative overflow-hidden border-t border-cyan-100/15 bg-[#08111f] text-white">
+        <section className="relative overflow-hidden bg-[#08111f] text-white">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(125,211,252,0.16),transparent_30%),linear-gradient(135deg,rgba(8,17,31,0.9),rgba(15,23,42,0.97))]" />
             <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.42)_1px,transparent_1px)] [background-size:42px_42px] opacity-30"
             />
-            <div className="relative mx-auto max-w-3xl px-4 py-20 text-center">
-                <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-cyan-200/72 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-12 top-0 h-8 bg-cyan-200/12 blur-2xl" />
+            <div className="relative mx-auto max-w-6xl px-4 py-20 text-left">
+                <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
+                    {t('landing.contactFooter.kicker')}
+                </p>
+                <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                     {t('landing.contactFooter.heading')}
                 </h2>
-                <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-200">
+                <p className="mt-6 w-full text-lg leading-relaxed text-slate-200">
                     {t('landing.contactFooter.pitch')}
                 </p>
 

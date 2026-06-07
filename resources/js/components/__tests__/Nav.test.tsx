@@ -20,7 +20,7 @@ vi.mock('@inertiajs/react', () => ({
                 },
                 nav: {
                     playground: 'Playground',
-                    about: 'About',
+                    projects: 'Projects',
                 },
             },
         },
@@ -57,11 +57,11 @@ describe('Nav', () => {
         expect(nav?.tagName).toBe('NAV');
     });
 
-    test('renders Playground and About primary links', () => {
+    test('renders Playground and Projects primary links', () => {
         render(<Nav />);
 
         expect(screen.queryByText('Playground')).not.toBeNull();
-        expect(screen.queryByText('About')).not.toBeNull();
+        expect(screen.queryByText('Projects')).not.toBeNull();
     });
 
     test('uses logical Tailwind classes (no physical left/right)', () => {

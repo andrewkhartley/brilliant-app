@@ -14,7 +14,7 @@ return [
         'cards' => [
             'interstellar' => [
                 'title' => 'Interstellar',
-                'description' => 'A relativity travel agency. Set acceleration, pick a destination, watch time dilation play out — Earth time, traveler time, fuel-equivalents, the equation itself.',
+                'description' => 'A relativity travel agency. Set acceleration, pick a destination, watch time dilation play out: Earth time, traveler time, fuel-equivalents, the equation itself.',
             ],
             'cruise' => [
                 'title' => 'Sol Cruise',
@@ -84,7 +84,7 @@ return [
         'sliderSection' => [
             'title' => 'SliderInput',
             'intro' => 'Accessible controlled range input with live value display. Verify: arrow keys step by 1, PageUp/PageDown step by 10, Home/End jump to min/max, aria-valuetext updates on every change (inspect with DevTools or a screen reader), value display reflects the current value.',
-            'sliderLabel' => 'Demo slider — adjust to verify keyboard behavior',
+            'sliderLabel' => 'Demo slider: adjust to verify keyboard behavior',
         ],
         'liveResultSection' => [
             'title' => 'LiveResult',
@@ -94,7 +94,7 @@ return [
         ],
         'experienceCardSection' => [
             'title' => 'ExperienceCard',
-            'intro' => 'Reusable clickable card for linking to a playground experience. Entire card is the click target (whole rectangle is interactive). Used by Phase 7 (Landing) "what else" section and Phase 9 (Playground hub). Verify: clicking anywhere on a card issues an Inertia visit; hover gives subtle elevation feedback; focus-visible shows the outline ring; cards stack on narrow viewports and grid out at larger widths. Card destinations 404 in v1 — controllers ship in Phases 8/10/11.',
+            'intro' => 'Reusable clickable card for linking to a playground experience. Entire card is the click target (whole rectangle is interactive).',
             'cards' => [
                 'interstellar' => [
                     'title' => 'Interstellar',

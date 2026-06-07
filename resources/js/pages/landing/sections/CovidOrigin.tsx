@@ -2,6 +2,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { GlowPhrase } from '@/components/GlowPhrase';
 import { useTranslation } from '@/hooks/useTranslation';
 
 /**
@@ -185,7 +186,14 @@ export function CovidOrigin() {
                                     {t('landing.covidOrigin.story.paragraph1')}
                                 </p>
                                 <p>
-                                    {t('landing.covidOrigin.story.paragraph2')}
+                                    <GlowPhrase
+                                        text={t(
+                                            'landing.covidOrigin.story.paragraph2',
+                                        )}
+                                        phrase={t(
+                                            'landing.covidOrigin.story.kicker',
+                                        )}
+                                    />
                                 </p>
                             </div>
                         </div>
@@ -275,7 +283,14 @@ export function CovidOrigin() {
                                 {t('landing.covidOrigin.capstone.paragraph1')}
                             </p>
                             <p>
-                                {t('landing.covidOrigin.capstone.paragraph2')}
+                                <GlowPhrase
+                                    text={t(
+                                        'landing.covidOrigin.capstone.paragraph2',
+                                    )}
+                                    phrase={t(
+                                        'landing.covidOrigin.capstone.brilliantName',
+                                    )}
+                                />
                             </p>
                         </div>
                     </div>
@@ -477,7 +492,13 @@ function GalleryModal({
 
                 {isArchiveNoticeOpen && (
                     <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/72 p-4 backdrop-blur-sm">
-                        <div className="w-full max-w-sm rounded-lg border border-cyan-100/18 bg-[#07101d] p-5 text-cyan-50 shadow-2xl shadow-black/50">
+                        <button
+                            type="button"
+                            aria-label={archiveNotice.cancel}
+                            onClick={() => setIsArchiveNoticeOpen(false)}
+                            className="absolute inset-0 cursor-default"
+                        />
+                        <div className="relative w-full max-w-sm rounded-lg border border-cyan-100/18 bg-[#07101d] p-5 text-cyan-50 shadow-2xl shadow-black/50">
                             <h4 className="text-lg font-semibold text-white">
                                 {archiveNotice.title}
                             </h4>

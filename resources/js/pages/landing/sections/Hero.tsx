@@ -159,7 +159,7 @@ export function Hero() {
                     className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/82 drop-shadow-md sm:text-base"
                 >
                     {t('landing.hero.pitchPrefix')}{' '}
-                    <strong className="font-semibold whitespace-nowrap text-cyan-100 [text-shadow:0_0_18px_rgba(125,211,252,0.36)]">
+                    <strong className="story-glow-emphasis whitespace-nowrap">
                         {t('landing.hero.pitchEmphasis')}
                     </strong>
                     {' and '}

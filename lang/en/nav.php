@@ -11,6 +11,6 @@
 return [
     'home' => 'Home',
     'playground' => 'Playground',
-    'about' => 'About',
+    'projects' => 'Projects',
     'equations' => 'Equations',
 ];

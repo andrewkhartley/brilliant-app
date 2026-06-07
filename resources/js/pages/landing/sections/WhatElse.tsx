@@ -17,10 +17,13 @@ export function WhatElse() {
             />
 
             <div className="relative mx-auto max-w-6xl px-4 py-20">
-                <h2 className="text-3xl font-semibold tracking-normal text-white sm:text-4xl">
+                <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
+                    {t('landing.whatElse.kicker')}
+                </p>
+                <h2 className="mt-4 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
                     {t('landing.whatElse.heading')}
                 </h2>
-                <p className="mt-4 flex max-w-3xl items-center gap-3 text-lg leading-8 text-slate-200">
+                <p className="mt-4 flex w-full items-center gap-3 text-lg leading-8 text-slate-200">
                     <img
                         src="/assets/brand/undaunted/logo.svg"
                         alt={t('landing.whatElse.undauntedLogoAlt')}

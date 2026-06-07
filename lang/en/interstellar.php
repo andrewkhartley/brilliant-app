@@ -20,15 +20,15 @@
 return [
     'pageTitle' => 'Interstellar',
     'pageDescription' => 'A relativity travel agency. Pick a destination, set your acceleration, watch time dilation play out.',
-    'heading' => 'Interstellar Settlement Planner',
-    'intro' => 'A planning room for possible homes beyond the solar system. Pick a destination, set the propulsion assumptions, and watch time, energy, and arrival strategy reshape the mission.',
+    'heading' => 'Interstellar Navigation',
+    'intro' => 'A planning room for possible homes beyond our solar system. Pick a destination, set the propulsion assumptions, and see how the limits of physics advise the future of your mission.',
 
     'introduction' => [
-        'eyebrow' => 'Before the calculator',
+        'eyebrow' => 'Pre-Trip Considerations',
         'title' => 'A settlement plan starts as a destination, then becomes a constraint map.',
-        'bodyA' => 'Interstellar travel is easy to imagine as a line between two stars. The harder question is whether humans can arrive with time, energy, and enough remaining mass for the trip to mean anything.',
-        'bodyB' => 'That makes relativity a useful storytelling engine. A traveler can experience one timeline while Earth experiences another, and both are true. The calculator keeps those clocks side by side.',
-        'bodyC' => 'The controls are deliberately practical: choose a target, set the acceleration, cap the cruise speed, pick a fuel, and decide whether this is a flyby or an arrival. Every setting changes what kind of settlement story is still plausible.',
+        'bodyA' => 'Interstellar travel is easy to imagine as a line between two stars, but some of these trips will be multi-generation. Anyone who ever made the decision to leave a home understands the weight, but to a new star system, there truly is no turning back.',
+        'bodyB' => 'Since we\'re going faster, we get to play a bit with relativity! A traveler can experience one timeline while Earth experiences another, and both are true from their own perspective. The calculator keeps those clocks side by side.',
+        'bodyC' => 'Choose a target, set the acceleration, cap the cruise speed, pick a fuel, and decide whether this is a flyby or an arrival. There is a lot more level of complexity that can be baked in, but this is a good start!',
     ],
 
     'stage' => [
@@ -36,11 +36,11 @@ return [
         'scenes' => [
             'arrival' => [
                 'speaker' => 'Nisha',
-                'dialogue' => 'Settlement planning starts with a name on a star chart. Today that name is :destination. The question is not only whether we can reach it, but what the trip asks us to become on the way.',
+                'dialogue' => 'Settlement planning starts with a name on a star chart. Today that name is :destination. This isn\'t your typical road trip. Depending on the destination, you will be in a whole new stage of life!',
             ],
             'time' => [
                 'speaker' => 'Nisha',
-                'dialogue' => 'With the current settings, Earth waits about :earthTime while the traveler experiences about :travelerTime. Relativity turns one mission into two honest clocks.',
+                'dialogue' => 'With the current settings, Earth waits about :earthTime while the traveler experiences about :travelerTime. Because of the weight of fuel, our best known methods of acceleration will hit a limit before the curve of relativity takes off, but some clever person may find a way to change that potential.',
             ],
             'energy' => [
                 'speaker' => 'Nisha',
@@ -50,15 +50,17 @@ return [
                 'speaker' => 'Nisha',
                 'dialogue' => 'Now change the premise. A little more acceleration, a different fuel, or a flyby instead of arrival can completely rewrite the plan.',
                 'calculator' => 'Back to the calculator',
-                'timeAgain' => 'Explain the two clocks again',
+                'timeAgain' => 'Explain it again?',
             ],
         ],
     ],
 
     'planner' => [
-        'eyebrow' => 'Mission constraints',
+        'eyebrow' => 'To Horizons Unseen',
         'title' => 'Tune the settlement premise',
         'body' => 'The inputs stay close together because the variables are not independent. Fuel limits speed, speed changes time dilation, and the arrival profile decides whether this is a visit or a high-speed look through the window.',
+        'controlsEyebrow' => 'Mission variables',
+        'controlsTitle' => 'Change the premise',
     ],
 
     'possibilities' => [
@@ -85,14 +87,6 @@ return [
         ],
     ],
 
-    'modeToggle' => [
-        'label' => 'Interface mode',
-        'ariaLabel' => 'Choose interface mode',
-        'beginnerLabel' => 'Beginner',
-        'mathLabel' => 'Just the math',
-        'hint' => 'Beginner mode hides the equation. Just the math reveals it.',
-    ],
-
     'destinationSelect' => [
         'label' => 'Destination',
         'ariaLabel' => 'Choose a destination',
@@ -104,13 +98,6 @@ return [
         'label' => 'Constant acceleration',
         'valueFormat' => ':value m/s² (:g g)',
         'ariaValueText' => ':value meters per second squared',
-    ],
-
-    'durationToggle' => [
-        'label' => 'Highlight time',
-        'subjectiveLabel' => 'Traveler time',
-        'earthLabel' => 'Earth time',
-        'hint' => 'Both clocks display in the result panel; the toggle highlights one as primary.',
     ],
 
     'fuelSelector' => [
@@ -150,7 +137,7 @@ return [
         'properTimeLabel' => 'Traveler time',
         'fuelLabel' => 'Fuel-equivalent',
         'yearsFormat' => ':value years',
-        'primaryHint' => 'Highlighted as primary by the toggle above.',
+        'relativityTitle' => 'Relativity',
         'cruiseBreakdownTitle' => 'Trip breakdown',
         'accelDistanceLabel' => 'Acceleration distance',
         'accelDurationLabel' => 'Acceleration duration',
@@ -161,11 +148,6 @@ return [
         'exhaustVelocityFormat' => ':fraction c (:mps km/s)',
         'lightYearsFormat' => ':value ly',
         'secondsFormat' => ':value s',
-    ],
-
-    'equationCard' => [
-        'toggleHint' => 'Toggle to "Just the math" mode above to show the relativistic speed equation.',
-        'hiddenLabel' => 'Equation card hidden in Beginner mode.',
     ],
 
     'fuelVisualization' => [

@@ -36,9 +36,9 @@ return [
         'intro' => 'In a strange, isolated season, live conversations taught me that curiosity could become something shared, energetic, and buildable.',
         'story' => [
             'kicker' => 'Small Steps & Giant Leaps',
-            'heading' => 'The future became specific enough for anyone curious to reason about.',
+            'heading' => 'The future became specific enough that anyone curious could reason about it.',
             'paragraph1' => 'A few years back, when the world went sideways, I was working with an airline. When Covid stalled travel, I suddenly had something that always felt in short supply: time. Fortunately, Clubhouse became an accessible community of voice at exactly the moment people were craving human contact.',
-            'paragraph2' => 'One group stuck out: Small Steps & Giant Leaps. After lurking for a few days, I started joining conversations about what humans might be capable of if we made better decisions together. I was honored to help steer rooms as a moderator and leader, where questions about Martian city planning, asteroid supply chains, megastructures, and off-world industry kept bringing people back. A teenager interested in astronomy could share a stage with the NASA chief scientist, and the room could still feel undaunting. The future became specific enough for anyone curious to reason about.',
+            'paragraph2' => 'One group stuck out: Small Steps & Giant Leaps. After lurking for a few days, I started joining conversations about what humans might be capable of if we made better decisions together. I was honored to help steer rooms as a moderator and leader, where questions about Martian city planning, asteroid supply chains, megastructures, and off-world industry kept bringing people back. A teenager interested in astronomy could share a stage with the NASA chief scientist, and the room could still feel undaunting. The future became specific enough that anyone curious could reason about it.',
         ],
         'visual' => [
             'placeholderLabel' => 'Room performance',
@@ -57,13 +57,14 @@ return [
         'capstone' => [
             'kicker' => 'The Inspiration that Remained',
             'heading' => 'Curiosity needs a place to go.',
+            'brilliantName' => 'Brilliant',
             'paragraph1' => 'A good story has rules and constraints, and rooms built around the art of the possible have to embrace them: what would the city need, where would the material come from, what breaks first, and what has to be learned before any of it becomes possible? Week after week, hundreds (and sometimes thousands) would listen or take the leap to join us on stage.',
             'paragraph2' => 'As the world adjusted and opened back up, the rooms on Clubhouse began to empty, but the inspiration did not. Curiosity needs a place to go. That is where Brilliant feels so aligned to me: it turns learning into something active, playful, and worth returning to.',
         ],
         'gallery' => [
             'analytics' => [
                 'title' => 'Room growth over time',
-                'caption' => 'An archived performance chart from the Clubhouse era. The final crop can focus this around the growth line and remove browser chrome.',
+                'caption' => 'An archived performance chart from the Clubhouse era.',
             ],
             'mars' => [
                 'title' => 'How to Build a City on Mars',
@@ -71,7 +72,7 @@ return [
             ],
             'jamesWebb' => [
                 'title' => 'A 12,000-listener James Webb room',
-                'caption' => 'This was one of the rooms I led: a James Webb Space Telescope inauguration conversation that reached more than 12,000 listeners live. The iOS chrome stays because it feels like the artifact it is.',
+                'caption' => 'This was one of the rooms I led: a James Webb Space Telescope inauguration conversation that reached more than 12,000 listeners live.',
             ],
             'generationShip' => [
                 'title' => 'Designing a Generation Ship',
@@ -98,8 +99,9 @@ return [
         'intro' => 'Every generation has a different window into wonder: radios and model planes, arcades and home computers, or smartphones a toddler can understand before she can read.',
         'paragraph1' => 'I once watched my niece pick up my phone, swipe across the bottom by instinct, reach the lock screen, and hand it back for me to unlock. Not exactly a triumph of early-childhood screen restraint, but she already knew there could be something worth discovering inside.',
         'paragraph2' => 'Curiosity is potential energy. It is why people keep reaching for the next thing, even as the brain changes pace with age. The right story can make a difficult path feel worth entering.',
+        'potentialEnergyPhrase' => 'Curiosity is potential energy.',
         'paragraph3' => 'One day, someone may plan real travel itineraries through the solar system. To make that possible, people will need to solve fuel, radiation, biology, and materials problems that are currently a barrier. Some of the people critical to those answers are alive today, but may not yet know what they will contribute.',
-        'capstonePrefix' => 'That is why Brilliant feels like the right place to build. I want to create near-future scenarios that connect imagination to the educational paths required to solve real problems.',
+        'capstonePrefix' => 'That is why Brilliant feels like the right place to build. I want to create near and distant future scenarios that connect imagination to the educational paths required to solve real problems.',
         'alexandriaLinkLabel' => 'Alexandria',
         'capstoneSuffix' => 'comes from the same instinct in another direction: use technology wisely, so creative human beings can think, organize, and build with more clarity, not less.',
         'demoKicker' => 'Scenario math',
@@ -109,7 +111,7 @@ return [
             'label' => 'Choose a formula example',
             'orbitalVelocity' => [
                 'tab' => 'Orbit speed',
-                'description' => 'Sol Cruise starts with a simple question: how fast does something need to move to hold a circular orbit?',
+                'description' => 'The Sol Cruise starts with a simple question: how fast does something need to move to hold a circular orbit?',
                 'radiusLabel' => 'Orbital radius',
                 'resultLabel' => 'Required speed:',
             ],
@@ -130,8 +132,9 @@ return [
     ],
 
     'whatElse' => [
-        'heading' => 'Here is the proof of work.',
-        'intro' => 'Three playgrounds built around the same idea: make the scenario vivid first, then let the math answer back.',
+        'kicker' => 'Interactive playgrounds',
+        'heading' => 'Give it a spin',
+        'intro' => 'Three playgrounds built around the same idea: create a plausible scenario and see how our future selves will navigate it.',
         'cards' => [
             'interstellar' => [
                 'title' => 'Interstellar',
@@ -149,23 +152,10 @@ return [
         'undauntedLogoAlt' => 'Undaunted',
     ],
 
-    'closingScene' => [
-        'heading' => 'Closing scene',
-        'caption' => [
-            'opening' => 'Dawn inside an O\'Neill Cylinder. The sun-line catches the curved horizon.',
-            'midReflection' => 'A place - not a problem, not a chart. Made of geometry, motion, and patience.',
-            'close' => 'That is the question I want to help Brilliant keep answering: how do you make an idea feel like a place?',
-        ],
-        'layers' => [
-            'cylinderHorizon' => 'O\'Neill cylinder curved horizon placeholder',
-            'sunLine' => 'Dawn sun-line atmospheric haze placeholder',
-            'frame' => 'Cylinder structural frame placeholder',
-        ],
-    ],
-
     'contactFooter' => [
+        'kicker' => 'Next conversation',
         'heading' => 'I would like to talk.',
-        'pitch' => 'I would love to contribute as an engineer, and I would love to discuss where this kind of work could go.',
+        'pitch' => 'I would love to contribute as an engineer, and I would love to discuss where this kind of work could go. I believe inspiration can change what people feel capable of learning, building, and becoming. Brilliant already helps people turn curiosity into capability; I want to help build the next experiences that make that transformation feel possible, and the community of visionaries who carry it forward.',
         'links' => [
             'email' => 'Email',
             'emailHref' => 'mailto:ahartley@gmail.com',
