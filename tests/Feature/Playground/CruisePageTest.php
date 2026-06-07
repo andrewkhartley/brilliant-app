@@ -91,16 +91,6 @@ it('rejects more than 8 destinations', function () {
     $response->assertSessionHasErrors(['destinations']);
 });
 
-it('rejects a past trip-start date', function () {
-    $response = post('/playground/cruise', [
-        'destinations' => ['mer'],
-        'layovers' => [5],
-        'tripStart' => now()->subDay()->toDateString(),
-    ]);
-
-    $response->assertSessionHasErrors(['tripStart']);
-});
-
 it('rejects a destination code that is not in the catalog', function () {
     $response = post('/playground/cruise', [
         'destinations' => ['not-a-real-place'],

@@ -22,22 +22,8 @@ return [
         'eyebrow' => 'A route through moving worlds',
         'title' => 'Planning with Physics',
         'bodyA' => 'A Sol Cruise should feel like a vacation planner, and one day, it might! This guide will make sure there\'s always something at your desetination..',
-        'bodyB' => 'That is a teaching hook: an itinerary becomes a living model of timing, distance, acceleration, and tradeoffs. The form stays simple on purpose, so curiosity can lead and the math will shape it.',
-        'bodyC' => 'Each stop adds a leg, a layover, and a new set of positions to solve against: the route is a sequence of moving targets. The calculator turns a travel wish into distance, duration, top speed, and a wee bit of time dilation.',
-        'cards' => [
-            'window' => [
-                'title' => 'Start with the launch window',
-                'body' => 'A date anchors the solar system at that moment in time. Change it, and each of the legs will need to adjust to reach their new targets..',
-            ],
-            'route' => [
-                'title' => 'Build a route, not a line',
-                'body' => 'Each stop adds a leg, a layover, and a new set of planetary positions to solve against.',
-            ],
-            'motion' => [
-                'title' => 'Let motion answer back',
-                'body' => 'The calculator turns a travel wish into distance, duration, top speed, and time dilation.',
-            ],
-        ],
+        'bodyB' => 'So here, with everything on the move, an itinerary becomes a living model of timing, distance, acceleration, and tradeoffs.',
+        'bodyC' => 'Each stop adds a leg, a layover, and a new set of positions: the route is a sequence of moving targets. We will turn a travel plan into distance, duration, top speed, and a wee bit of time dilation.',
         'callout' => [
             'eyebrow' => 'Live data path',
             'title' => 'This version shows the API at work.',
@@ -63,11 +49,11 @@ return [
             ],
             'manifest' => [
                 'speaker' => 'Mateo',
-                'dialogue' => 'Once the traveler chooses a date and a route, the planner can ask where each world will actually be when they arrive.',
+                'dialogue' => 'Once you chooses a date and destinations, we\'ll plot it out! If you want to reach a certain place by a certain date, try seeing what conditions will get you there!',
             ],
             'choice' => [
                 'speaker' => 'Mateo',
-                'dialogue' => 'That is the story this experience is trying to tell: your itinerary requires a bit of strategy.',
+                'dialogue' => 'What do you say: want to get started?',
                 'planner' => 'Start planning!',
                 'motion' => 'Can you repeat that?',
             ],

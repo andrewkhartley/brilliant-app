@@ -9,11 +9,9 @@ use Illuminate\Validation\Validator;
 /**
  * Server-side validation for POST /playground/cruise.
  *
- * Mirrors the rules in `resources/js/lib/validation/cruise-form-schema.ts`
- * so the client can short-circuit obviously-bad input but the server
- * remains the source of truth. Defense-in-depth: a curl request or
- * a user with DevTools open can bypass the zod check, so every rule
- * here has a counterpart on the client and the inverse must also hold.
+ * Validates the shape the trip builder needs. The client-side zod schema owns
+ * the "today or later" UX floor so browser-local dates do not get rejected by
+ * a server timezone boundary with Laravel's generic after_or_equal message.
  *
  * Public access — `/playground/cruise` is a no-auth playground page,
  * so `authorize()` is `true` (the override from the make:request
@@ -54,7 +52,7 @@ class StoreCruiseRequest extends FormRequest
                 'string',
                 'exists:solar_system_facts,destination_code',
             ],
-            'tripStart' => ['required', 'date', 'after_or_equal:today'],
+            'tripStart' => ['required', 'date'],
             'layovers' => ['required', 'array'],
             'layovers.*' => ['required', 'integer', 'min:1', 'max:90'],
         ];
