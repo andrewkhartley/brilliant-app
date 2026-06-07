@@ -114,11 +114,10 @@ export function StarSearch({ onSelect, selectedTarget }: StarSearchProps) {
                         {t('interstellar.starSearch.coordinateFormat', {
                             ra: selectedTarget.ra.toFixed(4),
                             dec: selectedTarget.dec.toFixed(4),
-                            distance: selectedTarget.distanceLy.toFixed(2),
+                            distance: formatLightYears(
+                                selectedTarget.distanceLy,
+                            ),
                         })}
-                    </p>
-                    <p className="mt-1 text-xs text-amber-50/58">
-                        {selectedTarget.source}
                     </p>
                 </div>
             )}
@@ -153,13 +152,12 @@ export function StarSearch({ onSelect, selectedTarget }: StarSearchProps) {
                                 </span>
                                 <span className="mt-0.5 block font-mono text-[0.7rem] leading-5 text-cyan-50/62">
                                     {t('interstellar.starSearch.resultFormat', {
-                                        distance: target.distanceLy.toFixed(2),
+                                        distance: formatLightYears(
+                                            target.distanceLy,
+                                        ),
                                         ra: target.ra.toFixed(3),
                                         dec: target.dec.toFixed(3),
                                     })}
-                                </span>
-                                <span className="mt-0.5 block text-[0.68rem] leading-4 text-cyan-100/48">
-                                    {target.source}
                                 </span>
                             </button>
                         ))}
@@ -174,4 +172,10 @@ export function StarSearch({ onSelect, selectedTarget }: StarSearchProps) {
             )}
         </div>
     );
+}
+
+function formatLightYears(distanceLy: number): string {
+    return distanceLy.toLocaleString(undefined, {
+        maximumFractionDigits: distanceLy >= 1000 ? 0 : 2,
+    });
 }

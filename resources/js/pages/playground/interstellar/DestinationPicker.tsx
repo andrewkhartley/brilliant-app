@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 
 import { useTranslation } from '@/hooks/useTranslation';
 
-import { DestinationSelect } from './DestinationSelect';
 import { StarSearch } from './StarSearch';
 import type { InterstellarTarget } from './StarSearch';
 
@@ -11,8 +10,6 @@ interface DestinationPickerProps {
     activeDistanceLy: number;
     activeName: string;
     activeSource: string;
-    destinationId: string;
-    onDestinationChange: (id: string) => void;
     onTargetSelect: (target: InterstellarTarget) => void;
     selectedTarget: InterstellarTarget | null;
 }
@@ -21,8 +18,6 @@ export function DestinationPicker({
     activeDistanceLy,
     activeName,
     activeSource,
-    destinationId,
-    onDestinationChange,
     onTargetSelect,
     selectedTarget,
 }: DestinationPickerProps) {
@@ -68,7 +63,7 @@ export function DestinationPicker({
                 </span>
                 <span className="mt-3 block font-mono text-xs leading-5 text-cyan-50/62">
                     {t('interstellar.destinationPicker.summary', {
-                        distance: activeDistanceLy.toFixed(2),
+                        distance: formatLightYears(activeDistanceLy),
                         source: activeSource,
                     })}
                 </span>
@@ -127,14 +122,7 @@ export function DestinationPicker({
                                 </button>
                             </div>
 
-                            <div className="mt-6 space-y-4">
-                                <DestinationSelect
-                                    destinationId={destinationId}
-                                    onChange={(id) => {
-                                        onDestinationChange(id);
-                                        setIsOpen(false);
-                                    }}
-                                />
+                            <div className="mt-6">
                                 <StarSearch
                                     selectedTarget={selectedTarget}
                                     onSelect={(target) => {
@@ -149,4 +137,10 @@ export function DestinationPicker({
                 )}
         </>
     );
+}
+
+function formatLightYears(distanceLy: number): string {
+    return distanceLy.toLocaleString(undefined, {
+        maximumFractionDigits: distanceLy >= 1000 ? 0 : 2,
+    });
 }

@@ -23,7 +23,7 @@ class InterstellarTargets
             return collect(self::targets())
                 ->sortBy('distanceLy')
                 ->values()
-                ->take(8);
+                ->take(12);
         }
 
         return collect(self::targets())
@@ -37,7 +37,7 @@ class InterstellarTargets
             })
             ->sortBy('distanceLy')
             ->values()
-            ->take(8);
+            ->take(12);
     }
 
     /**
@@ -53,7 +53,7 @@ class InterstellarTargets
                 'ra' => 217.42894,
                 'dec' => -62.67949,
                 'distanceLy' => 4.2465,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
             ],
             [
                 'id' => 'alpha-centauri-a',
@@ -62,7 +62,7 @@ class InterstellarTargets
                 'ra' => 219.90206,
                 'dec' => -60.83399,
                 'distanceLy' => 4.344,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
             ],
             [
                 'id' => 'barnards-star',
@@ -71,7 +71,7 @@ class InterstellarTargets
                 'ra' => 269.45402,
                 'dec' => 4.66829,
                 'distanceLy' => 5.963,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
             ],
             [
                 'id' => 'wolf-359',
@@ -80,7 +80,7 @@ class InterstellarTargets
                 'ra' => 164.12099,
                 'dec' => 7.01498,
                 'distanceLy' => 7.86,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
             ],
             [
                 'id' => 'lalande-21185',
@@ -89,7 +89,7 @@ class InterstellarTargets
                 'ra' => 165.83125,
                 'dec' => 35.96988,
                 'distanceLy' => 8.31,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
             ],
             [
                 'id' => 'sirius-a',
@@ -98,7 +98,7 @@ class InterstellarTargets
                 'ra' => 101.28716,
                 'dec' => -16.71612,
                 'distanceLy' => 8.60,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
             ],
             [
                 'id' => 'epsilon-eridani',
@@ -107,7 +107,7 @@ class InterstellarTargets
                 'ra' => 53.23269,
                 'dec' => -9.45826,
                 'distanceLy' => 10.47,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
             ],
             [
                 'id' => 'tau-ceti',
@@ -116,7 +116,7 @@ class InterstellarTargets
                 'ra' => 26.01701,
                 'dec' => -15.93748,
                 'distanceLy' => 11.9,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
             ],
             [
                 'id' => 'vega',
@@ -125,7 +125,7 @@ class InterstellarTargets
                 'ra' => 279.23473,
                 'dec' => 38.78369,
                 'distanceLy' => 25.04,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
             ],
             [
                 'id' => 'polaris',
@@ -134,7 +134,7 @@ class InterstellarTargets
                 'ra' => 37.95456,
                 'dec' => 89.26411,
                 'distanceLy' => 447.0,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
             ],
             [
                 'id' => 'trappist-1',
@@ -143,7 +143,16 @@ class InterstellarTargets
                 'ra' => 346.62237,
                 'dec' => -5.04140,
                 'distanceLy' => 40.66,
-                'source' => 'Seeded Gaia-style target',
+                'source' => 'Preset destination',
+            ],
+            [
+                'id' => 'andromeda-galaxy',
+                'name' => 'Andromeda Galaxy',
+                'aliases' => ['M31', 'Messier 31', 'NGC 224', 'Andromeda'],
+                'ra' => 10.68471,
+                'dec' => 41.26875,
+                'distanceLy' => 2_537_000.0,
+                'source' => 'Preset destination',
             ],
         ];
     }

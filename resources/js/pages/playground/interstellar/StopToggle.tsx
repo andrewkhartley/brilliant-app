@@ -35,14 +35,14 @@ export function StopToggle({ stop, onChange }: StopToggleProps) {
             <div
                 role="radiogroup"
                 aria-label={t('interstellar.stopToggle.ariaLabel')}
-                className="mx-auto inline-flex rounded border border-cyan-100/25 bg-slate-950/80 p-1"
+                className="grid w-full grid-cols-2 rounded border border-cyan-100/25 bg-slate-950/80 p-1"
             >
                 <button
                     type="button"
                     role="radio"
                     aria-checked={stopSelected}
                     onClick={() => onChange(true)}
-                    className={`cursor-pointer rounded px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
+                    className={`w-full cursor-pointer rounded px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
                         stopSelected
                             ? 'bg-cyan-200 text-slate-950 shadow-[0_0_18px_rgba(103,232,249,0.22)]'
                             : 'text-cyan-100 hover:bg-white/10'
@@ -55,7 +55,7 @@ export function StopToggle({ stop, onChange }: StopToggleProps) {
                     role="radio"
                     aria-checked={flybySelected}
                     onClick={() => onChange(false)}
-                    className={`cursor-pointer rounded px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
+                    className={`w-full cursor-pointer rounded px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
                         flybySelected
                             ? 'bg-cyan-200 text-slate-950 shadow-[0_0_18px_rgba(103,232,249,0.22)]'
                             : 'text-cyan-100 hover:bg-white/10'

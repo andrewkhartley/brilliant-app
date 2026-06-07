@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { EquationCard } from '@/components/equations/EquationCard';
 import { SliderInput } from '@/components/equations/SliderInput';
@@ -39,6 +39,19 @@ const LIGHT_YEAR_METERS = 9.4607304725808e15;
 /** Seconds per Julian year (365.25 days × 86400 s). */
 const SECONDS_PER_YEAR = 31_557_600;
 
+const INTERSTELLAR_STORAGE_KEY = 'interstellar:planner-settings';
+
+interface InterstellarPlannerSettings {
+    acceleration: number;
+    allowRelativisticLimit: boolean;
+    destinationId: string;
+    efficiency: number;
+    fuelId: string;
+    maxSpeed: number;
+    selectedTarget: InterstellarTarget | null;
+    stop: boolean;
+}
+
 /**
  * Interstellar experience — relativity travel agency.
  *
@@ -73,15 +86,21 @@ const SECONDS_PER_YEAR = 31_557_600;
  */
 export default function InterstellarPage() {
     const { t } = useTranslation();
-    const [destinationId, setDestinationId] = useState(destinations[0].id);
-    const [acceleration, setAcceleration] = useState(STANDARD_GRAVITY);
-    const [maxSpeed, setMaxSpeed] = useState(SPEED_OF_LIGHT * 0.25);
-    const [stop, setStop] = useState(true);
-    const [fuelId, setFuelId] = useState(interstellarFuels[0].id);
-    const [efficiency, setEfficiency] = useState(1.0);
+    const [initialSettings] = useState(loadInterstellarSettings);
+    const [destinationId] = useState(initialSettings.destinationId);
+    const [acceleration, setAcceleration] = useState(
+        initialSettings.acceleration,
+    );
+    const [maxSpeed, setMaxSpeed] = useState(initialSettings.maxSpeed);
+    const [allowRelativisticLimit, setAllowRelativisticLimit] = useState(
+        initialSettings.allowRelativisticLimit,
+    );
+    const [stop, setStop] = useState(initialSettings.stop);
+    const [fuelId, setFuelId] = useState(initialSettings.fuelId);
+    const [efficiency, setEfficiency] = useState(initialSettings.efficiency);
     const [isStoryOpen, setIsStoryOpen] = useState(false);
     const [selectedTarget, setSelectedTarget] =
-        useState<InterstellarTarget | null>(null);
+        useState<InterstellarTarget | null>(initialSettings.selectedTarget);
 
     const destination =
         destinations.find((d) => d.id === destinationId) ?? destinations[0];
@@ -94,10 +113,35 @@ export default function InterstellarPage() {
     const fuel =
         interstellarFuels.find((f) => f.id === fuelId) ?? interstellarFuels[0];
 
+    useEffect(() => {
+        saveInterstellarSettings({
+            acceleration,
+            allowRelativisticLimit,
+            destinationId,
+            efficiency,
+            fuelId,
+            maxSpeed,
+            selectedTarget,
+            stop,
+        });
+    }, [
+        acceleration,
+        allowRelativisticLimit,
+        destinationId,
+        efficiency,
+        fuelId,
+        maxSpeed,
+        selectedTarget,
+        stop,
+    ]);
+
     // Clamp at render so the slider's value ≤ slider max invariant
     // always holds when the user switches to a lower-energy fuel.
     // Pure derivation — no useEffect, no state sync surprises.
-    const clampedMaxSpeed = Math.min(maxSpeed, fuel.maxVelocityMps);
+    const speedLimit = allowRelativisticLimit
+        ? SPEED_OF_LIGHT * 0.99999999
+        : fuel.maxVelocityMps;
+    const clampedMaxSpeed = Math.min(maxSpeed, speedLimit);
 
     // Trip times — new 3-phase math from T4.6/T4.7.
     const earthTimeSeconds = interstellarTripDuration.compute({
@@ -193,6 +237,15 @@ export default function InterstellarPage() {
             t,
         ],
     );
+
+    const handleRelativisticLimitChange = (isEnabled: boolean) => {
+        setMaxSpeed((currentMaxSpeed) =>
+            isEnabled
+                ? clampedMaxSpeed
+                : Math.min(currentMaxSpeed, fuel.maxVelocityMps),
+        );
+        setAllowRelativisticLimit(isEnabled);
+    };
 
     return (
         <AppLayout pageTitle={t('interstellar.pageTitle')}>
@@ -296,12 +349,7 @@ export default function InterstellarPage() {
                                         activeDistanceLy={activeDistanceLy}
                                         activeName={activeDestinationName}
                                         activeSource={activeDestinationSource}
-                                        destinationId={destinationId}
                                         selectedTarget={selectedTarget}
-                                        onDestinationChange={(id) => {
-                                            setDestinationId(id);
-                                            setSelectedTarget(null);
-                                        }}
                                         onTargetSelect={setSelectedTarget}
                                     />
                                     <StopToggle
@@ -327,6 +375,7 @@ export default function InterstellarPage() {
                                     step={0.1}
                                     value={acceleration}
                                     onChange={setAcceleration}
+                                    stackValue
                                     formatValue={(v) =>
                                         t(
                                             'interstellar.accelerationSlider.valueFormat',
@@ -348,9 +397,15 @@ export default function InterstellarPage() {
                                     }
                                 />
                                 <MaxSpeedSlider
+                                    allowRelativisticLimit={
+                                        allowRelativisticLimit
+                                    }
                                     maxSpeed={clampedMaxSpeed}
                                     fuelMaxVelocityMps={fuel.maxVelocityMps}
                                     onChange={setMaxSpeed}
+                                    onRelativisticLimitChange={
+                                        handleRelativisticLimitChange
+                                    }
                                 />
                             </div>
                         </div>
@@ -410,4 +465,139 @@ function formatStoryYears(value: number): string {
     }
 
     return value.toFixed(value < 10 ? 2 : 1);
+}
+
+function defaultInterstellarSettings(): InterstellarPlannerSettings {
+    return {
+        acceleration: STANDARD_GRAVITY,
+        allowRelativisticLimit: false,
+        destinationId: destinations[0].id,
+        efficiency: 1.0,
+        fuelId: interstellarFuels[0].id,
+        maxSpeed: SPEED_OF_LIGHT * 0.25,
+        selectedTarget: null,
+        stop: true,
+    };
+}
+
+function loadInterstellarSettings(): InterstellarPlannerSettings {
+    const fallback = defaultInterstellarSettings();
+
+    if (typeof window === 'undefined') {
+        return fallback;
+    }
+
+    const rawSettings = window.localStorage.getItem(INTERSTELLAR_STORAGE_KEY);
+
+    if (rawSettings === null) {
+        return fallback;
+    }
+
+    try {
+        const parsed = JSON.parse(rawSettings) as Partial<InterstellarPlannerSettings>;
+        const fuel = interstellarFuels.find((item) => item.id === parsed.fuelId);
+        const destination = destinations.find(
+            (item) => item.id === parsed.destinationId,
+        );
+
+        return {
+            acceleration: clampNumber(
+                parsed.acceleration,
+                0.1,
+                100,
+                fallback.acceleration,
+            ),
+            allowRelativisticLimit:
+                typeof parsed.allowRelativisticLimit === 'boolean'
+                    ? parsed.allowRelativisticLimit
+                    : fallback.allowRelativisticLimit,
+            destinationId: destination?.id ?? fallback.destinationId,
+            efficiency: clampNumber(
+                parsed.efficiency,
+                0.01,
+                1,
+                fallback.efficiency,
+            ),
+            fuelId: fuel?.id ?? fallback.fuelId,
+            maxSpeed: clampNumber(
+                parsed.maxSpeed,
+                1,
+                SPEED_OF_LIGHT,
+                fallback.maxSpeed,
+            ),
+            selectedTarget: parseSavedTarget(parsed.selectedTarget),
+            stop:
+                typeof parsed.stop === 'boolean'
+                    ? parsed.stop
+                    : fallback.stop,
+        };
+    } catch {
+        return fallback;
+    }
+}
+
+function saveInterstellarSettings(settings: InterstellarPlannerSettings): void {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    window.localStorage.setItem(
+        INTERSTELLAR_STORAGE_KEY,
+        JSON.stringify(settings),
+    );
+}
+
+function clampNumber(
+    value: unknown,
+    min: number,
+    max: number,
+    fallback: number,
+): number {
+    return typeof value === 'number' && Number.isFinite(value)
+        ? Math.min(max, Math.max(min, value))
+        : fallback;
+}
+
+function parseSavedTarget(target: unknown): InterstellarTarget | null {
+    if (
+        target === null ||
+        typeof target !== 'object' ||
+        !('id' in target) ||
+        !('name' in target) ||
+        !('ra' in target) ||
+        !('dec' in target) ||
+        !('distanceLy' in target) ||
+        !('source' in target)
+    ) {
+        return null;
+    }
+
+    const candidate = target as Partial<InterstellarTarget>;
+
+    if (
+        typeof candidate.id !== 'string' ||
+        typeof candidate.name !== 'string' ||
+        typeof candidate.ra !== 'number' ||
+        typeof candidate.dec !== 'number' ||
+        typeof candidate.distanceLy !== 'number' ||
+        typeof candidate.source !== 'string' ||
+        !Number.isFinite(candidate.ra) ||
+        !Number.isFinite(candidate.dec) ||
+        !Number.isFinite(candidate.distanceLy)
+    ) {
+        return null;
+    }
+
+    return {
+        dec: candidate.dec,
+        distanceLy: candidate.distanceLy,
+        id: candidate.id,
+        name: candidate.name,
+        ra: candidate.ra,
+        source: candidate.source,
+        sourceId:
+            typeof candidate.sourceId === 'string'
+                ? candidate.sourceId
+                : undefined,
+    };
 }

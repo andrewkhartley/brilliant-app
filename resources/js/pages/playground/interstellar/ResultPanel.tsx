@@ -52,6 +52,11 @@ export function ResultPanel({
     const formatLy = (ly: number) =>
         ly.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
+    const earthTravelerDeltaYears = Math.max(
+        0,
+        earthTimeYears - properTimeYears,
+    );
+
     const exhaustVelocityFraction = (
         effectiveExhaustVelocityMps / SPEED_OF_LIGHT
     ).toLocaleString(undefined, { maximumFractionDigits: 4 });
@@ -160,6 +165,11 @@ export function ResultPanel({
                             {t('interstellar.resultPanel.yearsFormat', {
                                 value: formatYears(properTimeYears),
                             })}
+                            <span className="mt-1 block text-sm text-emerald-300/82">
+                                {t('interstellar.resultPanel.deltaFromEarth', {
+                                    value: formatYears(earthTravelerDeltaYears),
+                                })}
+                            </span>
                         </dd>
                     </div>
 

@@ -10,6 +10,9 @@ interface SliderInputProps {
     onChange: (value: number) => void;
     formatValue?: (value: number) => string;
     formatAriaValueText?: (value: number) => string;
+    onValueClick?: () => void;
+    stackValue?: boolean;
+    valueButtonLabel?: string;
 }
 
 /**
@@ -55,6 +58,9 @@ export function SliderInput({
     onChange,
     formatValue = (v) => v.toString(),
     formatAriaValueText,
+    onValueClick,
+    stackValue = false,
+    valueButtonLabel,
 }: SliderInputProps) {
     const formatted = formatValue(value);
     const ariaValueText = (formatAriaValueText ?? formatValue)(value);
@@ -65,19 +71,36 @@ export function SliderInput({
 
     return (
         <div className="w-full rounded-lg border border-cyan-100/15 bg-slate-950/72 p-4 backdrop-blur-md">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <div
+                className={
+                    stackValue
+                        ? 'space-y-1'
+                        : 'flex flex-wrap items-baseline justify-between gap-2'
+                }
+            >
                 <label
                     htmlFor={id}
                     className="text-sm font-semibold text-cyan-100"
                 >
                     {label}
                 </label>
-                <output
-                    htmlFor={id}
-                    className="font-mono text-sm font-semibold text-white"
-                >
-                    {formatted}
-                </output>
+                {onValueClick ? (
+                    <button
+                        type="button"
+                        aria-label={valueButtonLabel}
+                        className={`${stackValue ? 'block' : ''} cursor-pointer font-mono text-sm font-semibold text-white underline decoration-cyan-200/30 underline-offset-4 transition hover:text-cyan-100 hover:decoration-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300`}
+                        onClick={onValueClick}
+                    >
+                        {formatted}
+                    </button>
+                ) : (
+                    <output
+                        htmlFor={id}
+                        className={`${stackValue ? 'block' : ''} font-mono text-sm font-semibold text-white`}
+                    >
+                        {formatted}
+                    </output>
+                )}
             </div>
             <input
                 id={id}

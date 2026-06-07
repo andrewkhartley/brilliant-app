@@ -3,27 +3,20 @@
 namespace App\Data;
 
 /**
- * Interstellar fuel taxonomy — 4 fuels with specific energy and
- * empirical max-velocity ceilings.
+ * Interstellar fuel taxonomy: 4 fuels with specific energy and practical
+ * max-velocity ceilings.
  *
- * Data lifted verbatim from Andrew Hartley's authoritative Undaunted
- * prototype at:
- * undaunted-app-2024-08-14/public/assets/js/defaults/Interstellar.js
+ * Specific energy values (`specificEnergyJoulesPerKg`) are derived from
+ * Andrew's Undaunted prototype by converting MJ/kg to J/kg.
  *
- * Specific energy values (`specificEnergyJoulesPerKg`) are derived
- * from the original `size` field by multiplying by 10⁶ (Andrew stored
- * the values in MJ/kg; we use J/kg for SI consistency with the rest
- * of the registry).
+ * The `comparisonPercent` field shows each fuel's specific energy as a
+ * percentage of matter-antimatter annihilation.
  *
- * The `comparisonPercent` field shows each fuel's specific energy as
- * a percentage of matter-antimatter annihilation, matching Andrew's
- * original UI display.
- *
- * The `maxVelocityMps` field is the empirical maximum velocity Andrew
- * chose to surface in his UI at 100% efficiency. These are NOT derived
- * from first principles in his source — they're his curated display
- * caps. Brilliant's Phase 8 UI uses these as slider upper bounds when
- * a fuel is selected.
+ * The `maxVelocityMps` field is the practical cruise-speed ceiling surfaced
+ * in the UI. Matter-antimatter is capped at 25% c because the mass ratio
+ * becomes unreasonable before the theoretical limit near 33% c. Lower-energy
+ * fuels are capped below their prior hard limits so switching fuels clearly
+ * changes the slider.
  */
 class InterstellarFuels
 {
@@ -44,28 +37,28 @@ class InterstellarFuels
                 'name' => 'Matter-Antimatter',
                 'specificEnergyJoulesPerKg' => 8.9875517874e16,
                 'comparisonPercent' => 100.00,
-                'maxVelocityMps' => 269_800_000.0,
+                'maxVelocityMps' => 74_948_114.0,
             ],
             [
                 'id' => 'deuterium-tritium',
                 'name' => 'Deuterium-Tritium',
                 'specificEnergyJoulesPerKg' => 3.38e14,
                 'comparisonPercent' => 0.3761,
-                'maxVelocityMps' => 1_341_000.0,
+                'maxVelocityMps' => 1_005_750.0,
             ],
             [
                 'id' => 'uranium-235',
                 'name' => 'Uranium-235 Isotope',
                 'specificEnergyJoulesPerKg' => 1.44e14,
                 'comparisonPercent' => 0.1602,
-                'maxVelocityMps' => 691_000.0,
+                'maxVelocityMps' => 518_250.0,
             ],
             [
                 'id' => 'natural-uranium',
                 'name' => 'Natural Uranium',
                 'specificEnergyJoulesPerKg' => 8.6e13,
                 'comparisonPercent' => 0.0958,
-                'maxVelocityMps' => 413_000.0,
+                'maxVelocityMps' => 309_750.0,
             ],
         ];
     }
