@@ -55,6 +55,14 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
 
+      - name: Verify SSH access
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "echo 'SSH deploy connection OK'"
+
       - name: Deploy with rsync
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -73,7 +81,7 @@ jobs:
             --exclude='storage/framework/cache/' \
             --exclude='storage/framework/sessions/' \
             --exclude='storage/framework/views/' \
-            -e "ssh -p ${SSH_PORT}" \
+            -e "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -p ${SSH_PORT}" \
             ./ \
             "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/"
 
@@ -83,7 +91,7 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
-          ssh -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${DEPLOY_PATH}' && \
+          ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${DEPLOY_PATH}' && \
             mkdir -p storage/app/private storage/app/public storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache && \
             chmod -R ug+rw storage bootstrap/cache && \
             php artisan config:clear && \
