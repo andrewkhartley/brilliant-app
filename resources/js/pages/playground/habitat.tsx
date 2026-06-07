@@ -14,6 +14,10 @@ import { buildHabitatStoryScenes } from './habitat/story';
 const DEFAULT_RADIUS_METERS = 3_200;
 const DEFAULT_LENGTH_METERS = 32_000;
 const DEFAULT_DENSITY_PER_KM2 = 12_000;
+const PRACTICAL_RADIUS_MAX_METERS = 10_000;
+const HUGE_RADIUS_MAX_METERS = 1_000_000_000_000;
+const SCIENTIFIC_NOTATION_THRESHOLD = 1_000_000_000_000;
+const ROTATION_RATE_UNITS = ['minute', 'hour', 'day', 'year'] as const;
 
 const LAND_COMPARISONS = [
     { id: 'hotelRooms', squareKm: 0.0306580032 },
@@ -73,6 +77,37 @@ const PRESETS = [
     },
 ];
 
+const FICTIONAL_SCALE_PRESETS = [
+    {
+        id: 'nivenRingworld',
+        radiusMeters: 149_600_000_000,
+        lengthMeters: 1_600_000_000,
+    },
+    {
+        id: 'haloInstallation',
+        radiusMeters: 5_000_000,
+        lengthMeters: 318_000,
+    },
+];
+
+const HABITAT_LIFE_SCENARIOS = [
+    'notGravity',
+    'fallingAndAirDrag',
+    'gravityZones',
+    'movementAndSports',
+    'mountain',
+    'waterInLowGravity',
+    'destinationGravityAndParkour',
+    'accelerationLife',
+    'accelerationSpaces',
+    'accelerationMess',
+    'architectureAndFoundations',
+    'transportation',
+] as const;
+
+type HabitatLifeScenarioId = (typeof HABITAT_LIFE_SCENARIOS)[number];
+type RotationRateUnit = (typeof ROTATION_RATE_UNITS)[number];
+
 type EditableControlId =
     | 'radius'
     | 'length'
@@ -93,6 +128,7 @@ interface EditableControl {
     onChange: (value: number) => void;
     toInternal: (value: number) => number;
     toEdit: (value: number) => number;
+    inputOnly?: boolean;
 }
 
 export default function HabitatPage() {
@@ -102,10 +138,18 @@ export default function HabitatPage() {
     const [gravityMultiplier, setGravityMultiplier] = useState(1);
     const [densityPerKm2, setDensityPerKm2] = useState(DEFAULT_DENSITY_PER_KM2);
     const [accelerationMultiplier, setAccelerationMultiplier] = useState(0.05);
+    const [isHugeScaleEnabled, setIsHugeScaleEnabled] = useState(false);
+    const [rotationRateUnit, setRotationRateUnit] =
+        useState<RotationRateUnit>('minute');
     const [editingControl, setEditingControl] =
         useState<EditableControlId | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isStoryOpen, setIsStoryOpen] = useState(false);
+    const maxAccelerationMultiplier = Math.min(0.5, gravityMultiplier);
+    const effectiveAccelerationMultiplier = Math.min(
+        accelerationMultiplier,
+        maxAccelerationMultiplier,
+    );
 
     const metrics = useMemo(() => {
         const targetGravity = gravityMultiplier * STANDARD_GRAVITY;
@@ -122,9 +166,32 @@ export default function HabitatPage() {
         const rotationSeconds = (2 * Math.PI) / angularVelocity;
         const rimSpeedMetersPerSecond = angularVelocity * radiusMeters;
         const population = innerBandSquareKm * densityPerKm2;
-        const acceleration = accelerationMultiplier * STANDARD_GRAVITY;
-        const tiltDegrees =
-            (Math.atan2(acceleration, targetGravity) * 180) / Math.PI;
+        const acceleration = effectiveAccelerationMultiplier * STANDARD_GRAVITY;
+        const adjustedSpinGravity = Math.sqrt(
+            Math.max(0, targetGravity ** 2 - acceleration ** 2),
+        );
+        const adjustedAngularVelocity =
+            adjustedSpinGravity === 0
+                ? 0
+                : Math.sqrt(adjustedSpinGravity / radiusMeters);
+        const adjustedRotationsPerMinute =
+            (adjustedAngularVelocity * 60) / (2 * Math.PI);
+        const adjustedRotationSeconds =
+            adjustedAngularVelocity === 0
+                ? null
+                : (2 * Math.PI) / adjustedAngularVelocity;
+        const foundationTiltDegrees =
+            (Math.atan2(acceleration, adjustedSpinGravity) * 180) / Math.PI;
+        const adjustedSpinGravityMultiplier =
+            adjustedSpinGravity / STANDARD_GRAVITY;
+        const adjustedSpinRateDelta =
+            adjustedRotationsPerMinute - rotationsPerMinute;
+        const adjustedRotationDelta =
+            adjustedRotationSeconds === null
+                ? null
+                : adjustedRotationSeconds - rotationSeconds;
+        const adjustedSpinGravityDelta =
+            adjustedSpinGravityMultiplier - gravityMultiplier;
 
         return {
             circumferenceKm: circumferenceMeters / 1_000,
@@ -132,13 +199,19 @@ export default function HabitatPage() {
             closedShellSquareKm,
             rotationsPerMinute,
             rotationSeconds,
+            adjustedRotationsPerMinute,
+            adjustedRotationSeconds,
+            adjustedSpinGravityMultiplier,
+            adjustedSpinRateDelta,
+            adjustedRotationDelta,
+            adjustedSpinGravityDelta,
             rimSpeedMetersPerSecond,
             population,
-            tiltDegrees,
+            foundationTiltDegrees,
         };
     }, [
-        accelerationMultiplier,
         densityPerKm2,
+        effectiveAccelerationMultiplier,
         gravityMultiplier,
         lengthMeters,
         radiusMeters,
@@ -149,7 +222,9 @@ export default function HabitatPage() {
             id: 'radius',
             label: t('habitat.controls.radius'),
             min: 500,
-            max: 10_000,
+            max: isHugeScaleEnabled
+                ? HUGE_RADIUS_MAX_METERS
+                : PRACTICAL_RADIUS_MAX_METERS,
             step: 100,
             value: radiusMeters,
             displayValue: t('habitat.controls.radiusFormat', {
@@ -160,6 +235,7 @@ export default function HabitatPage() {
             onChange: setRadiusMeters,
             toInternal: (value) => value * 1_000,
             toEdit: (value) => value / 1_000,
+            inputOnly: isHugeScaleEnabled,
         },
         {
             id: 'length',
@@ -213,13 +289,13 @@ export default function HabitatPage() {
             id: 'acceleration',
             label: t('habitat.controls.acceleration'),
             min: 0,
-            max: 0.5,
+            max: maxAccelerationMultiplier,
             step: 0.01,
-            value: accelerationMultiplier,
+            value: effectiveAccelerationMultiplier,
             displayValue: t('habitat.controls.accelerationFormat', {
-                value: formatNumber(accelerationMultiplier, 2),
+                value: formatNumber(effectiveAccelerationMultiplier, 2),
             }),
-            editValue: accelerationMultiplier,
+            editValue: effectiveAccelerationMultiplier,
             unitLabel: t('habitat.controls.gravityUnit'),
             onChange: setAccelerationMultiplier,
             toInternal: (value) => value,
@@ -230,6 +306,15 @@ export default function HabitatPage() {
     const activeControl =
         controls.find((control) => control.id === editingControl) ?? null;
     const storyLabels = useMemo(() => buildStoryStageLabels(t), [t]);
+    const handleHugeScaleChange = (isEnabled: boolean) => {
+        setIsHugeScaleEnabled(isEnabled);
+
+        if (!isEnabled) {
+            setRadiusMeters((currentRadiusMeters) =>
+                Math.min(currentRadiusMeters, PRACTICAL_RADIUS_MAX_METERS),
+            );
+        }
+    };
 
     const landComparisons = LAND_COMPARISONS.map((item) => ({
         id: item.id,
@@ -276,7 +361,11 @@ export default function HabitatPage() {
                         value: formatNumber(metrics.population, 0),
                     }),
                     spinRate: t('habitat.results.rpmFormat', {
-                        value: formatNumber(metrics.rotationsPerMinute, 2),
+                        value: formatRotationRate(
+                            metrics.rotationsPerMinute,
+                            rotationRateUnit,
+                        ),
+                        unit: t(`habitat.rotationUnits.${rotationRateUnit}`),
                     }),
                 },
                 onOpenControls: () => {
@@ -289,6 +378,7 @@ export default function HabitatPage() {
             metrics.innerBandSquareKm,
             metrics.population,
             metrics.rotationsPerMinute,
+            rotationRateUnit,
             t,
         ],
     );
@@ -296,15 +386,27 @@ export default function HabitatPage() {
     const applyPreset = (presetId: string) => {
         const preset = PRESETS.find((candidate) => candidate.id === presetId);
 
-        if (!preset) {
+        if (preset) {
+            setRadiusMeters(preset.radiusMeters);
+            setLengthMeters(preset.lengthMeters);
+            setGravityMultiplier(preset.gravityMultiplier);
+            setDensityPerKm2(preset.densityPerKm2);
+            setAccelerationMultiplier(preset.accelerationMultiplier);
+
             return;
         }
 
-        setRadiusMeters(preset.radiusMeters);
-        setLengthMeters(preset.lengthMeters);
-        setGravityMultiplier(preset.gravityMultiplier);
-        setDensityPerKm2(preset.densityPerKm2);
-        setAccelerationMultiplier(preset.accelerationMultiplier);
+        const fictionalPreset = FICTIONAL_SCALE_PRESETS.find(
+            (candidate) => candidate.id === presetId,
+        );
+
+        if (!fictionalPreset) {
+            return;
+        }
+
+        setIsHugeScaleEnabled(true);
+        setRadiusMeters(fictionalPreset.radiusMeters);
+        setLengthMeters(fictionalPreset.lengthMeters);
     };
 
     return (
@@ -381,7 +483,10 @@ export default function HabitatPage() {
                             step={t('habitat.lesson.stepOne')}
                             eyebrow={t('habitat.builder.kicker')}
                             title={t('habitat.builder.heading')}
-                            body={t('habitat.builder.intro')}
+                            body={[
+                                t('habitat.builder.introA'),
+                                t('habitat.builder.introB'),
+                            ]}
                         >
                             <div className="grid gap-4 lg:grid-cols-3">
                                 <PrimaryMetric
@@ -397,9 +502,12 @@ export default function HabitatPage() {
                                 <PrimaryMetric
                                     label={t('habitat.results.spinRate')}
                                     value={t('habitat.results.rpmFormat', {
-                                        value: formatNumber(
+                                        value: formatRotationRate(
                                             metrics.rotationsPerMinute,
-                                            2,
+                                            rotationRateUnit,
+                                        ),
+                                        unit: t(
+                                            `habitat.rotationUnits.${rotationRateUnit}`,
                                         ),
                                     })}
                                     note={t('habitat.story.spinNote')}
@@ -419,7 +527,85 @@ export default function HabitatPage() {
                                 />
                             </div>
 
-                            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                                <div className="rounded-lg border border-cyan-100/14 bg-slate-950/62 p-4 shadow-lg shadow-black/22 backdrop-blur-md">
+                                    <p className="text-sm font-semibold text-white">
+                                        {t('habitat.rotationUnits.title')}
+                                    </p>
+                                    <p className="mt-1 text-xs leading-5 text-cyan-50/58">
+                                        {t('habitat.rotationUnits.body')}
+                                    </p>
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {ROTATION_RATE_UNITS.map((unit) => (
+                                            <button
+                                                key={unit}
+                                                type="button"
+                                                onClick={() =>
+                                                    setRotationRateUnit(unit)
+                                                }
+                                                className={[
+                                                    'cursor-pointer rounded border px-3 py-2 text-xs font-semibold transition focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none',
+                                                    rotationRateUnit === unit
+                                                        ? 'border-amber-200/40 bg-amber-200/14 text-amber-100'
+                                                        : 'border-cyan-100/14 bg-cyan-50/7 text-cyan-50/72 hover:border-cyan-100/30 hover:bg-cyan-50/12',
+                                                ].join(' ')}
+                                            >
+                                                {t(
+                                                    `habitat.rotationUnits.${unit}`,
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-lg border border-cyan-100/14 bg-slate-950/62 p-4 shadow-lg shadow-black/22 backdrop-blur-md">
+                                    <div className="flex flex-wrap items-center justify-between gap-3">
+                                        <label
+                                            htmlFor="habitat-inline-acceleration"
+                                            className="text-sm font-semibold text-white"
+                                        >
+                                            {t(
+                                                'habitat.accelerationControl.title',
+                                            )}
+                                        </label>
+                                        <p className="font-mono text-lg font-semibold text-amber-100">
+                                            {t(
+                                                'habitat.controls.accelerationFormat',
+                                                {
+                                                    value: formatNumber(
+                                                        effectiveAccelerationMultiplier,
+                                                        2,
+                                                    ),
+                                                },
+                                            )}
+                                        </p>
+                                    </div>
+                                    <p className="mt-1 text-xs leading-5 text-cyan-50/58">
+                                        {t('habitat.accelerationControl.body')}
+                                    </p>
+                                    <input
+                                        id="habitat-inline-acceleration"
+                                        type="range"
+                                        min={0}
+                                        max={maxAccelerationMultiplier}
+                                        step={0.01}
+                                        value={effectiveAccelerationMultiplier}
+                                        onChange={(event) =>
+                                            setAccelerationMultiplier(
+                                                Number(
+                                                    event.currentTarget.value,
+                                                ),
+                                            )
+                                        }
+                                        aria-label={t(
+                                            'habitat.controls.acceleration',
+                                        )}
+                                        className="mt-4 w-full cursor-pointer accent-amber-300"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                                 <MetricCard
                                     label={t('habitat.results.circumference')}
                                     value={t('habitat.results.kmFormat', {
@@ -441,9 +627,8 @@ export default function HabitatPage() {
                                 <MetricCard
                                     label={t('habitat.results.dayLength')}
                                     value={t('habitat.results.secondsFormat', {
-                                        value: formatNumber(
+                                        value: formatDurationReference(
                                             metrics.rotationSeconds,
-                                            1,
                                         ),
                                     })}
                                 />
@@ -460,37 +645,70 @@ export default function HabitatPage() {
                                     label={t('habitat.results.tilt')}
                                     value={t('habitat.results.tiltFormat', {
                                         value: formatNumber(
-                                            metrics.tiltDegrees,
+                                            metrics.foundationTiltDegrees,
                                             1,
                                         ),
                                     })}
                                 />
+                                <MetricCard
+                                    label={t('habitat.results.adjustedSpinRate')}
+                                    value={t('habitat.results.rpmFormat', {
+                                        value: formatRotationRate(
+                                            metrics.adjustedRotationsPerMinute,
+                                            rotationRateUnit,
+                                        ),
+                                        unit: t(
+                                            `habitat.rotationUnits.${rotationRateUnit}`,
+                                        ),
+                                    })}
+                                    delta={formatSignedNumber(
+                                        metrics.adjustedSpinRateDelta,
+                                        2,
+                                    )}
+                                />
+                                <MetricCard
+                                    label={t(
+                                        'habitat.results.adjustedSpinGravity',
+                                    )}
+                                    value={t('habitat.results.gravityFormat', {
+                                        value: formatNumber(
+                                            metrics.adjustedSpinGravityMultiplier,
+                                            3,
+                                        ),
+                                    })}
+                                    delta={formatSignedNumber(
+                                        metrics.adjustedSpinGravityDelta,
+                                        3,
+                                    )}
+                                />
+                                <MetricCard
+                                    label={t(
+                                        'habitat.results.adjustedRotation',
+                                    )}
+                                    value={
+                                        metrics.adjustedRotationSeconds === null
+                                            ? t(
+                                                  'habitat.results.noSpinFormat',
+                                              )
+                                            : t('habitat.results.secondsFormat', {
+                                                  value: formatDurationReference(
+                                                      metrics.adjustedRotationSeconds,
+                                                  ),
+                                              })
+                                    }
+                                    delta={
+                                        metrics.adjustedRotationDelta === null
+                                            ? undefined
+                                            : formatSignedNumber(
+                                                  metrics.adjustedRotationDelta,
+                                                  1,
+                                              )
+                                    }
+                                />
                             </div>
                         </LearningStep>
 
-                        <LearningStep
-                            step={t('habitat.lesson.stepTwo')}
-                            eyebrow={t('habitat.life.eyebrow')}
-                            title={t('habitat.life.title')}
-                            body={t('habitat.life.body')}
-                        >
-                            <div className="grid gap-4 md:grid-cols-3">
-                                <LifeCard
-                                    title={t('habitat.life.cards.sky.title')}
-                                    body={t('habitat.life.cards.sky.body')}
-                                />
-                                <LifeCard
-                                    title={t(
-                                        'habitat.life.cards.weather.title',
-                                    )}
-                                    body={t('habitat.life.cards.weather.body')}
-                                />
-                                <LifeCard
-                                    title={t('habitat.life.cards.body.title')}
-                                    body={t('habitat.life.cards.body.body')}
-                                />
-                            </div>
-                        </LearningStep>
+                        <LifeScenarioSection />
 
                         <LearningStep
                             step={t('habitat.lesson.stepThree')}
@@ -533,16 +751,15 @@ export default function HabitatPage() {
                     </div>
                 </div>
 
-                <section className="relative overflow-hidden bg-[#171106] py-14 sm:py-16">
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_20%,rgba(251,191,36,0.18),transparent_30%),radial-gradient(circle_at_18%_72%,rgba(245,158,11,0.12),transparent_28%),linear-gradient(180deg,rgba(30,20,6,0.92),rgba(12,10,6,0.96))]" />
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,rgba(251,191,36,0.22)_1px,transparent_1px)] bg-size-[46px_46px] opacity-18" />
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-0.75 bg-linear-to-r from-transparent via-amber-200/76 to-transparent" />
+                <section className="relative overflow-hidden bg-[#07111f] py-14 sm:py-16">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(34,211,238,0.14),transparent_30%),linear-gradient(180deg,rgba(8,17,31,0.96),rgba(2,6,23,0.98))]" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-0.75 bg-linear-to-r from-transparent via-cyan-200/66 to-transparent" />
                     <div className="relative mx-auto grid max-w-6xl gap-5 px-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)]">
-                        <div className="rounded-lg border border-amber-100/20 bg-amber-100/10 p-5 shadow-xl shadow-black/24 backdrop-blur-md">
+                        <div className="rounded-lg border border-cyan-100/18 bg-cyan-50/8 p-5 shadow-xl shadow-black/24 backdrop-blur-md">
                             <h2 className="text-lg font-semibold tracking-normal text-white">
                                 {t('habitat.formula.registryTitle')}
                             </h2>
-                            <p className="mt-3 text-sm leading-7 text-amber-50/76">
+                            <p className="mt-3 text-sm leading-7 text-cyan-50/76">
                                 {t('habitat.formula.registryBody')}
                             </p>
                             <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -559,7 +776,7 @@ export default function HabitatPage() {
                                     formula={t('habitat.formula.tiltFormula')}
                                 />
                             </div>
-                            <p className="mt-4 text-xs leading-6 text-amber-50/62">
+                            <p className="mt-4 text-xs leading-6 text-cyan-50/62">
                                 {t('habitat.formula.bandNote')}
                             </p>
                         </div>
@@ -569,13 +786,18 @@ export default function HabitatPage() {
                                 equation={cylinderSurfaceArea}
                                 theme="amber"
                             />
-                            <p className="mt-3 text-xs leading-6 text-amber-50/62">
+                            <p className="mt-3 text-xs leading-6 text-cyan-50/62">
                                 {t('habitat.formula.surfaceAreaNote')}
                             </p>
                         </div>
                     </div>
+                </section>
 
-                    <div className="relative mx-auto mt-10 max-w-6xl px-4">
+                <section className="relative overflow-hidden bg-[#171106] py-14 sm:py-16">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_20%,rgba(251,191,36,0.18),transparent_30%),radial-gradient(circle_at_18%_72%,rgba(245,158,11,0.12),transparent_28%),linear-gradient(180deg,rgba(30,20,6,0.92),rgba(12,10,6,0.96))]" />
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,rgba(251,191,36,0.22)_1px,transparent_1px)] bg-size-[46px_46px] opacity-18" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-0.75 bg-linear-to-r from-transparent via-amber-200/76 to-transparent" />
+                    <div className="relative mx-auto max-w-6xl px-4">
                         <div className="rounded-lg border border-amber-100/20 bg-amber-100/10 p-6 shadow-2xl shadow-black/30 backdrop-blur-md sm:p-7">
                             <div>
                                 <p className="text-xs font-semibold tracking-[0.24em] text-amber-200/78 uppercase">
@@ -654,10 +876,13 @@ export default function HabitatPage() {
                 {isSettingsOpen && (
                     <ControlsModal
                         controls={controls}
+                        isHugeScaleEnabled={isHugeScaleEnabled}
                         metrics={metrics}
                         onClose={() => setIsSettingsOpen(false)}
                         onEdit={setEditingControl}
+                        onHugeScaleChange={handleHugeScaleChange}
                         onPreset={applyPreset}
+                        rotationRateUnit={rotationRateUnit}
                     />
                 )}
 
@@ -674,12 +899,16 @@ export default function HabitatPage() {
 
 function ControlsModal({
     controls,
+    isHugeScaleEnabled,
     metrics,
     onClose,
     onEdit,
+    onHugeScaleChange,
     onPreset,
+    rotationRateUnit,
 }: {
     controls: EditableControl[];
+    isHugeScaleEnabled: boolean;
     metrics: {
         innerBandSquareKm: number;
         rotationsPerMinute: number;
@@ -687,7 +916,9 @@ function ControlsModal({
     };
     onClose: () => void;
     onEdit: (controlId: EditableControlId) => void;
+    onHugeScaleChange: (isEnabled: boolean) => void;
     onPreset: (presetId: string) => void;
+    rotationRateUnit: RotationRateUnit;
 }) {
     const { t } = useTranslation();
 
@@ -742,9 +973,12 @@ function ControlsModal({
                             <MetricCard
                                 label={t('habitat.results.spinRate')}
                                 value={t('habitat.results.rpmFormat', {
-                                    value: formatNumber(
+                                    value: formatRotationRate(
                                         metrics.rotationsPerMinute,
-                                        2,
+                                        rotationRateUnit,
+                                    ),
+                                    unit: t(
+                                        `habitat.rotationUnits.${rotationRateUnit}`,
                                     ),
                                 })}
                             />
@@ -759,7 +993,9 @@ function ControlsModal({
                     <div className="min-h-0 overflow-y-auto p-4">
                         <ControlRail
                             controls={controls}
+                            isHugeScaleEnabled={isHugeScaleEnabled}
                             onEdit={onEdit}
+                            onHugeScaleChange={onHugeScaleChange}
                             onPreset={onPreset}
                             compact
                         />
@@ -773,12 +1009,16 @@ function ControlsModal({
 function ControlRail({
     compact = false,
     controls,
+    isHugeScaleEnabled,
     onEdit,
+    onHugeScaleChange,
     onPreset,
 }: {
     compact?: boolean;
     controls: EditableControl[];
+    isHugeScaleEnabled: boolean;
     onEdit: (controlId: EditableControlId) => void;
+    onHugeScaleChange: (isEnabled: boolean) => void;
     onPreset: (presetId: string) => void;
 }) {
     const { t } = useTranslation();
@@ -801,6 +1041,25 @@ function ControlRail({
                 {t('habitat.controls.railBody')}
             </p>
 
+            <label className="mt-4 flex cursor-pointer items-start gap-3 rounded border border-amber-200/18 bg-amber-200/8 p-3 text-sm text-cyan-50/76">
+                <input
+                    type="checkbox"
+                    checked={isHugeScaleEnabled}
+                    onChange={(event) =>
+                        onHugeScaleChange(event.currentTarget.checked)
+                    }
+                    className="mt-1 size-4 cursor-pointer accent-amber-300"
+                />
+                <span>
+                    <span className="block font-semibold text-amber-100">
+                        {t('habitat.controls.hugeScaleLabel')}
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-cyan-50/62">
+                        {t('habitat.controls.hugeScaleHint')}
+                    </span>
+                </span>
+            </label>
+
             <div
                 className={
                     compact
@@ -818,6 +1077,17 @@ function ControlRail({
                         {t(`habitat.presets.${preset.id}`)}
                     </button>
                 ))}
+                {isHugeScaleEnabled &&
+                    FICTIONAL_SCALE_PRESETS.map((preset) => (
+                        <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => onPreset(preset.id)}
+                            className="cursor-pointer rounded border border-amber-200/22 bg-amber-200/10 px-3 py-2 text-start text-xs font-semibold text-amber-100 transition hover:border-amber-100/52 hover:bg-amber-200/16 focus-visible:ring-2 focus-visible:ring-amber-100 focus-visible:outline-none"
+                        >
+                            {t(`habitat.presets.${preset.id}`)}
+                        </button>
+                    ))}
             </div>
 
             <div
@@ -850,6 +1120,7 @@ function EditableSlider({
     onEdit: () => void;
 }) {
     const { t } = useTranslation();
+    const exactValue = control.toEdit(control.value);
 
     return (
         <div
@@ -866,33 +1137,71 @@ function EditableSlider({
                 >
                     {control.label}
                 </label>
-                <button
-                    type="button"
-                    onClick={onEdit}
-                    className="cursor-pointer rounded border border-cyan-100/14 bg-cyan-50/7 px-2 py-1 font-mono text-xs font-semibold text-white transition hover:border-cyan-200/40 hover:bg-cyan-100/12 focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:outline-none"
-                    aria-label={t('habitat.controls.editAria', {
-                        label: control.label,
-                    })}
-                >
-                    {control.displayValue}
-                </button>
+                {!control.inputOnly && (
+                    <button
+                        type="button"
+                        onClick={onEdit}
+                        className="cursor-pointer rounded border border-cyan-100/14 bg-cyan-50/7 px-2 py-1 font-mono text-xs font-semibold text-white transition hover:border-cyan-200/40 hover:bg-cyan-100/12 focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:outline-none"
+                        aria-label={t('habitat.controls.editAria', {
+                            label: control.label,
+                        })}
+                    >
+                        {control.displayValue}
+                    </button>
+                )}
             </div>
-            <input
-                id={`habitat-${control.id}`}
-                type="range"
-                min={control.min}
-                max={control.max}
-                step={control.step}
-                value={control.value}
-                onChange={(event) =>
-                    control.onChange(Number(event.target.value))
-                }
-                className={
-                    compact
-                        ? 'brilliant-slider mt-2 w-full cursor-pointer accent-cyan-300'
-                        : 'brilliant-slider mt-3 w-full cursor-pointer accent-cyan-300'
-                }
-            />
+            {control.inputOnly ? (
+                <div className="mt-3">
+                    <input
+                        id={`habitat-${control.id}`}
+                        type="number"
+                        min={control.toEdit(control.min)}
+                        max={control.toEdit(control.max)}
+                        step={control.toEdit(control.step)}
+                        value={Number.isFinite(exactValue) ? exactValue : 0}
+                        onChange={(event) => {
+                            const parsedValue = Number(
+                                event.currentTarget.value,
+                            );
+
+                            if (!Number.isFinite(parsedValue)) {
+                                return;
+                            }
+
+                            const nextValue = Math.min(
+                                control.max,
+                                Math.max(
+                                    control.min,
+                                    control.toInternal(parsedValue),
+                                ),
+                            );
+
+                            control.onChange(nextValue);
+                        }}
+                        className="w-full rounded border border-amber-200/22 bg-slate-950 px-3 py-2 font-mono text-sm font-semibold text-white shadow-inner shadow-black/24 focus-visible:ring-2 focus-visible:ring-amber-100 focus-visible:outline-none"
+                    />
+                    <p className="mt-2 text-xs leading-5 text-cyan-50/54">
+                        {t('habitat.controls.hugeScaleInputHint')}
+                    </p>
+                </div>
+            ) : (
+                <input
+                    id={`habitat-${control.id}`}
+                    type="range"
+                    min={control.min}
+                    max={control.max}
+                    step={control.step}
+                    value={control.value}
+                    onChange={(event) =>
+                        control.onChange(Number(event.target.value))
+                    }
+                    className={
+                        compact
+                            ? 'brilliant-slider mt-2 w-full cursor-pointer accent-cyan-300'
+                            : 'brilliant-slider mt-3 w-full cursor-pointer accent-cyan-300'
+                    }
+                />
+            )}
         </div>
     );
 }
@@ -1023,7 +1332,7 @@ function LearningStep({
     step,
     title,
 }: {
-    body: string;
+    body: string | string[];
     children: ReactNode;
     eyebrow: string;
     step: string;
@@ -1048,9 +1357,11 @@ function LearningStep({
                     <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white">
                         {title}
                     </h2>
-                    <p className="mt-4 text-sm leading-7 text-cyan-50/72">
-                        {body}
-                    </p>
+                    <div className="mt-4 space-y-4 text-sm leading-7 text-cyan-50/72">
+                        {(Array.isArray(body) ? body : [body]).map((paragraph) => (
+                            <p key={paragraph}>{paragraph}</p>
+                        ))}
+                    </div>
                 </div>
                 <div>{children}</div>
             </div>
@@ -1080,7 +1391,15 @@ function PrimaryMetric({
     );
 }
 
-function MetricCard({ label, value }: { label: string; value: string }) {
+function MetricCard({
+    delta,
+    label,
+    value,
+}: {
+    delta?: string;
+    label: string;
+    value: string;
+}) {
     return (
         <article className="rounded-lg border border-cyan-100/14 bg-slate-950/64 p-4 shadow-lg shadow-black/22 backdrop-blur-md">
             <p className="text-xs font-semibold tracking-[0.2em] text-cyan-200/70 uppercase">
@@ -1089,15 +1408,187 @@ function MetricCard({ label, value }: { label: string; value: string }) {
             <p className="mt-2 font-mono text-xl font-semibold text-white">
                 {value}
             </p>
+            {delta !== undefined && (
+                <p className="mt-2 font-mono text-xs font-semibold text-emerald-300">
+                    {delta}
+                </p>
+            )}
         </article>
     );
 }
 
-function LifeCard({ body, title }: { body: string; title: string }) {
+function LifeScenarioSection() {
+    const { t } = useTranslation();
+    const [activeIndex, setActiveIndex] = useState(0);
+    const activeScenario: HabitatLifeScenarioId =
+        HABITAT_LIFE_SCENARIOS[activeIndex];
+
+    const goToPrevious = () => {
+        setActiveIndex((current) =>
+            current === 0 ? HABITAT_LIFE_SCENARIOS.length - 1 : current - 1,
+        );
+    };
+
+    const goToNext = () => {
+        setActiveIndex((current) =>
+            current === HABITAT_LIFE_SCENARIOS.length - 1 ? 0 : current + 1,
+        );
+    };
+
     return (
-        <article className="rounded-lg border border-cyan-100/14 bg-slate-950/64 p-5 shadow-lg shadow-black/22">
-            <h3 className="text-lg font-semibold text-white">{title}</h3>
-            <p className="mt-3 text-sm leading-7 text-cyan-50/70">{body}</p>
+        <section className="relative overflow-hidden border-t border-cyan-100/18 pt-10">
+            <div className="grid items-start gap-8 lg:grid-cols-[minmax(15rem,0.382fr)_minmax(0,0.618fr)]">
+                <div className="lg:self-start">
+                    <div className="inline-flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded border border-cyan-100/16 bg-cyan-50/8 px-3 py-2 shadow-lg shadow-black/18 backdrop-blur-sm">
+                        <p className="font-mono text-sm font-semibold text-cyan-100">
+                            {t('habitat.lesson.stepTwo')}
+                        </p>
+                        <span
+                            aria-hidden="true"
+                            className="h-4 w-px bg-cyan-100/24"
+                        />
+                        <p className="text-xs font-semibold tracking-[0.2em] text-cyan-50/78 uppercase">
+                            {t('habitat.life.eyebrow')}
+                        </p>
+                    </div>
+                    <ScenarioIndex
+                        activeIndex={activeIndex}
+                        onSelect={setActiveIndex}
+                    />
+                </div>
+
+                <div className="space-y-5">
+                    <div>
+                        <h2 className="text-3xl font-semibold tracking-normal text-white">
+                            {t('habitat.life.title')}
+                        </h2>
+                        <p className="mt-4 max-w-3xl text-sm leading-7 text-cyan-50/72">
+                            {t('habitat.life.body')}
+                        </p>
+                    </div>
+                    <LifeScenario
+                        number={activeIndex + 1}
+                        title={t(
+                            `habitat.life.scenarios.${activeScenario}.title`,
+                        )}
+                        body={t(
+                            `habitat.life.scenarios.${activeScenario}.body`,
+                        )}
+                    />
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <p className="font-mono text-sm font-semibold text-cyan-100/72">
+                            {t('habitat.life.deck.position', {
+                                current: activeIndex + 1,
+                                total: HABITAT_LIFE_SCENARIOS.length,
+                            })}
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={goToPrevious}
+                                className="inline-flex cursor-pointer items-center gap-2 rounded border border-cyan-100/18 bg-cyan-50/8 px-3 py-2 text-sm font-semibold text-cyan-50 transition hover:border-cyan-100/36 hover:bg-cyan-50/12 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none"
+                            >
+                                <i
+                                    aria-hidden="true"
+                                    className="fa-solid fa-arrow-left"
+                                />
+                                {t('habitat.life.deck.previous')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={goToNext}
+                                className="inline-flex cursor-pointer items-center gap-2 rounded border border-amber-200/28 bg-amber-200/12 px-3 py-2 text-sm font-semibold text-amber-100 transition hover:border-amber-100/52 hover:bg-amber-200/16 focus-visible:ring-2 focus-visible:ring-amber-100 focus-visible:outline-none"
+                            >
+                                {t('habitat.life.deck.next')}
+                                <i
+                                    aria-hidden="true"
+                                    className="fa-solid fa-arrow-right"
+                                />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function ScenarioIndex({
+    activeIndex,
+    onSelect,
+}: {
+    activeIndex: number;
+    onSelect: (index: number) => void;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <div className="mt-6 rounded-lg border border-cyan-100/14 bg-slate-950/62 p-3 shadow-xl shadow-black/22">
+            <p className="px-2 pb-3 text-xs font-semibold tracking-[0.2em] text-cyan-200/64 uppercase">
+                {t('habitat.life.deck.indexTitle')}
+            </p>
+            <div className="scenario-index-scrollbar max-h-80 space-y-1 overflow-y-auto pr-3">
+                {HABITAT_LIFE_SCENARIOS.map((scenario, index) => {
+                    const isActive = index === activeIndex;
+
+                    return (
+                        <button
+                            key={scenario}
+                            type="button"
+                            onClick={() => onSelect(index)}
+                            aria-current={isActive ? 'true' : undefined}
+                            className={[
+                                'flex w-full cursor-pointer items-center gap-3 rounded px-3 py-2 text-left text-sm transition focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none',
+                                isActive
+                                    ? 'border border-amber-200/30 bg-amber-200/12 text-amber-100'
+                                    : 'border border-transparent text-cyan-50/68 hover:border-cyan-100/18 hover:bg-cyan-50/8 hover:text-cyan-50',
+                            ].join(' ')}
+                        >
+                            <span className="font-mono text-xs text-cyan-100/54">
+                                {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <span>
+                                {t(
+                                    `habitat.life.scenarios.${scenario}.title`,
+                                )}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+function LifeScenario({
+    body,
+    number,
+    title,
+}: {
+    body: string;
+    number: number;
+    title: string;
+}) {
+    return (
+        <article className="group relative isolate min-h-48 rounded-md border border-cyan-100/18 bg-slate-950/86 p-5 text-cyan-50 shadow-[0_18px_42px_rgba(2,6,23,0.42)] transition duration-200 before:absolute before:inset-0 before:-z-10 before:translate-x-2 before:translate-y-2 before:rounded-md before:border before:border-cyan-100/10 before:bg-cyan-950/32 before:content-[''] after:absolute after:inset-0 after:-z-20 after:translate-x-4 after:translate-y-4 after:rounded-md after:border after:border-amber-200/10 after:bg-slate-900/62 after:content-[''] hover:-translate-y-1 hover:border-cyan-100/32 hover:bg-slate-950 hover:shadow-[0_24px_52px_rgba(2,6,23,0.5)]">
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-md bg-[radial-gradient(circle_at_18%_12%,rgba(34,211,238,0.14),transparent_30%),linear-gradient(135deg,rgba(251,191,36,0.08),transparent_38%)]"
+            />
+            <div className="flex items-start justify-between gap-4 border-b border-cyan-100/12 pb-3">
+                <div>
+                    <p className="text-[0.66rem] font-semibold tracking-[0.24em] text-cyan-200/62 uppercase">
+                        {'Scenario'}
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold leading-6 text-white">
+                        {title}
+                    </h3>
+                </div>
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-amber-200/34 bg-amber-200/10 text-sm font-semibold text-amber-100 shadow-md shadow-slate-950/18">
+                    {number}
+                </div>
+            </div>
+            <p className="mt-4 text-sm leading-7 text-cyan-50/72">{body}</p>
         </article>
     );
 }
@@ -1203,7 +1694,69 @@ function formatLandRatio(
     });
 }
 
+function formatSignedNumber(value: number, maximumFractionDigits: number) {
+    const formatted = formatNumber(Math.abs(value), maximumFractionDigits);
+
+    if (Math.abs(value) < 10 ** -maximumFractionDigits) {
+        return `+/- ${formatted}`;
+    }
+
+    return `${value > 0 ? '+' : '-'} ${formatted}`;
+}
+
+function formatRotationRate(
+    rotationsPerMinute: number,
+    unit: RotationRateUnit,
+): string {
+    const unitMultiplier: Record<RotationRateUnit, number> = {
+        minute: 1,
+        hour: 60,
+        day: 1_440,
+        year: 525_960,
+    };
+    const rotationsPerUnit = rotationsPerMinute * unitMultiplier[unit];
+
+    if (rotationsPerUnit === 0) {
+        return formatNumber(0, 2);
+    }
+
+    if (Math.abs(rotationsPerUnit) < 0.000001) {
+        return rotationsPerUnit.toExponential(2);
+    }
+
+    if (Math.abs(rotationsPerUnit) < 0.01) {
+        return formatNumber(rotationsPerUnit, 6);
+    }
+
+    return formatNumber(rotationsPerUnit, 2);
+}
+
+function formatDurationReference(seconds: number): string {
+    const units = [
+        { label: 'year', seconds: 31_557_600 },
+        { label: 'day', seconds: 86_400 },
+        { label: 'hour', seconds: 3_600 },
+        { label: 'minute', seconds: 60 },
+    ];
+
+    const unit = units.find((candidate) => seconds >= candidate.seconds);
+
+    if (unit === undefined) {
+        return `${formatNumber(seconds, seconds < 10 ? 2 : 1)} seconds`;
+    }
+
+    const value = seconds / unit.seconds;
+    const formattedValue = formatNumber(value, value < 10 ? 2 : 1);
+    const suffix = value === 1 ? unit.label : `${unit.label}s`;
+
+    return `${formattedValue} ${suffix}`;
+}
+
 function formatNumber(value: number, maximumFractionDigits: number): string {
+    if (Math.abs(value) >= SCIENTIFIC_NOTATION_THRESHOLD) {
+        return value.toExponential(2);
+    }
+
     return new Intl.NumberFormat('en-US', {
         maximumFractionDigits,
         minimumFractionDigits: maximumFractionDigits,

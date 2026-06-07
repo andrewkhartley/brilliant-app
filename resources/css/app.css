@@ -33,6 +33,38 @@
         font-weight: 600;
         text-shadow: 0 0 18px rgb(125 211 252 / 0.36);
     }
+
+    .scenario-index-scrollbar {
+        scrollbar-color: rgb(251 191 36 / 0.42) rgb(8 47 73 / 0.32);
+        scrollbar-width: thin;
+    }
+
+    .scenario-index-scrollbar::-webkit-scrollbar {
+        width: 0.5rem;
+    }
+
+    .scenario-index-scrollbar::-webkit-scrollbar-track {
+        border-radius: 999px;
+        background: rgb(8 47 73 / 0.32);
+    }
+
+    .scenario-index-scrollbar::-webkit-scrollbar-thumb {
+        border: 1px solid rgb(254 240 138 / 0.2);
+        border-radius: 999px;
+        background: linear-gradient(
+            180deg,
+            rgb(251 191 36 / 0.62),
+            rgb(34 211 238 / 0.42)
+        );
+    }
+
+    .scenario-index-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(
+            180deg,
+            rgb(251 191 36 / 0.78),
+            rgb(34 211 238 / 0.58)
+        );
+    }
 }
 
 /*
