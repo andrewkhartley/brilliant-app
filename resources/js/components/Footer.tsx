@@ -1,4 +1,5 @@
 import { useTranslation } from '@/hooks/useTranslation';
+import { ResumeLink } from './ResumeLink';
 
 /**
  * Site footer — bottom chrome composed by AppLayout.
@@ -80,17 +81,12 @@ export function Footer({ showLinks = true }: FooterProps) {
                         </a>
                     </li>
                     <li>
-                        <a
+                        <ResumeLink
                             href={t('common.footer.cvUrl')}
-                            aria-label={t('common.footer.cvAriaLabel')}
+                            ariaLabel={t('common.footer.cvAriaLabel')}
                             className="inline-flex items-center gap-2 rounded border border-cyan-100/12 bg-cyan-50/5 px-3 py-1.5 transition-colors hover:border-cyan-100/28 hover:bg-cyan-50/10 hover:text-white"
-                        >
-                            <i
-                                aria-hidden="true"
-                                className="fa-solid fa-file-lines text-cyan-200"
-                            />
-                            {t('common.footer.cvLinkText')}
-                        </a>
+                            label={t('common.footer.cvLinkText')}
+                        />
                     </li>
                 </ul>
             )}

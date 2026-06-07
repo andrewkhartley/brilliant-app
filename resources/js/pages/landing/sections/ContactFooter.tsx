@@ -1,3 +1,4 @@
+import { ResumeLink } from '@/components/ResumeLink';
 import { useTranslation } from '@/hooks/useTranslation';
 
 /**
@@ -85,16 +86,12 @@ export function ContactFooter() {
                         </a>
                     </li>
                     <li>
-                        <a
+                        <ResumeLink
                             href={t('landing.contactFooter.links.cvHref')}
+                            ariaLabel={t('landing.contactFooter.links.cvAriaLabel')}
                             className="inline-flex items-center gap-2 rounded border border-cyan-100/25 bg-white/5 px-4 py-2 text-cyan-100 transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
-                        >
-                            <i
-                                aria-hidden="true"
-                                className="fa-solid fa-file-lines text-cyan-200"
-                            />
-                            {t('landing.contactFooter.links.cv')}
-                        </a>
+                            label={t('landing.contactFooter.links.cv')}
+                        />
                     </li>
                 </ul>
             </div>

@@ -165,6 +165,7 @@ return [
             'linkedinHref' => 'https://www.linkedin.com/in/andrewkhartley',
             'cv' => 'CV (PDF)',
             'cvHref' => '/cv.pdf',
+            'cvAriaLabel' => 'Open Andrew\'s CV',
         ],
     ],
 ];

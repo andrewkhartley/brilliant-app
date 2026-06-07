@@ -33,6 +33,13 @@ return [
         'emailLinkText' => 'Email',
         'cvLinkText' => 'CV',
     ],
+    'resumeModal' => [
+        'kicker' => 'Resume',
+        'title' => 'The business-world version',
+        'body' => 'This is the format the business world likes best: tidy dates, tidy roles, tidy bullets. It is useful, but this site is where you can see more of the real me: how I think, what I build, and why this kind of learning matters to me.',
+        'accept' => 'Open resume',
+        'close' => 'Close resume note',
+    ],
     'equations' => [
         'formulaAriaLabel' => 'Equation in mathematical notation',
         'symbolHeading' => 'Symbol',
