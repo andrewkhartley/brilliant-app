@@ -278,9 +278,19 @@ class CruiseController extends Controller
                 'durationSeconds' => $leg['finalLegDetails']['legDuration'] ?? 0,
                 'durationFormatted' => strip_tags((string) ($leg['finalLegDetails']['legDurationFormatted'] ?? '')),
                 'maxSpeedFormatted' => strip_tags((string) ($leg['finalLegDetails']['legMaxSpeedFormatted'] ?? '0')),
+                'burnDistanceFormatted' => strip_tags((string) ($leg['finalLegDetails']['burnDistanceFormatted'] ?? '0')),
                 'burnDurationFormatted' => strip_tags((string) ($leg['finalLegDetails']['burnDurationFormatted'] ?? '')),
+                'cruiseDistanceKm' => $leg['finalLegDetails']['cruiseDistance'] ?? 0,
+                'cruiseDistanceFormatted' => strip_tags((string) ($leg['finalLegDetails']['cruiseDistanceFormatted'] ?? '0')),
                 'cruiseDurationFormatted' => strip_tags((string) ($leg['finalLegDetails']['cruiseDurationFormatted'] ?? '')),
+                'flipDistanceFormatted' => strip_tags((string) ($leg['finalLegDetails']['flipDistanceFormatted'] ?? '0')),
+                'flipDurationFormatted' => strip_tags((string) ($leg['finalLegDetails']['flipDurationFormatted'] ?? '')),
                 'dilationFormatted' => strip_tags((string) ($leg['finalLegDetails']['legDilationFormatted'] ?? '')),
+                'layoverDistanceFormatted' => strip_tags((string) ($leg['layoverDetails']['distanceFormatted'] ?? '0')),
+                'layoverDurationFormatted' => strip_tags((string) ($leg['layoverDetails']['durationFormatted'] ?? '')),
+                'layoverQuantityFormatted' => strip_tags((string) ($leg['layoverDetails']['quantityFormatted'] ?? '0')),
+                'nextDepartureDate' => strip_tags((string) ($leg['nextDepDate'] ?? '')),
+                'nextDepartureTime' => strip_tags((string) ($leg['nextDepTime'] ?? '')),
                 'depCoordinates' => $this->presentCoordinates($leg['depCoordinates'] ?? []),
                 'arrCoordinates' => $this->presentCoordinates($leg['arrCoordinates'] ?? []),
             ])
@@ -298,6 +308,15 @@ class CruiseController extends Controller
             'finalDuration' => $computedTrip['finalDuration'] === null
                 ? null
                 : strip_tags((string) $computedTrip['finalDuration']),
+            'tripDistanceFormatted' => strip_tags((string) ($totals['tripDistanceFormatted'] ?? '0')),
+            'burnDistanceFormatted' => strip_tags((string) ($totals['burnDistanceFormatted'] ?? '0')),
+            'burnDurationFormatted' => strip_tags((string) ($totals['burnDurationFormatted'] ?? '')),
+            'cruiseDistanceFormatted' => strip_tags((string) ($totals['cruiseDistanceFormatted'] ?? '0')),
+            'cruiseDurationFormatted' => strip_tags((string) ($totals['cruiseDurationFormatted'] ?? '')),
+            'orbitDistanceFormatted' => strip_tags((string) ($totals['orbitDistanceFormatted'] ?? '0')),
+            'orbitDurationFormatted' => strip_tags((string) ($totals['orbitDurationFormatted'] ?? '')),
+            'tripDilationFormatted' => strip_tags((string) ($totals['tripDilationFormatted'] ?? '0')),
+            'tripDilationMinutes' => strip_tags((string) ($totals['tripDilationMinutes'] ?? '0')),
             'totalOrbDurFormatted' => isset($totals['totalOrbDur'])
                 ? strip_tags(secondsToDuration((int) round((float) $totals['totalOrbDur'])))
                 : null,

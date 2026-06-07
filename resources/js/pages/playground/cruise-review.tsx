@@ -83,7 +83,7 @@ export default function CruiseReviewPage({
     const [isRevealingItinerary, setIsRevealingItinerary] = useState(false);
 
     return (
-        <AppLayout pageTitle={t('cruise.review.title')}>
+        <AppLayout pageTitle={t('cruise.review.summary.ticketHeading')}>
             {showRevealOverlay && transition !== null && (
                 <CruiseLaunchOverlay
                     destinations={transition.destinations}
@@ -107,13 +107,13 @@ export default function CruiseReviewPage({
                         <div className="max-w-3xl">
                             <div className="inline-flex items-center gap-3 rounded-full border border-cyan-200/30 bg-cyan-50/10 px-4 py-2 text-sm font-semibold text-cyan-100">
                                 <ReviewIcon icon="ticket" />
-                                {t('cruise.review.kicker')}
+                                {t('cruise.review.summary.eyebrow')}
                             </div>
                             <h1 className="mt-5 text-4xl font-semibold tracking-normal text-white sm:text-6xl">
-                                {t('cruise.review.title')}
+                                {t('cruise.review.summary.ticketHeading')}
                             </h1>
                             <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
-                                {t('cruise.review.lead')}
+                                {t('cruise.review.summary.ticketBody')}
                             </p>
                         </div>
                         <Link
@@ -174,14 +174,35 @@ interface ComputedTripViewProps {
 
 function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
     const { t } = useTranslation();
+    const routeStops = buildRouteStops(trip);
 
     return (
         <>
-            <section className="rounded-lg border border-cyan-100/25 bg-slate-950 p-6 text-cyan-50">
-                <h2 className="text-xl font-semibold text-white">
-                    {t('cruise.review.summary.heading')}
-                </h2>
-                <dl className="mt-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
+            <section className="overflow-hidden rounded-lg border border-cyan-100/20 bg-slate-950/92 p-6 text-cyan-50 shadow-[0_28px_80px_rgba(8,17,31,0.42)] md:p-8">
+                <div className="rounded border border-cyan-100/12 bg-cyan-50/6 p-4">
+                    <p className="text-xs font-semibold tracking-wide text-cyan-100/56 uppercase">
+                        {t('cruise.review.summary.routeLabel')}
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-white">
+                        {routeStops.map((stop, index) => (
+                            <span
+                                key={`${stop}-${index}`}
+                                className="inline-flex items-center gap-2"
+                            >
+                                <span>{stop}</span>
+                                {index < routeStops.length - 1 && (
+                                    <span
+                                        aria-hidden="true"
+                                        className="text-cyan-100/38"
+                                    >
+                                        {'->'}
+                                    </span>
+                                )}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+                <dl className="mt-5 grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
                     <SummaryItem
                         label={t('cruise.review.summary.legsLabel')}
                         value={String(trip.legs.length)}
@@ -207,6 +228,47 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
                         value={trip.totalDilationFormatted ?? '—'}
                     />
                 </dl>
+                <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <TripPacketMetric
+                        accent="gold"
+                        label={t('cruise.review.summary.totalTripLabel')}
+                        distance={trip.tripDistanceFormatted}
+                        duration={trip.finalDuration ?? '-'}
+                    />
+                    <TripPacketMetric
+                        accent="rose"
+                        label={t('cruise.review.summary.burnDetailsLabel')}
+                        distance={trip.burnDistanceFormatted}
+                        duration={trip.burnDurationFormatted}
+                    />
+                    <TripPacketMetric
+                        accent="cyan"
+                        label={t('cruise.review.summary.cruiseDetailsLabel')}
+                        distance={trip.cruiseDistanceFormatted}
+                        duration={trip.cruiseDurationFormatted}
+                    />
+                    <TripPacketMetric
+                        accent="violet"
+                        label={t('cruise.review.summary.orbitDetailsLabel')}
+                        distance={trip.orbitDistanceFormatted}
+                        duration={
+                            trip.orbitDurationFormatted ??
+                            trip.totalOrbDurFormatted ??
+                            '-'
+                        }
+                    />
+                </div>
+                <div className="mt-7 border-t border-cyan-100/12 bg-[linear-gradient(90deg,rgba(251,191,36,0.08),rgba(34,211,238,0.1),rgba(251,191,36,0.08))] px-4 py-5">
+                    <p className="text-sm font-semibold text-amber-100">
+                        {t('cruise.review.summary.dilationNoteTitle')}
+                    </p>
+                    <p className="mt-2 max-w-4xl text-sm leading-7 text-cyan-50/74">
+                        {t('cruise.review.summary.dilationNoteBody', {
+                            seconds: trip.tripDilationFormatted,
+                            minutes: trip.tripDilationMinutes,
+                        })}
+                    </p>
+                </div>
             </section>
 
             <section
@@ -230,6 +292,75 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
                 error-path "you picked X, Y, Z" message. */}
             <span className="sr-only">{cruise.destinations.join(' → ')}</span>
         </>
+    );
+}
+
+function buildRouteStops(trip: Trip): string[] {
+    const firstLeg = trip.legs[0];
+
+    if (firstLeg === undefined) {
+        return [];
+    }
+
+    return [
+        firstLeg.departureName,
+        ...trip.legs.map((leg) => leg.arrivalName),
+    ];
+}
+
+type TripPacketAccent = 'cyan' | 'gold' | 'rose' | 'violet';
+
+const packetAccentClasses: Record<TripPacketAccent, string> = {
+    cyan: 'border-cyan-200/22 bg-cyan-200/8 text-cyan-100',
+    gold: 'border-amber-200/28 bg-amber-200/10 text-amber-100',
+    rose: 'border-rose-200/22 bg-rose-200/8 text-rose-100',
+    violet: 'border-violet-200/22 bg-violet-200/8 text-violet-100',
+};
+
+interface TripPacketMetricProps {
+    accent: TripPacketAccent;
+    label: string;
+    distance: string;
+    duration: string;
+}
+
+function TripPacketMetric({
+    accent,
+    label,
+    distance,
+    duration,
+}: TripPacketMetricProps) {
+    const { t } = useTranslation();
+
+    return (
+        <div
+            className={`rounded border p-4 ${packetAccentClasses[accent]}`}
+        >
+            <p className="text-xs font-semibold tracking-wide uppercase">
+                {label}
+            </p>
+            <dl className="mt-4 space-y-3 text-cyan-50">
+                <div>
+                    <dt className="text-[0.68rem] font-semibold tracking-wide text-cyan-100/52 uppercase">
+                        {t('cruise.review.summary.distanceLabel')}
+                    </dt>
+                    <dd className="mt-1 text-lg font-semibold text-white">
+                        {distance}
+                        <span className="ms-1 text-sm font-normal text-cyan-100/58">
+                            {'km'}
+                        </span>
+                    </dd>
+                </div>
+                <div>
+                    <dt className="text-[0.68rem] font-semibold tracking-wide text-cyan-100/52 uppercase">
+                        {t('cruise.review.summary.durationValueLabel')}
+                    </dt>
+                    <dd className="mt-1 text-sm font-semibold leading-6 text-white">
+                        {duration}
+                    </dd>
+                </div>
+            </dl>
+        </div>
     );
 }
 
@@ -340,6 +471,7 @@ interface LegDetailsDisclosureProps {
  */
 function LegDetailsDisclosure({ leg }: LegDetailsDisclosureProps) {
     const { t } = useTranslation();
+    const hasCruiseSegment = leg.cruiseDistanceKm > 0;
 
     return (
         <details className="group mt-5 border-t border-cyan-100/15 pt-4">
@@ -353,12 +485,54 @@ function LegDetailsDisclosure({ leg }: LegDetailsDisclosureProps) {
             </summary>
             <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
                 <DetailItem
-                    label={t('cruise.review.leg.details.burnLabel')}
+                    label={t('cruise.review.leg.details.burnDistanceLabel')}
+                    value={`${leg.burnDistanceFormatted} km`}
+                />
+                <DetailItem
+                    label={t('cruise.review.leg.details.burnDurationLabel')}
                     value={leg.burnDurationFormatted}
                 />
                 <DetailItem
-                    label={t('cruise.review.leg.details.cruiseLabel')}
-                    value={leg.cruiseDurationFormatted}
+                    label={t(
+                        hasCruiseSegment
+                            ? 'cruise.review.leg.details.cruiseDistanceLabel'
+                            : 'cruise.review.leg.details.flipDistanceLabel',
+                    )}
+                    value={`${
+                        hasCruiseSegment
+                            ? leg.cruiseDistanceFormatted
+                            : leg.flipDistanceFormatted
+                    } km`}
+                />
+                <DetailItem
+                    label={t(
+                        hasCruiseSegment
+                            ? 'cruise.review.leg.details.cruiseDurationLabel'
+                            : 'cruise.review.leg.details.flipDurationLabel',
+                    )}
+                    value={
+                        hasCruiseSegment
+                            ? leg.cruiseDurationFormatted
+                            : leg.flipDurationFormatted
+                    }
+                />
+                <DetailItem
+                    label={t('cruise.review.leg.details.orbitDistanceLabel')}
+                    value={`${leg.layoverDistanceFormatted} km`}
+                />
+                <DetailItem
+                    label={t('cruise.review.leg.details.orbitDurationLabel')}
+                    value={leg.layoverDurationFormatted}
+                />
+                <DetailItem
+                    label={t('cruise.review.leg.details.orbitsLabel')}
+                    value={leg.layoverQuantityFormatted}
+                />
+                <DetailItem
+                    label={t('cruise.review.leg.details.nextDepartureLabel')}
+                    value={[leg.nextDepartureDate, leg.nextDepartureTime]
+                        .filter(Boolean)
+                        .join(' ')}
                 />
                 <DetailItem
                     label={t('cruise.review.leg.details.dilationLabel')}

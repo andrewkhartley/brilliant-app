@@ -52,12 +52,32 @@ export interface Leg {
     durationFormatted: string;
     /** Pre-formatted peak leg speed. */
     maxSpeedFormatted: string;
+    /** Pre-formatted burn (accel + decel) distance. */
+    burnDistanceFormatted: string;
     /** Pre-formatted burn (accel + decel) duration. */
     burnDurationFormatted: string;
+    /** Numeric cruise/coast distance in km. Zero when the leg flips directly. */
+    cruiseDistanceKm: number;
+    /** Pre-formatted cruise (coast) distance. */
+    cruiseDistanceFormatted: string;
     /** Pre-formatted cruise (coast) duration. */
     cruiseDurationFormatted: string;
+    /** Pre-formatted direct flip distance when there is no cruise segment. */
+    flipDistanceFormatted: string;
+    /** Pre-formatted direct flip duration when there is no cruise segment. */
+    flipDurationFormatted: string;
     /** Pre-formatted relativistic time dilation across the leg. */
     dilationFormatted: string;
+    /** Pre-formatted layover/orbit distance at the arrival body. */
+    layoverDistanceFormatted: string;
+    /** Pre-formatted layover/orbit duration at the arrival body. */
+    layoverDurationFormatted: string;
+    /** Pre-formatted number of orbits completed during the layover. */
+    layoverQuantityFormatted: string;
+    /** Date for the next leg departure after layover. */
+    nextDepartureDate: string;
+    /** Time for the next leg departure after layover. */
+    nextDepartureTime: string;
     /** 3D departure position in km at leg-start (null when missing). */
     depCoordinates: Coordinates | null;
     /** 3D arrival position in km at leg-end (null when missing). */
@@ -71,6 +91,24 @@ export interface Trip {
     arrivalTime: string | null;
     /** Pre-formatted total trip duration ("11d 6h"). */
     finalDuration: string | null;
+    /** Pre-formatted cumulative trip distance. */
+    tripDistanceFormatted: string;
+    /** Pre-formatted cumulative burn distance. */
+    burnDistanceFormatted: string;
+    /** Pre-formatted cumulative burn duration. */
+    burnDurationFormatted: string;
+    /** Pre-formatted cumulative cruise distance. */
+    cruiseDistanceFormatted: string;
+    /** Pre-formatted cumulative cruise duration. */
+    cruiseDurationFormatted: string;
+    /** Pre-formatted cumulative orbit/layover distance. */
+    orbitDistanceFormatted: string;
+    /** Pre-formatted cumulative orbit/layover duration. */
+    orbitDurationFormatted: string;
+    /** Pre-formatted seconds of time dilation across the trip. */
+    tripDilationFormatted: string;
+    /** Pre-formatted minutes of time dilation across the trip. */
+    tripDilationMinutes: string;
     /** Pre-formatted cumulative orbit/layover time across all legs. */
     totalOrbDurFormatted: string | null;
     /** Pre-formatted cumulative time dilation across all legs. */
