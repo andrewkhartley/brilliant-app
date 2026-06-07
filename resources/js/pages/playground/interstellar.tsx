@@ -23,6 +23,8 @@ import { FuelVisualization } from './interstellar/FuelVisualization';
 import { MaxSpeedSlider } from './interstellar/MaxSpeedSlider';
 import { InterstellarPossibilitiesSection } from './interstellar/PossibilitiesSection';
 import { ResultPanel } from './interstellar/ResultPanel';
+import { StarSearch } from './interstellar/StarSearch';
+import type { InterstellarTarget } from './interstellar/StarSearch';
 import { StopToggle } from './interstellar/StopToggle';
 import { buildInterstellarStoryScenes } from './interstellar/story';
 
@@ -81,10 +83,14 @@ export default function InterstellarPage() {
     const [fuelId, setFuelId] = useState(interstellarFuels[0].id);
     const [efficiency, setEfficiency] = useState(1.0);
     const [isStoryOpen, setIsStoryOpen] = useState(false);
+    const [selectedTarget, setSelectedTarget] =
+        useState<InterstellarTarget | null>(null);
 
     const destination =
         destinations.find((d) => d.id === destinationId) ?? destinations[0];
-    const distanceMeters = destination.distanceLy * LIGHT_YEAR_METERS;
+    const activeDestinationName = selectedTarget?.name ?? destination.name;
+    const activeDistanceLy = selectedTarget?.distanceLy ?? destination.distanceLy;
+    const distanceMeters = activeDistanceLy * LIGHT_YEAR_METERS;
 
     const fuel =
         interstellarFuels.find((f) => f.id === fuelId) ?? interstellarFuels[0];
@@ -158,7 +164,7 @@ export default function InterstellarPage() {
         () =>
             buildInterstellarStoryScenes({
                 metrics: {
-                    destination: destination.name,
+                    destination: activeDestinationName,
                     earthTime: t('interstellar.resultPanel.yearsFormat', {
                         value: formatStoryYears(earthTimeYears),
                     }),
@@ -180,7 +186,7 @@ export default function InterstellarPage() {
                 t,
             }),
         [
-            destination.name,
+            activeDestinationName,
             earthTimeYears,
             fuel.name,
             massRatio,
@@ -289,13 +295,20 @@ export default function InterstellarPage() {
                                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-1">
                                     <DestinationSelect
                                         destinationId={destinationId}
-                                        onChange={setDestinationId}
+                                        onChange={(id) => {
+                                            setDestinationId(id);
+                                            setSelectedTarget(null);
+                                        }}
                                     />
                                     <StopToggle
                                         stop={stop}
                                         onChange={setStop}
                                     />
                                 </div>
+                                <StarSearch
+                                    selectedTarget={selectedTarget}
+                                    onSelect={setSelectedTarget}
+                                />
                                 <FuelSelector
                                     fuelId={fuelId}
                                     onChange={setFuelId}

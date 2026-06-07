@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\HorizonController;
+use App\Http\Controllers\API\InterstellarTargetController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Playground\AnimationDebugController;
 use App\Http\Controllers\Playground\ComponentsDebugController;
@@ -20,6 +21,9 @@ Route::get('/projects', ProjectsController::class)->name('projects.index');
 
 Route::get('/api/horizon/query', [HorizonController::class, 'queryHorizon'])
     ->name('horizon.query');
+
+Route::get('/api/interstellar/stars', [InterstellarTargetController::class, 'search'])
+    ->name('interstellar.stars.search');
 
 Route::get('/playground', PlaygroundController::class)
     ->name('playground.index');

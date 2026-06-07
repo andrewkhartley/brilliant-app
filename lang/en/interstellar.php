@@ -94,6 +94,19 @@ return [
         'optionFormat' => ':name (:distance ly)',
     ],
 
+    'starSearch' => [
+        'label' => 'Search a star',
+        'placeholder' => 'Try Proxima, Barnard, Sirius...',
+        'hint' => 'This uses a seeded Gaia-style target list for now: name, RA, Dec, and distance. A live Gaia archive lookup can replace this endpoint later.',
+        'loading' => 'Searching targets...',
+        'error' => 'The target search did not answer. Try one of the preset destinations.',
+        'suggestionsLabel' => 'Nearby targets',
+        'resultsLabel' => 'Matching targets',
+        'selectedLabel' => 'Selected target',
+        'coordinateFormat' => 'RA :ra deg / Dec :dec deg / :distance ly',
+        'resultFormat' => ':distance ly / RA :ra / Dec :dec',
+    ],
+
     'accelerationSlider' => [
         'label' => 'Constant acceleration',
         'valueFormat' => ':value m/s² (:g g)',
