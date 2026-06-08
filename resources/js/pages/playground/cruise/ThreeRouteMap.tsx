@@ -85,6 +85,8 @@ const SIMULATION_SPEEDS = [
     SECONDS_PER_DAY * 7,
     SECONDS_PER_DAY * 30,
 ];
+const MIN_SIMULATION_DAYS_PER_SECOND = 0.25;
+const MAX_SIMULATION_DAYS_PER_SECOND = 120;
 const FLIGHT_PHASE_STYLES: Array<{
     activeClass: string;
     color: number;
@@ -145,6 +147,16 @@ export function ThreeRouteMap({
     function updateSpeed(nextSpeed: number) {
         simulationSpeedRef.current = nextSpeed;
         setSimulationSpeed(nextSpeed);
+    }
+
+    function togglePlaying() {
+        setIsPlaying((current) => {
+            const nextPlaying = !current;
+
+            isPlayingRef.current = nextPlaying;
+
+            return nextPlaying;
+        });
     }
 
     useEffect(() => {
@@ -435,7 +447,7 @@ export function ThreeRouteMap({
                 <div className="flex flex-wrap items-center gap-3">
                     <button
                         type="button"
-                        onClick={() => updatePlaying(!isPlaying)}
+                        onClick={togglePlaying}
                         className="inline-flex cursor-pointer items-center gap-2 rounded bg-cyan-200 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
                     >
                         <i
@@ -464,20 +476,48 @@ export function ThreeRouteMap({
                             className="h-2 w-full cursor-pointer accent-cyan-200"
                         />
                     </label>
-                    <select
-                        value={simulationSpeed}
-                        aria-label={t('cruise.review.map.controls.speedLabel')}
-                        onChange={(event) => updateSpeed(Number(event.target.value))}
-                        className="cursor-pointer rounded border border-cyan-100/20 bg-slate-950 px-2 py-2 text-xs font-bold text-cyan-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
-                    >
-                        {SIMULATION_SPEEDS.map((speed) => (
-                            <option key={speed} value={speed}>
+                    <div className="min-w-[12rem] flex-1 sm:flex-none">
+                        <label className="block text-[0.65rem] font-bold tracking-[0.16em] text-cyan-100/62 uppercase">
+                            <span className="sr-only">
+                                {t('cruise.review.map.controls.speedLabel')}
+                            </span>
+                            <span aria-hidden="true">
                                 {t('cruise.review.map.controls.speed', {
-                                    speed: formatSpeed(speed),
+                                    speed: formatSpeed(simulationSpeed),
                                 })}
-                            </option>
-                        ))}
-                    </select>
+                            </span>
+                            <input
+                                type="range"
+                                min={MIN_SIMULATION_DAYS_PER_SECOND}
+                                max={MAX_SIMULATION_DAYS_PER_SECOND}
+                                step={0.25}
+                                value={simulationSpeed / SECONDS_PER_DAY}
+                                onChange={(event) =>
+                                    updateSpeed(
+                                        Number(event.target.value)
+                                            * SECONDS_PER_DAY,
+                                    )
+                                }
+                                className="mt-1 h-2 w-full cursor-pointer accent-amber-200"
+                            />
+                        </label>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                            {SIMULATION_SPEEDS.map((speed) => (
+                                <button
+                                    key={speed}
+                                    type="button"
+                                    onClick={() => updateSpeed(speed)}
+                                    className={`cursor-pointer rounded border px-2 py-1 text-[0.65rem] font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ${
+                                        simulationSpeed === speed
+                                            ? 'border-amber-200/60 bg-amber-200/18 text-amber-100'
+                                            : 'border-cyan-100/14 bg-slate-950/45 text-cyan-50/62 hover:bg-cyan-100/10 hover:text-cyan-50'
+                                    }`}
+                                >
+                                    {formatSpeed(speed)}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                     <span className="text-xs font-semibold text-cyan-50/70">
                         {formatElapsedTime(simulationProgress * totalSeconds)}
                     </span>
