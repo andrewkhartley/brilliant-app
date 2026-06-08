@@ -35,6 +35,11 @@ interface PlanetOrbit {
     phase: number;
 }
 
+interface PlanetPositionOverride {
+    phase: number;
+    radius: number;
+}
+
 type FlightPhase = 'acceleration' | 'cruise' | 'deceleration' | 'layover';
 
 interface TimelineSegment {
@@ -145,16 +150,16 @@ export function ThreeRouteMap({
         root.add(createStarfield());
         root.add(createSun());
 
-        const planetPhaseOverrides = buildPlanetPhaseOverrides(points);
+        const planetPositionOverrides = buildPlanetPositionOverrides(points);
         const planetMeshes: THREE.Mesh[] = [];
 
         for (const planet of PLANETS) {
-            const orbit = createOrbitLine(planet);
+            const orbit = createOrbitLine(planet, planetPositionOverrides);
             root.add(orbit);
 
             const marker = createPlanetMarker(planet);
             marker.position.copy(
-                positionForPlanet(planet, 0, planetPhaseOverrides),
+                positionForPlanet(planet, 0, planetPositionOverrides),
             );
             root.add(marker);
             planetMeshes.push(marker);
@@ -267,8 +272,8 @@ export function ThreeRouteMap({
                 simulationProgressRef.current,
             );
             const progress = timelineState.routeProgress;
-            const routePosition = routeCurve.getPointAt(progress);
-            const tangent = routeCurve.getTangentAt(progress);
+            const routePosition = routeCurve.getPoint(progress);
+            const tangent = routeCurve.getTangent(progress);
             const activeIndex = Math.min(
                 points.length - 1,
                 Math.floor(progress * (points.length - 1) + 0.5),
@@ -298,7 +303,7 @@ export function ThreeRouteMap({
                     positionForPlanet(
                         planet,
                         timelineState.elapsedSeconds / 86400,
-                        planetPhaseOverrides,
+                        planetPositionOverrides,
                     ),
                 );
             });
@@ -432,7 +437,7 @@ function normalizeRoutePoints(points: RouteMapPoint[]): THREE.Vector3[] {
         return new THREE.Vector3(
             Math.cos(angle) * scaledRadius,
             Math.sin(angle) * scaledRadius,
-            0.7 + Math.sin(angle * 1.7) * 0.22,
+            0,
         );
     });
 }
@@ -607,8 +612,10 @@ function scaleAu(au: number): number {
     return Math.sqrt(au / MAX_AU) * ORBIT_SCALE;
 }
 
-function buildPlanetPhaseOverrides(points: RouteMapPoint[]): Map<string, number> {
-    const phases = new Map<string, number>();
+function buildPlanetPositionOverrides(
+    points: RouteMapPoint[],
+): Map<string, PlanetPositionOverride> {
+    const overrides = new Map<string, PlanetPositionOverride>();
 
     for (const point of points) {
         const planet = PLANETS.find((entry) => entry.code === point.code);
@@ -620,27 +627,35 @@ function buildPlanetPhaseOverrides(points: RouteMapPoint[]): Map<string, number>
         const observedAngle = Math.atan2(point.y, point.x);
         const elapsedOrbitAngle =
             (point.elapsedDays / planet.periodDays) * Math.PI * 2;
+        const observedRadius = scaleAu(point.radiusKm / AU_KM);
 
-        phases.set(planet.code, observedAngle - elapsedOrbitAngle);
+        overrides.set(planet.code, {
+            phase: observedAngle - elapsedOrbitAngle,
+            radius: observedRadius,
+        });
     }
 
-    return phases;
+    return overrides;
 }
 
 function positionForPlanet(
     planet: PlanetOrbit,
     offsetDays: number,
-    phaseOverrides: Map<string, number>,
+    positionOverrides: Map<string, PlanetPositionOverride>,
 ): THREE.Vector3 {
-    const radius = scaleAu(planet.au);
-    const basePhase = phaseOverrides.get(planet.code) ?? planet.phase;
+    const override = positionOverrides.get(planet.code);
+    const radius = override?.radius ?? scaleAu(planet.au);
+    const basePhase = override?.phase ?? planet.phase;
     const angle = basePhase + (offsetDays / planet.periodDays) * Math.PI * 2;
 
     return new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
 }
 
-function createOrbitLine(planet: PlanetOrbit): THREE.Line {
-    const radius = scaleAu(planet.au);
+function createOrbitLine(
+    planet: PlanetOrbit,
+    positionOverrides: Map<string, PlanetPositionOverride>,
+): THREE.Line {
+    const radius = positionOverrides.get(planet.code)?.radius ?? scaleAu(planet.au);
     const points = [];
 
     for (let i = 0; i <= 192; i++) {
