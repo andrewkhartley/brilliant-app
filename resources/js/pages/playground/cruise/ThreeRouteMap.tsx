@@ -10,6 +10,7 @@ type DataSource = 'horizons' | 'ephemeris';
 
 export interface RouteMapPoint {
     code: string;
+    elapsedDays: number;
     name: string;
     x: number;
     y: number;
@@ -60,7 +61,12 @@ const PLANETS: PlanetOrbit[] = [
     { code: 'nep', name: 'Neptune', au: 30.069, periodDays: 60189, color: 0x60a5fa, size: 0.18, phase: 4.7 },
 ];
 
-const SIMULATION_SPEEDS = [240, 1200, 6000];
+const SECONDS_PER_DAY = 86400;
+const SIMULATION_SPEEDS = [
+    SECONDS_PER_DAY,
+    SECONDS_PER_DAY * 7,
+    SECONDS_PER_DAY * 30,
+];
 
 export function ThreeRouteMap({
     dataSource,
@@ -137,6 +143,7 @@ export function ThreeRouteMap({
         root.add(createStarfield());
         root.add(createSun());
 
+        const planetPhaseOverrides = buildPlanetPhaseOverrides(points);
         const planetMeshes: THREE.Mesh[] = [];
 
         for (const planet of PLANETS) {
@@ -144,7 +151,9 @@ export function ThreeRouteMap({
             root.add(orbit);
 
             const marker = createPlanetMarker(planet);
-            marker.position.copy(positionForPlanet(planet, 0));
+            marker.position.copy(
+                positionForPlanet(planet, 0, planetPhaseOverrides),
+            );
             root.add(marker);
             planetMeshes.push(marker);
         }
@@ -283,6 +292,7 @@ export function ThreeRouteMap({
                     positionForPlanet(
                         planet,
                         timelineState.elapsedSeconds / 86400,
+                        planetPhaseOverrides,
                     ),
                 );
             });
@@ -549,11 +559,13 @@ function formatElapsedTime(seconds: number): string {
 }
 
 function formatSpeed(speed: number): string {
-    if (speed >= 1440) {
-        return `${Math.round(speed / 1440).toLocaleString()}d/s`;
+    const daysPerSecond = speed / SECONDS_PER_DAY;
+
+    if (daysPerSecond >= 1) {
+        return `${Math.round(daysPerSecond).toLocaleString()}d/s`;
     }
 
-    return `${speed.toLocaleString()}x`;
+    return `${Math.round(speed).toLocaleString()}x`;
 }
 
 function scaleAu(au: number): number {
@@ -564,9 +576,34 @@ function scaleAu(au: number): number {
     return Math.sqrt(au / MAX_AU) * ORBIT_SCALE;
 }
 
-function positionForPlanet(planet: PlanetOrbit, offset: number): THREE.Vector3 {
+function buildPlanetPhaseOverrides(points: RouteMapPoint[]): Map<string, number> {
+    const phases = new Map<string, number>();
+
+    for (const point of points) {
+        const planet = PLANETS.find((entry) => entry.code === point.code);
+
+        if (planet === undefined) {
+            continue;
+        }
+
+        const observedAngle = Math.atan2(point.y, point.x);
+        const elapsedOrbitAngle =
+            (point.elapsedDays / planet.periodDays) * Math.PI * 2;
+
+        phases.set(planet.code, observedAngle - elapsedOrbitAngle);
+    }
+
+    return phases;
+}
+
+function positionForPlanet(
+    planet: PlanetOrbit,
+    offsetDays: number,
+    phaseOverrides: Map<string, number>,
+): THREE.Vector3 {
     const radius = scaleAu(planet.au);
-    const angle = planet.phase + offset;
+    const basePhase = phaseOverrides.get(planet.code) ?? planet.phase;
+    const angle = basePhase + (offsetDays / planet.periodDays) * Math.PI * 2;
 
     return new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
 }

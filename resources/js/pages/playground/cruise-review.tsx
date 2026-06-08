@@ -476,9 +476,12 @@ function buildRouteMapPoints(trip: Trip): RouteMapPoint[] {
         return [];
     }
 
+    let elapsedSeconds = 0;
+
     return [
         {
             code: firstLeg.departure,
+            elapsedDays: 0,
             name: firstLeg.departureName,
             x: firstLeg.depCoordinates.x,
             y: firstLeg.depCoordinates.y,
@@ -492,13 +495,20 @@ function buildRouteMapPoints(trip: Trip): RouteMapPoint[] {
             .map((leg) => {
                 const coordinates = leg.arrCoordinates as Coordinates;
 
-                return {
+                elapsedSeconds += leg.durationSeconds;
+
+                const point = {
                     code: leg.arrival,
+                    elapsedDays: elapsedSeconds / 86400,
                     name: leg.arrivalName,
                     x: coordinates.x,
                     y: coordinates.y,
                     radiusKm: Math.hypot(coordinates.x, coordinates.y),
                 };
+
+                elapsedSeconds += leg.layoverDurationSeconds;
+
+                return point;
             }),
     ];
 }
