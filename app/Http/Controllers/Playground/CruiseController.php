@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCruiseRequest;
 use App\Models\Experiences\Cruise\Destination;
 use App\Services\Experiences\Cruise\DestinationService;
+use App\Services\Experiences\Cruise\EphemerisCatalog;
 use App\Services\Experiences\Cruise\TripBuilderService;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\RedirectResponse;
@@ -64,6 +65,7 @@ class CruiseController extends Controller
 
         return Inertia::render('playground/cruise', [
             'destinations' => $destinations,
+            'ephemerisDestinations' => EphemerisCatalog::destinations(),
             'cruiseReady' => $cruiseReady,
             // `preparedCruise` is gated on `cruiseReady` so the form only
             // pre-fills on the just-submitted "trip is ready" landing.
@@ -132,20 +134,25 @@ class CruiseController extends Controller
 
         session()->keep(['cruise']);
 
+        $dataSource = $cruise['dataSource'] ?? DestinationService::DATA_SOURCE_HORIZONS;
+
         $destinationsInput = $this->buildDestinationsInput(
             $cruise['destinations'],
             $cruise['layovers'],
+            $dataSource,
         );
         $tripStartTimestamp = strtotime($cruise['tripStart']);
 
         $tripData = [
             'tripDate' => $cruise['tripStart'],
+            'dataSource' => $dataSource,
         ];
 
         try {
             $destinationsData = $destinationService->prepareDestinationsData(
                 $destinationsInput,
                 $tripStartTimestamp,
+                $dataSource,
             );
 
             $computedTrip = $tripBuilderService->tripBuild($tripData, $destinationsData);
@@ -164,9 +171,8 @@ class CruiseController extends Controller
             // the names directly from the cached destination catalog here.
             // Codes that don't resolve fall back to the raw code, matching
             // `buildDestinationsInput()`'s defensive behavior.
-            $catalog = Destination::getCachedFacts()->keyBy('destination_code');
             $attemptedDestinationNames = collect($cruise['destinations'])
-                ->map(fn (string $code): string => $catalog->get($code)?->destination ?? $code)
+                ->map(fn (string $code): string => $this->destinationName($code, $dataSource))
                 ->values()
                 ->all();
 
@@ -212,19 +218,36 @@ class CruiseController extends Controller
      * @param  array<int, int>  $layovers
      * @return array<int, array{destination: string, name: string, dur: int, durType: string}>
      */
-    private function buildDestinationsInput(array $destinationCodes, array $layovers): array
+    private function buildDestinationsInput(
+        array $destinationCodes,
+        array $layovers,
+        string $dataSource,
+    ): array
     {
         $catalog = Destination::getCachedFacts()->keyBy('destination_code');
 
         return collect($destinationCodes)
             ->map(fn (string $code, int $index): array => [
                 'destination' => $code,
-                'name' => $catalog->get($code)?->destination ?? $code,
+                'name' => $dataSource === DestinationService::DATA_SOURCE_EPHEMERIS
+                    ? EphemerisCatalog::name($code)
+                    : ($catalog->get($code)?->destination ?? $code),
                 'dur' => (int) ($layovers[$index] ?? self::DEFAULT_LAYOVER_DAYS),
                 'durType' => 'day',
             ])
             ->values()
             ->all();
+    }
+
+    private function destinationName(string $code, string $dataSource): string
+    {
+        if ($dataSource === DestinationService::DATA_SOURCE_EPHEMERIS) {
+            return EphemerisCatalog::name($code);
+        }
+
+        $catalog = Destination::getCachedFacts()->keyBy('destination_code');
+
+        return $catalog->get($code)?->destination ?? $code;
     }
 
     /**

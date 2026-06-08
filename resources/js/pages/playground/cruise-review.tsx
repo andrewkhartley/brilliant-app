@@ -271,6 +271,8 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
                 </div>
             </section>
 
+            <RouteMap cruise={cruise} trip={trip} />
+
             <section
                 aria-label={t('cruise.review.itinerary.label')}
                 className="mt-10 space-y-4"
@@ -293,6 +295,180 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
             <span className="sr-only">{cruise.destinations.join(' → ')}</span>
         </>
     );
+}
+
+function RouteMap({ cruise, trip }: ComputedTripViewProps) {
+    const { t } = useTranslation();
+    const points = buildRouteMapPoints(trip);
+
+    if (points.length < 2) {
+        return null;
+    }
+
+    const maxRadius = Math.max(...points.map((point) => point.radiusKm), 1);
+    const centerX = 320;
+    const centerY = 190;
+    const maxPlotRadius = 145;
+    const plotted = points.map((point) => {
+        const scaledRadius =
+            point.radiusKm === 0
+                ? 0
+                : Math.sqrt(point.radiusKm / maxRadius) * maxPlotRadius;
+        const angle = Math.atan2(point.y, point.x);
+
+        return {
+            ...point,
+            plotX: centerX + Math.cos(angle) * scaledRadius,
+            plotY: centerY + Math.sin(angle) * scaledRadius,
+        };
+    });
+    const path = plotted
+        .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.plotX} ${point.plotY}`)
+        .join(' ');
+    const orbitRadii = Array.from(
+        new Set(
+            plotted
+                .map((point) => Math.round(Math.hypot(point.plotX - centerX, point.plotY - centerY)))
+                .filter((radius) => radius > 10),
+        ),
+    ).slice(0, 5);
+
+    return (
+        <section className="mt-8 overflow-hidden rounded-lg border border-amber-200/22 bg-[linear-gradient(135deg,rgba(251,191,36,0.1),rgba(8,17,31,0.94)_46%,rgba(34,211,238,0.08))] p-5 text-cyan-50 shadow-[0_22px_70px_rgba(8,17,31,0.38)] md:p-6">
+            <div className="grid gap-6 lg:grid-cols-[0.618fr_1fr] lg:items-center">
+                <div>
+                    <p className="text-xs font-semibold tracking-[0.22em] text-amber-200/82 uppercase">
+                        {t('cruise.review.map.eyebrow')}
+                    </p>
+                    <h2 className="mt-3 text-2xl font-semibold text-white">
+                        {t('cruise.review.map.title')}
+                    </h2>
+                    <p className="mt-3 text-sm leading-7 text-cyan-50/72">
+                        {t('cruise.review.map.body')}
+                    </p>
+                    <p className="mt-4 rounded border border-amber-200/20 bg-amber-200/10 px-3 py-2 text-xs font-semibold text-amber-100">
+                        {t(`cruise.review.map.source.${cruise.dataSource}`)}
+                    </p>
+                </div>
+
+                <div className="rounded border border-cyan-100/14 bg-slate-950/68 p-3">
+                    <svg
+                        viewBox="0 0 640 380"
+                        role="img"
+                        aria-label={t('cruise.review.map.ariaLabel')}
+                        className="h-auto w-full"
+                    >
+                        <defs>
+                            <radialGradient id="cruise-map-sun">
+                                <stop offset="0%" stopColor="#fde68a" />
+                                <stop offset="100%" stopColor="#f97316" />
+                            </radialGradient>
+                            <filter id="cruise-map-glow" x="-40%" y="-40%" width="180%" height="180%">
+                                <feGaussianBlur stdDeviation="4" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <rect width="640" height="380" rx="10" fill="#07111f" />
+                        <g opacity="0.38">
+                            {orbitRadii.map((radius) => (
+                                <circle
+                                    key={radius}
+                                    cx={centerX}
+                                    cy={centerY}
+                                    r={radius}
+                                    fill="none"
+                                    stroke="#67e8f9"
+                                    strokeDasharray="3 8"
+                                    strokeWidth="1"
+                                />
+                            ))}
+                        </g>
+                        <circle
+                            cx={centerX}
+                            cy={centerY}
+                            r="8"
+                            fill="url(#cruise-map-sun)"
+                            filter="url(#cruise-map-glow)"
+                        />
+                        <path
+                            d={path}
+                            fill="none"
+                            stroke="#fbbf24"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="3"
+                        />
+                        {plotted.map((point, index) => (
+                            <g key={`${point.code}-${index}`}>
+                                <circle
+                                    cx={point.plotX}
+                                    cy={point.plotY}
+                                    r={index === 0 ? 6 : 5}
+                                    fill={index === 0 ? '#67e8f9' : '#f8fafc'}
+                                    stroke="#0f172a"
+                                    strokeWidth="2"
+                                />
+                                <text
+                                    x={point.plotX + 9}
+                                    y={point.plotY - 8}
+                                    fill="#cffafe"
+                                    fontSize="12"
+                                    fontWeight="700"
+                                >
+                                    {point.name}
+                                </text>
+                            </g>
+                        ))}
+                    </svg>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+interface RouteMapPoint {
+    code: string;
+    name: string;
+    x: number;
+    y: number;
+    radiusKm: number;
+}
+
+function buildRouteMapPoints(trip: Trip): RouteMapPoint[] {
+    const firstLeg = trip.legs[0];
+
+    if (firstLeg === undefined || firstLeg.depCoordinates === null) {
+        return [];
+    }
+
+    return [
+        {
+            code: firstLeg.departure,
+            name: firstLeg.departureName,
+            x: firstLeg.depCoordinates.x,
+            y: firstLeg.depCoordinates.y,
+            radiusKm: Math.hypot(
+                firstLeg.depCoordinates.x,
+                firstLeg.depCoordinates.y,
+            ),
+        },
+        ...trip.legs
+            .filter((leg) => leg.arrCoordinates !== null)
+            .map((leg) => {
+                const coordinates = leg.arrCoordinates as Coordinates;
+
+                return {
+                    code: leg.arrival,
+                    name: leg.arrivalName,
+                    x: coordinates.x,
+                    y: coordinates.y,
+                    radiusKm: Math.hypot(coordinates.x, coordinates.y),
+                };
+            }),
+    ];
 }
 
 function buildRouteStops(trip: Trip): string[] {

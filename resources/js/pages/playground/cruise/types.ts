@@ -118,6 +118,8 @@ export interface Trip {
 }
 
 export interface CruiseInput {
+    /** Coordinate source chosen on the form. */
+    dataSource: 'horizons' | 'ephemeris';
     /** User-picked destination codes, in trip order. */
     destinations: string[];
     /** Per-destination layover days, parallel to destinations. */

@@ -18,6 +18,8 @@ class TripBuilderService
     // App Services
     private ConfigService $config;
 
+    private ApproximateEphemerisService $approximateEphemerisService;
+
     private CumulativeService $cumulativeService;
 
     private DestinationService $destinationService;
@@ -42,6 +44,7 @@ class TripBuilderService
      */
     public function __construct(
         ConfigService $config,
+        ApproximateEphemerisService $approximateEphemerisService,
         CumulativeService $cumulativeService,
         DestinationService $destinationService,
         HorizonService $horizonService,
@@ -54,6 +57,7 @@ class TripBuilderService
         RelativisticSpeed $relativisticSpeed
     ) {
         $this->config = $config;
+        $this->approximateEphemerisService = $approximateEphemerisService;
         $this->cumulativeService = $cumulativeService;
         $this->destinationService = $destinationService;
         $this->horizonService = $horizonService;
@@ -81,6 +85,7 @@ class TripBuilderService
             'start' => $tripStart,
             'flip' => $tripData['flipDur'] ?? 300,
             'ratio' => isset($tripData['percent']) ? $tripData['percent'] / 100 : 0.35,
+            'dataSource' => $tripData['dataSource'] ?? DestinationService::DATA_SOURCE_HORIZONS,
         ];
     }
 
@@ -127,7 +132,7 @@ class TripBuilderService
         ];
 
         // Earth Start Data
-        $earStartData = $this->horizonService->horizonQuery(399, $tripStart, 60, 86400);
+        $earStartData = $this->positionQuery('ear', 399, $tripStart, 60, 86400, $tripSettings['dataSource']);
         $this->session->set('earStartData', $earStartData);
 
         foreach ($tripData['legs'] as $leg => $route) {
@@ -315,11 +320,13 @@ class TripBuilderService
             // Horizon Data
             $sessionKey = $arrDetails['code'].'Data';
             if (! $this->session->has($sessionKey)) {
-                $arrData = $this->horizonService->horizonQuery(
+                $arrData = $this->positionQuery(
+                    $arrDetails['code'],
                     $arrDetails['horizonsId'],
                     $startRange,
                     $stepSize,
-                    $durationSearch
+                    $durationSearch,
+                    $tripSettings['dataSource'],
                 );
 
                 // Set Session
@@ -552,6 +559,31 @@ class TripBuilderService
         }
 
         return $tripLegs;
+    }
+
+    private function positionQuery(
+        string $code,
+        string|int $horizonsId,
+        int $legStart,
+        int $stepSize,
+        int $durationSearch,
+        string $dataSource,
+    ): string|array|null {
+        if ($dataSource === DestinationService::DATA_SOURCE_EPHEMERIS) {
+            return $this->approximateEphemerisService->query(
+                $code,
+                $legStart,
+                $stepSize,
+                $durationSearch,
+            );
+        }
+
+        return $this->horizonService->horizonQuery(
+            (string) $horizonsId,
+            $legStart,
+            $stepSize,
+            $durationSearch,
+        );
     }
 
     /**

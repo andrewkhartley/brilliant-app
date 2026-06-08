@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { ChangeEvent } from 'react';
+import { useState } from 'react';
 
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -221,11 +222,9 @@ export function DestinationPicker({
                                 className="group flex min-h-20 w-full cursor-pointer items-center gap-3 rounded border border-cyan-100/20 bg-white/6 p-3 text-left transition-colors hover:border-cyan-200/70 hover:bg-cyan-200/12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
                             >
                                 <span className="flex size-12 shrink-0 items-center justify-center rounded bg-slate-950/70 ring-1 ring-cyan-100/15">
-                                    <img
-                                        src={destinationImageSrc(destination)}
-                                        alt=""
+                                    <DestinationImage
+                                        code={destination.code}
                                         className="size-9 object-contain transition-transform group-hover:scale-110"
-                                        loading="lazy"
                                     />
                                 </span>
                                 <span className="min-w-0">
@@ -319,11 +318,9 @@ function SortableItem({
                 })}
             </span>
             <span className="flex size-10 shrink-0 items-center justify-center rounded bg-slate-950/80 ring-1 ring-cyan-100/15">
-                <img
-                    src={destinationImageSrc(destination)}
-                    alt=""
+                <DestinationImage
+                    code={destination.code}
                     className="size-8 object-contain"
-                    loading="lazy"
                 />
             </span>
             <span className="flex-1 font-semibold text-white">
@@ -369,8 +366,28 @@ function SortableItem({
     );
 }
 
-function destinationImageSrc(destination: Destination): string {
-    return `/assets/img/destinations/${destination.code}.png`;
+function destinationImageSrc(code: string): string {
+    return `/assets/img/destinations/${code}.png`;
+}
+
+function DestinationImage({
+    code,
+    className,
+}: {
+    code: string;
+    className: string;
+}) {
+    const [src, setSrc] = useState(destinationImageSrc(code));
+
+    return (
+        <img
+            src={src}
+            alt=""
+            className={className}
+            loading="lazy"
+            onError={() => setSrc('/assets/img/destinations/obs.png')}
+        />
+    );
 }
 
 /**

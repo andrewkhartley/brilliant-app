@@ -144,6 +144,16 @@ return [
             'heading' => 'Your trip details',
             'label' => 'Trip itinerary, leg by leg',
         ],
+        'map' => [
+            'eyebrow' => 'Route map',
+            'title' => 'Now the itinerary has a shape.',
+            'body' => 'The same coordinates used for the trip math become a top-down map of the route. The scale is compressed so the whole Solar System can fit in one readable view.',
+            'ariaLabel' => 'Top-down map of the selected Sol Cruise route',
+            'source' => [
+                'horizons' => 'Source: live NASA Horizons vectors.',
+                'ephemeris' => 'Source: coded approximate ephemeris for fast exploration and expanded destinations.',
+            ],
+        ],
         'leg' => [
             'heading' => 'Leg :number :.: :departure to :arrival',
             'timeRange' => ':departure → :arrival',
@@ -218,6 +228,18 @@ return [
         ],
         'submitDisabledHint' => 'Pick at least one destination and a departure date to plan a trip.',
         'plottingAriaLabel' => 'Plotting your trip :.: please wait',
+
+        'dataSource' => [
+            'label' => 'Data source',
+            'horizons' => [
+                'title' => 'NASA Horizons',
+                'body' => 'Use live vector data from NASA for the classic planet route.',
+            ],
+            'ephemeris' => [
+                'title' => 'Coded ephemeris',
+                'body' => 'Use a fast local model with moons, asteroids, and instant map generation.',
+            ],
+        ],
 
         'destinations' => [
             'label' => 'Destinations',
