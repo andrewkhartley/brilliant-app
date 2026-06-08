@@ -406,90 +406,96 @@ export function ThreeRouteMap({
         return <>{fallback}</>;
     }
 
+    const controlLabelKey = isPlaying
+        ? 'cruise.review.map.controls.pause'
+        : 'cruise.review.map.controls.play';
+    const controlIcon = isPlaying ? 'fa-pause' : 'fa-play';
+
     return (
-        <div className="relative overflow-hidden rounded border border-cyan-100/14 bg-slate-950/68">
-            <canvas
-                ref={canvasRef}
-                aria-label={t('cruise.review.map.ariaLabel')}
-                className="block aspect-[16/10] w-full cursor-grab touch-none active:cursor-grabbing"
-            />
-            <div className="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-start justify-between gap-3">
-                <div className="rounded border border-cyan-100/16 bg-slate-950/72 px-3 py-2 shadow-xl shadow-black/20 backdrop-blur">
-                    <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-cyan-200/78 uppercase">
-                        {t('cruise.review.map.simulationLabel')}
+        <section className="mt-10">
+            <div className="mb-5 grid gap-4 lg:grid-cols-[0.618fr_1fr] lg:items-end">
+                <div>
+                    <p className="text-xs font-semibold tracking-[0.22em] text-amber-200/82 uppercase">
+                        {t('cruise.review.map.eyebrow')}
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-white">
-                        {activePointName || points[0]?.name}
+                    <h2 className="mt-3 text-2xl font-semibold text-white">
+                        {t('cruise.review.map.title')}
+                    </h2>
+                </div>
+                <div className="max-w-3xl space-y-2 text-sm leading-7 text-cyan-50/72 lg:justify-self-end">
+                    <p>
+                        {t('cruise.review.map.body')}{' '}
+                        {t('cruise.review.map.interactionHint')}
                     </p>
-                    <p className="mt-1 text-xs font-semibold text-amber-100">
-                        {t(`cruise.review.map.phase.${currentPhase}`)}
+                    <p className="inline-flex rounded border border-amber-200/20 bg-amber-200/10 px-3 py-2 text-xs font-semibold leading-5 text-amber-100/86 shadow-[0_12px_34px_rgba(251,191,36,0.08)]">
+                        {t(`cruise.review.map.source.${dataSource}`)}
                     </p>
-                    <p className="mt-1 font-mono text-xs text-cyan-50/70">
-                        {formatSimulationDate(
-                            tripStart,
-                            simulationProgress * totalSeconds,
-                        )}
-                    </p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                        {FLIGHT_PHASE_STYLES.map((phase) => (
-                            <span
-                                key={phase.key}
-                                className={`rounded border px-2 py-0.5 text-[0.62rem] font-bold tracking-[0.14em] uppercase transition ${
-                                    currentPhase === phase.key
-                                        ? phase.activeClass
-                                        : 'border-cyan-100/12 bg-slate-950/50 text-cyan-50/45'
-                                }`}
-                            >
-                                {t(
-                                    `cruise.review.map.phaseShort.${phase.key}`,
-                                )}
-                            </span>
-                        ))}
+                </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded border border-cyan-100/14 bg-slate-950/68 shadow-[0_22px_70px_rgba(8,17,31,0.38)]">
+                <canvas
+                    ref={canvasRef}
+                    aria-label={t('cruise.review.map.ariaLabel')}
+                    className="block aspect-[16/10] w-full cursor-grab touch-none active:cursor-grabbing"
+                />
+                <div className="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-start justify-between gap-3">
+                    <div className="rounded border border-cyan-100/16 bg-slate-950/72 px-3 py-2 shadow-xl shadow-black/20 backdrop-blur">
+                        <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-cyan-200/78 uppercase">
+                            {t('cruise.review.map.simulationLabel')}
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-white">
+                            {activePointName || points[0]?.name}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-amber-100">
+                            {t(`cruise.review.map.phase.${currentPhase}`)}
+                        </p>
+                        <p className="mt-1 font-mono text-xs text-cyan-50/70">
+                            {formatSimulationDate(
+                                tripStart,
+                                simulationProgress * totalSeconds,
+                            )}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                            {FLIGHT_PHASE_STYLES.map((phase) => (
+                                <span
+                                    key={phase.key}
+                                    className={`rounded border px-2 py-0.5 text-[0.62rem] font-bold tracking-[0.14em] uppercase transition ${
+                                        currentPhase === phase.key
+                                            ? phase.activeClass
+                                            : 'border-cyan-100/12 bg-slate-950/50 text-cyan-50/45'
+                                    }`}
+                                >
+                                    {t(
+                                        `cruise.review.map.phaseShort.${phase.key}`,
+                                    )}
+                                </span>
+                            ))}
+                        </div>
                     </div>
                 </div>
-                <p className="max-w-48 rounded border border-amber-200/18 bg-amber-200/10 px-3 py-2 text-right text-[0.68rem] font-semibold leading-5 text-amber-100/86 backdrop-blur">
-                    {t(`cruise.review.map.source.${dataSource}`)}
-                </p>
-            </div>
-            <div className="absolute inset-x-3 bottom-10 hidden rounded border border-cyan-100/14 bg-slate-950/76 p-3 shadow-xl shadow-black/24 backdrop-blur md:block">
-                <div className="grid gap-3 md:grid-cols-[1.618fr_1fr] md:items-start">
-                    <div className="rounded border border-cyan-100/10 bg-cyan-50/5 p-2.5">
-                        <div className="flex min-h-12 items-center justify-between gap-3">
-                            <button
-                                type="button"
-                                onClick={togglePlaying}
-                                className="inline-flex cursor-pointer items-center gap-2 rounded bg-cyan-200 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
-                            >
-                                <i
-                                    aria-hidden="true"
-                                    className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}`}
-                                />
-                                {t(
-                                    isPlaying
-                                        ? 'cruise.review.map.controls.pause'
-                                        : 'cruise.review.map.controls.play',
-                                )}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setShowMobileTimelineControls(
-                                        (current) => !current,
-                                    )
-                                }
-                                className="inline-flex cursor-pointer items-center gap-2 rounded border border-cyan-100/18 bg-slate-950/50 px-3 py-2 text-xs font-bold text-cyan-50 transition hover:bg-cyan-100/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 md:hidden"
-                            >
-                                <i aria-hidden="true" className="fa-solid fa-sliders" />
-                                {t('cruise.review.map.controls.timeline')}
-                            </button>
-                            <span className="ms-auto text-xs font-semibold text-cyan-50/70">
-                                {formatElapsedTime(
-                                    simulationProgress * totalSeconds,
-                                )}
-                            </span>
-                        </div>
-                        <div className="mt-3">
-                            <label className="block text-[0.65rem] font-bold tracking-[0.16em] text-cyan-100/62 uppercase">
+                <div className="absolute inset-x-3 bottom-3 hidden rounded border border-cyan-100/14 bg-slate-950/76 p-3 shadow-xl shadow-black/24 backdrop-blur md:block">
+                    <div className="grid gap-3 md:grid-cols-[1.618fr_1fr] md:items-stretch">
+                        <div className="flex h-full flex-col rounded border border-cyan-100/10 bg-cyan-50/5 p-2.5">
+                            <div className="flex min-h-11 items-center justify-between gap-3">
+                                <button
+                                    type="button"
+                                    onClick={togglePlaying}
+                                    className="inline-flex cursor-pointer items-center gap-2 rounded bg-cyan-200 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
+                                >
+                                    <i
+                                        aria-hidden="true"
+                                        className={`fa-solid ${controlIcon}`}
+                                    />
+                                    {t(controlLabelKey)}
+                                </button>
+                                <span className="ms-auto text-xs font-semibold text-cyan-50/70">
+                                    {formatElapsedTime(
+                                        simulationProgress * totalSeconds,
+                                    )}
+                                </span>
+                            </div>
+                            <label className="mt-3 block text-[0.65rem] font-bold tracking-[0.16em] text-cyan-100/62 uppercase">
                                 <span>
                                     {t('cruise.review.map.controls.timeline')}
                                 </span>
@@ -508,29 +514,15 @@ export function ThreeRouteMap({
                                 />
                             </label>
                         </div>
-                    </div>
-                    <div className="rounded border border-amber-200/12 bg-amber-200/8 p-2.5">
-                        <div className="flex min-h-12 items-center justify-between gap-3">
-                            <p className="text-[0.65rem] font-bold tracking-[0.16em] text-amber-100/70 uppercase">
-                                {t('cruise.review.map.controls.speed', {
-                                    speed: formatSpeed(simulationSpeed),
-                                })}
-                            </p>
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setShowMobileSpeedControls(
-                                        (current) => !current,
-                                    )
-                                }
-                                className="inline-flex cursor-pointer items-center gap-2 rounded border border-amber-100/18 bg-slate-950/50 px-3 py-2 text-xs font-bold text-amber-50 transition hover:bg-amber-100/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 md:hidden"
-                            >
-                                <i aria-hidden="true" className="fa-solid fa-gauge-high" />
-                                {t('cruise.review.map.controls.speedLabel')}
-                            </button>
-                        </div>
-                        <div className="mt-3">
-                            <label className="block">
+                        <div className="flex h-full flex-col rounded border border-amber-200/12 bg-amber-200/8 p-2.5">
+                            <div className="flex min-h-11 items-center">
+                                <p className="text-[0.65rem] font-bold tracking-[0.16em] text-amber-100/70 uppercase">
+                                    {t('cruise.review.map.controls.speed', {
+                                        speed: formatSpeed(simulationSpeed),
+                                    })}
+                                </p>
+                            </div>
+                            <label className="mt-3 block">
                                 <span className="sr-only">
                                     {t('cruise.review.map.controls.speedLabel')}
                                 </span>
@@ -571,132 +563,132 @@ export function ThreeRouteMap({
                         </div>
                     </div>
                 </div>
-            </div>
-            <div className="absolute inset-x-3 bottom-10 rounded border border-cyan-100/14 bg-slate-950/82 p-2 shadow-xl shadow-black/24 backdrop-blur md:hidden">
-                <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={togglePlaying}
-                        className="inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded bg-cyan-200 text-sm font-bold text-slate-950 transition hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
-                        aria-label={t(
-                            isPlaying
-                                ? 'cruise.review.map.controls.pause'
-                                : 'cruise.review.map.controls.play',
-                        )}
-                    >
-                        <i
-                            aria-hidden="true"
-                            className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}`}
-                        />
-                    </button>
-                    <span className="min-w-0 flex-1 truncate text-xs font-semibold text-cyan-50/78">
-                        {formatElapsedTime(simulationProgress * totalSeconds)}
-                    </span>
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setShowMobileTimelineControls((current) => !current)
-                        }
-                        className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded border text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ${
-                            showMobileTimelineControls
-                                ? 'border-cyan-200/60 bg-cyan-200/18 text-cyan-100'
-                                : 'border-cyan-100/18 bg-slate-950/50 text-cyan-50 hover:bg-cyan-100/10'
-                        }`}
-                        aria-label={t('cruise.review.map.controls.timeline')}
-                    >
-                        <i aria-hidden="true" className="fa-solid fa-sliders" />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setShowMobileSpeedControls((current) => !current)
-                        }
-                        className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded border text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 ${
-                            showMobileSpeedControls
-                                ? 'border-amber-200/60 bg-amber-200/18 text-amber-100'
-                                : 'border-amber-100/18 bg-slate-950/50 text-amber-50 hover:bg-amber-100/10'
-                        }`}
-                        aria-label={t('cruise.review.map.controls.speedLabel')}
-                    >
-                        <i aria-hidden="true" className="fa-solid fa-gauge-high" />
-                    </button>
-                </div>
-                {(showMobileTimelineControls || showMobileSpeedControls) && (
-                    <div className="mt-2 rounded border border-cyan-100/12 bg-slate-950/72 p-2">
-                        {showMobileTimelineControls && (
-                            <label className="block text-[0.65rem] font-bold tracking-[0.16em] text-cyan-100/62 uppercase">
-                                <span>
-                                    {t('cruise.review.map.controls.timeline')}
-                                </span>
-                                <input
-                                    type="range"
-                                    min={0}
-                                    max={1000}
-                                    value={Math.round(simulationProgress * 1000)}
-                                    onChange={(event) => {
-                                        updatePlaying(false);
-                                        updateProgress(
-                                            Number(event.target.value) / 1000,
-                                        );
-                                    }}
-                                    className="mt-2 h-2 w-full cursor-pointer accent-cyan-200"
-                                />
-                            </label>
-                        )}
-                        {showMobileSpeedControls && (
-                            <div className={showMobileTimelineControls ? 'mt-3' : ''}>
-                                <p className="text-[0.65rem] font-bold tracking-[0.16em] text-amber-100/70 uppercase">
-                                    {t('cruise.review.map.controls.speed', {
-                                        speed: formatSpeed(simulationSpeed),
-                                    })}
-                                </p>
-                                <input
-                                    type="range"
-                                    min={MIN_SIMULATION_DAYS_PER_SECOND}
-                                    max={MAX_SIMULATION_DAYS_PER_SECOND}
-                                    step={1 / 24}
-                                    value={simulationSpeed / SECONDS_PER_DAY}
-                                    onChange={(event) =>
-                                        updateSpeed(
-                                            Number(event.target.value)
-                                                * SECONDS_PER_DAY,
-                                        )
-                                    }
-                                    className="mt-2 h-2 w-full cursor-pointer accent-amber-200"
-                                    aria-label={t(
-                                        'cruise.review.map.controls.speedLabel',
-                                    )}
-                                />
-                                <div className="mt-2 flex flex-wrap gap-1.5">
-                                    {SIMULATION_SPEEDS.map((speed) => (
-                                        <button
-                                            key={speed}
-                                            type="button"
-                                            onClick={() => updateSpeed(speed)}
-                                            className={`cursor-pointer rounded border px-2 py-1 text-[0.65rem] font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ${
-                                                isSpeedPresetActive(
-                                                    simulationSpeed,
-                                                    speed,
-                                                )
-                                                    ? 'border-amber-200/60 bg-amber-200/18 text-amber-100'
-                                                    : 'border-cyan-100/14 bg-slate-950/45 text-cyan-50/62 hover:bg-cyan-100/10 hover:text-cyan-50'
-                                            }`}
-                                        >
-                                            {formatSpeed(speed)}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                <div className="absolute inset-x-3 bottom-3 rounded border border-cyan-100/14 bg-slate-950/82 p-2 shadow-xl shadow-black/24 backdrop-blur md:hidden">
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={togglePlaying}
+                            className="inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded bg-cyan-200 text-sm font-bold text-slate-950 transition hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
+                            aria-label={t(controlLabelKey)}
+                        >
+                            <i
+                                aria-hidden="true"
+                                className={`fa-solid ${controlIcon}`}
+                            />
+                        </button>
+                        <span className="min-w-0 flex-1 truncate text-xs font-semibold text-cyan-50/78">
+                            {formatElapsedTime(simulationProgress * totalSeconds)}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setShowMobileTimelineControls((current) => !current)
+                            }
+                            className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded border text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ${
+                                showMobileTimelineControls
+                                    ? 'border-cyan-200/60 bg-cyan-200/18 text-cyan-100'
+                                    : 'border-cyan-100/18 bg-slate-950/50 text-cyan-50 hover:bg-cyan-100/10'
+                            }`}
+                            aria-label={t('cruise.review.map.controls.timeline')}
+                        >
+                            <i aria-hidden="true" className="fa-solid fa-sliders" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setShowMobileSpeedControls((current) => !current)
+                            }
+                            className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded border text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 ${
+                                showMobileSpeedControls
+                                    ? 'border-amber-200/60 bg-amber-200/18 text-amber-100'
+                                    : 'border-amber-100/18 bg-slate-950/50 text-amber-50 hover:bg-amber-100/10'
+                            }`}
+                            aria-label={t('cruise.review.map.controls.speedLabel')}
+                        >
+                            <i
+                                aria-hidden="true"
+                                className="fa-solid fa-gauge-high"
+                            />
+                        </button>
                     </div>
-                )}
+                    {(showMobileTimelineControls || showMobileSpeedControls) && (
+                        <div className="mt-2 rounded border border-cyan-100/12 bg-slate-950/72 p-2">
+                            {showMobileTimelineControls && (
+                                <label className="block text-[0.65rem] font-bold tracking-[0.16em] text-cyan-100/62 uppercase">
+                                    <span>
+                                        {t('cruise.review.map.controls.timeline')}
+                                    </span>
+                                    <input
+                                        type="range"
+                                        min={0}
+                                        max={1000}
+                                        value={Math.round(
+                                            simulationProgress * 1000,
+                                        )}
+                                        onChange={(event) => {
+                                            updatePlaying(false);
+                                            updateProgress(
+                                                Number(event.target.value) / 1000,
+                                            );
+                                        }}
+                                        className="mt-2 h-2 w-full cursor-pointer accent-cyan-200"
+                                    />
+                                </label>
+                            )}
+                            {showMobileSpeedControls && (
+                                <div
+                                    className={
+                                        showMobileTimelineControls ? 'mt-3' : ''
+                                    }
+                                >
+                                    <p className="text-[0.65rem] font-bold tracking-[0.16em] text-amber-100/70 uppercase">
+                                        {t('cruise.review.map.controls.speed', {
+                                            speed: formatSpeed(simulationSpeed),
+                                        })}
+                                    </p>
+                                    <input
+                                        type="range"
+                                        min={MIN_SIMULATION_DAYS_PER_SECOND}
+                                        max={MAX_SIMULATION_DAYS_PER_SECOND}
+                                        step={1 / 24}
+                                        value={simulationSpeed / SECONDS_PER_DAY}
+                                        onChange={(event) =>
+                                            updateSpeed(
+                                                Number(event.target.value)
+                                                    * SECONDS_PER_DAY,
+                                            )
+                                        }
+                                        className="mt-2 h-2 w-full cursor-pointer accent-amber-200"
+                                        aria-label={t(
+                                            'cruise.review.map.controls.speedLabel',
+                                        )}
+                                    />
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                        {SIMULATION_SPEEDS.map((speed) => (
+                                            <button
+                                                key={speed}
+                                                type="button"
+                                                onClick={() => updateSpeed(speed)}
+                                                className={`cursor-pointer rounded border px-2 py-1 text-[0.65rem] font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ${
+                                                    isSpeedPresetActive(
+                                                        simulationSpeed,
+                                                        speed,
+                                                    )
+                                                        ? 'border-amber-200/60 bg-amber-200/18 text-amber-100'
+                                                        : 'border-cyan-100/14 bg-slate-950/45 text-cyan-50/62 hover:bg-cyan-100/10 hover:text-cyan-50'
+                                                }`}
+                                            >
+                                                {formatSpeed(speed)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950/86 to-transparent px-4 pb-3 pt-12">
-                <p className="text-xs leading-5 text-cyan-50/66">
-                    {t('cruise.review.map.interactionHint')}
-                </p>
-            </div>
-        </div>
+        </section>
     );
 }
 
