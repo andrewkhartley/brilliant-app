@@ -451,10 +451,10 @@ export function ThreeRouteMap({
                     {t(`cruise.review.map.source.${dataSource}`)}
                 </p>
             </div>
-            <div className="absolute inset-x-3 bottom-10 rounded border border-cyan-100/14 bg-slate-950/76 p-3 shadow-xl shadow-black/24 backdrop-blur">
+            <div className="absolute inset-x-3 bottom-10 hidden rounded border border-cyan-100/14 bg-slate-950/76 p-3 shadow-xl shadow-black/24 backdrop-blur md:block">
                 <div className="grid gap-3 md:grid-cols-[1.618fr_1fr] md:items-start">
                     <div className="rounded border border-cyan-100/10 bg-cyan-50/5 p-2.5">
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-h-12 items-center justify-between gap-3">
                             <button
                                 type="button"
                                 onClick={togglePlaying}
@@ -488,13 +488,7 @@ export function ThreeRouteMap({
                                 )}
                             </span>
                         </div>
-                        <div
-                            className={`mt-3 ${
-                                showMobileTimelineControls
-                                    ? 'block'
-                                    : 'hidden md:block'
-                            }`}
-                        >
+                        <div className="mt-3">
                             <label className="block text-[0.65rem] font-bold tracking-[0.16em] text-cyan-100/62 uppercase">
                                 <span>
                                     {t('cruise.review.map.controls.timeline')}
@@ -516,7 +510,7 @@ export function ThreeRouteMap({
                         </div>
                     </div>
                     <div className="rounded border border-amber-200/12 bg-amber-200/8 p-2.5">
-                        <div className="flex items-center justify-between gap-3 md:min-h-[2rem]">
+                        <div className="flex min-h-12 items-center justify-between gap-3">
                             <p className="text-[0.65rem] font-bold tracking-[0.16em] text-amber-100/70 uppercase">
                                 {t('cruise.review.map.controls.speed', {
                                     speed: formatSpeed(simulationSpeed),
@@ -535,13 +529,7 @@ export function ThreeRouteMap({
                                 {t('cruise.review.map.controls.speedLabel')}
                             </button>
                         </div>
-                        <div
-                            className={`mt-3 ${
-                                showMobileSpeedControls
-                                    ? 'block'
-                                    : 'hidden md:block'
-                            }`}
-                        >
+                        <div className="mt-3">
                             <label className="block">
                                 <span className="sr-only">
                                     {t('cruise.review.map.controls.speedLabel')}
@@ -583,6 +571,125 @@ export function ThreeRouteMap({
                         </div>
                     </div>
                 </div>
+            </div>
+            <div className="absolute inset-x-3 bottom-10 rounded border border-cyan-100/14 bg-slate-950/82 p-2 shadow-xl shadow-black/24 backdrop-blur md:hidden">
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={togglePlaying}
+                        className="inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded bg-cyan-200 text-sm font-bold text-slate-950 transition hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
+                        aria-label={t(
+                            isPlaying
+                                ? 'cruise.review.map.controls.pause'
+                                : 'cruise.review.map.controls.play',
+                        )}
+                    >
+                        <i
+                            aria-hidden="true"
+                            className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}`}
+                        />
+                    </button>
+                    <span className="min-w-0 flex-1 truncate text-xs font-semibold text-cyan-50/78">
+                        {formatElapsedTime(simulationProgress * totalSeconds)}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setShowMobileTimelineControls((current) => !current)
+                        }
+                        className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded border text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ${
+                            showMobileTimelineControls
+                                ? 'border-cyan-200/60 bg-cyan-200/18 text-cyan-100'
+                                : 'border-cyan-100/18 bg-slate-950/50 text-cyan-50 hover:bg-cyan-100/10'
+                        }`}
+                        aria-label={t('cruise.review.map.controls.timeline')}
+                    >
+                        <i aria-hidden="true" className="fa-solid fa-sliders" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setShowMobileSpeedControls((current) => !current)
+                        }
+                        className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded border text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 ${
+                            showMobileSpeedControls
+                                ? 'border-amber-200/60 bg-amber-200/18 text-amber-100'
+                                : 'border-amber-100/18 bg-slate-950/50 text-amber-50 hover:bg-amber-100/10'
+                        }`}
+                        aria-label={t('cruise.review.map.controls.speedLabel')}
+                    >
+                        <i aria-hidden="true" className="fa-solid fa-gauge-high" />
+                    </button>
+                </div>
+                {(showMobileTimelineControls || showMobileSpeedControls) && (
+                    <div className="mt-2 rounded border border-cyan-100/12 bg-slate-950/72 p-2">
+                        {showMobileTimelineControls && (
+                            <label className="block text-[0.65rem] font-bold tracking-[0.16em] text-cyan-100/62 uppercase">
+                                <span>
+                                    {t('cruise.review.map.controls.timeline')}
+                                </span>
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={1000}
+                                    value={Math.round(simulationProgress * 1000)}
+                                    onChange={(event) => {
+                                        updatePlaying(false);
+                                        updateProgress(
+                                            Number(event.target.value) / 1000,
+                                        );
+                                    }}
+                                    className="mt-2 h-2 w-full cursor-pointer accent-cyan-200"
+                                />
+                            </label>
+                        )}
+                        {showMobileSpeedControls && (
+                            <div className={showMobileTimelineControls ? 'mt-3' : ''}>
+                                <p className="text-[0.65rem] font-bold tracking-[0.16em] text-amber-100/70 uppercase">
+                                    {t('cruise.review.map.controls.speed', {
+                                        speed: formatSpeed(simulationSpeed),
+                                    })}
+                                </p>
+                                <input
+                                    type="range"
+                                    min={MIN_SIMULATION_DAYS_PER_SECOND}
+                                    max={MAX_SIMULATION_DAYS_PER_SECOND}
+                                    step={1 / 24}
+                                    value={simulationSpeed / SECONDS_PER_DAY}
+                                    onChange={(event) =>
+                                        updateSpeed(
+                                            Number(event.target.value)
+                                                * SECONDS_PER_DAY,
+                                        )
+                                    }
+                                    className="mt-2 h-2 w-full cursor-pointer accent-amber-200"
+                                    aria-label={t(
+                                        'cruise.review.map.controls.speedLabel',
+                                    )}
+                                />
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {SIMULATION_SPEEDS.map((speed) => (
+                                        <button
+                                            key={speed}
+                                            type="button"
+                                            onClick={() => updateSpeed(speed)}
+                                            className={`cursor-pointer rounded border px-2 py-1 text-[0.65rem] font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ${
+                                                isSpeedPresetActive(
+                                                    simulationSpeed,
+                                                    speed,
+                                                )
+                                                    ? 'border-amber-200/60 bg-amber-200/18 text-amber-100'
+                                                    : 'border-cyan-100/14 bg-slate-950/45 text-cyan-50/62 hover:bg-cyan-100/10 hover:text-cyan-50'
+                                            }`}
+                                        >
+                                            {formatSpeed(speed)}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950/86 to-transparent px-4 pb-3 pt-12">
                 <p className="text-xs leading-5 text-cyan-50/66">
