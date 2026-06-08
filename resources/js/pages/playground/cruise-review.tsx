@@ -318,6 +318,7 @@ function RouteMap({ cruise, trip }: ComputedTripViewProps) {
         <ThreeRouteMap
             dataSource={cruise.dataSource}
             legs={trip.legs}
+            planetPositions={trip.mapPlanetPositions}
             points={points}
             fallback={<SvgRouteMap cruise={cruise} trip={trip} />}
             tripStart={cruise.tripStart}

@@ -4,6 +4,7 @@
 /** @noinspection PhpUnhandledExceptionInspection — Horizons calls @throws GuzzleException; tests stub the upstream so the exception is never actually thrown. */
 
 use App\Services\API\HorizonService;
+use App\Services\Experiences\Cruise\DestinationService;
 use Database\Seeders\SolarSystemFactsSeeder;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Psr7\Request;
@@ -146,6 +147,7 @@ it('flows from form submission through to a rendered review page', function () {
     $tripStart = now()->addDays(7)->toDateString();
 
     $response = followingRedirects()->post('/playground/cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['ven', 'mar'],
         'layovers' => [5, 5],
         'tripStart' => $tripStart,
@@ -166,6 +168,7 @@ it('flows from form submission through to a rendered review page', function () {
         fn ($page) => $page
             ->component('playground/cruise-review')
             ->where('horizonsError', false)
+            ->has('trip.mapPlanetPositions', 8)
             ->has('trip.legs', 3)
     );
 });

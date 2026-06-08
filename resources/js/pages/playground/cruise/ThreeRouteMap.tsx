@@ -21,6 +21,7 @@ interface ThreeRouteMapProps {
     dataSource: DataSource;
     fallback: ReactNode;
     legs: Leg[];
+    planetPositions: RouteMapPoint[];
     points: RouteMapPoint[];
     tripStart: string;
 }
@@ -117,6 +118,7 @@ export function ThreeRouteMap({
     dataSource,
     fallback,
     legs,
+    planetPositions,
     points,
     tripStart,
 }: ThreeRouteMapProps) {
@@ -204,7 +206,10 @@ export function ThreeRouteMap({
         root.add(createStarfield());
         root.add(createSun());
 
-        const planetPositionOverrides = buildPlanetPositionOverrides(points);
+        const planetPositionOverrides = buildPlanetPositionOverrides([
+            ...planetPositions,
+            ...points,
+        ]);
         const planetMeshes: THREE.Mesh[] = [];
 
         for (const planet of PLANETS) {
@@ -400,7 +405,15 @@ export function ThreeRouteMap({
             disposeObject(scene);
             renderer.dispose();
         };
-    }, [legSegments, legs, points, routePoints, timeline, totalSeconds]);
+    }, [
+        legSegments,
+        legs,
+        planetPositions,
+        points,
+        routePoints,
+        timeline,
+        totalSeconds,
+    ]);
 
     if (webglFailed || legSegments.length === 0) {
         return <>{fallback}</>;

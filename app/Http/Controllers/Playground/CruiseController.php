@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Playground;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCruiseRequest;
 use App\Models\Experiences\Cruise\Destination;
+use App\Services\Experiences\Cruise\ApproximateEphemerisService;
 use App\Services\Experiences\Cruise\DestinationService;
 use App\Services\Experiences\Cruise\EphemerisCatalog;
 use App\Services\Experiences\Cruise\TripBuilderService;
@@ -33,6 +34,17 @@ use Inertia\Response;
  */
 class CruiseController extends Controller
 {
+    private const array MAP_PLANET_CODES = [
+        'mer',
+        'ven',
+        'ear',
+        'mar',
+        'jup',
+        'sat',
+        'ura',
+        'nep',
+    ];
+
     /**
      * Default layover at each stop, in days. Matches the initial value
      * the lifted Undaunted Cruise form set per destination, and serves
@@ -120,6 +132,7 @@ class CruiseController extends Controller
      */
     public function review(
         DestinationService $destinationService,
+        ApproximateEphemerisService $ephemerisService,
         TripBuilderService $tripBuilderService,
     ): Response|RedirectResponse {
         $cruise = session('cruise');
@@ -187,7 +200,11 @@ class CruiseController extends Controller
 
         return Inertia::render('playground/cruise-review', [
             'cruise' => $cruise,
-            'trip' => $this->presentTrip($computedTrip),
+            'trip' => $this->presentTrip(
+                $computedTrip,
+                $tripStartTimestamp,
+                $ephemerisService,
+            ),
             'horizonsError' => false,
             'attemptedDestinationNames' => [],
             'translations' => translations(['cruise', 'storyStage']),
@@ -284,7 +301,11 @@ class CruiseController extends Controller
      * @param  array<string, mixed>  $computedTrip
      * @return array<string, mixed>
      */
-    private function presentTrip(array $computedTrip): array
+    private function presentTrip(
+        array $computedTrip,
+        int $tripStartTimestamp,
+        ApproximateEphemerisService $ephemerisService,
+    ): array
     {
         $legs = collect($computedTrip['legData'] ?? [])
             ->values()
@@ -351,8 +372,52 @@ class CruiseController extends Controller
             'totalDilationFormatted' => isset($totals['totalDilation'])
                 ? strip_tags(secondsToDuration((int) round((float) $totals['totalDilation'])))
                 : null,
+            'mapPlanetPositions' => $this->presentMapPlanetPositions(
+                $tripStartTimestamp,
+                $ephemerisService,
+            ),
             'legs' => $legs,
         ];
+    }
+
+    /**
+     * Seed the client map with a real start angle for every visible
+     * planet. The itinerary legs still use the selected source's
+     * solved departure/arrival coordinates; this only prevents
+     * non-selected planets from falling back to placeholder phases.
+     *
+     * @return array<int, array{code: string, elapsedDays: int, name: string, x: int, y: int, radiusKm: int}>
+     */
+    private function presentMapPlanetPositions(
+        int $tripStartTimestamp,
+        ApproximateEphemerisService $ephemerisService,
+    ): array {
+        return collect(self::MAP_PLANET_CODES)
+            ->map(function (string $code) use ($ephemerisService, $tripStartTimestamp): array {
+                $coordinates = $ephemerisService->positionAt(
+                    $code,
+                    $tripStartTimestamp,
+                );
+
+                return [
+                    'code' => $code,
+                    'elapsedDays' => 0,
+                    'name' => $this->destinationName(
+                        $code,
+                        DestinationService::DATA_SOURCE_EPHEMERIS,
+                    ),
+                    'x' => (int) round((float) $coordinates['x']),
+                    'y' => (int) round((float) $coordinates['y']),
+                    'radiusKm' => (int) round(
+                        hypot(
+                            (float) $coordinates['x'],
+                            (float) $coordinates['y'],
+                        ),
+                    ),
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     /**

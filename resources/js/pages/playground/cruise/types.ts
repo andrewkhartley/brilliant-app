@@ -27,6 +27,13 @@ export interface Coordinates {
     z: number;
 }
 
+export interface MapPlanetPosition extends Coordinates {
+    code: string;
+    elapsedDays: number;
+    name: string;
+    radiusKm: number;
+}
+
 export interface Leg {
     /** 1-based leg ordinal — surfaces in the "Leg N" heading. */
     leg: number;
@@ -123,6 +130,8 @@ export interface Trip {
     totalOrbDurFormatted: string | null;
     /** Pre-formatted cumulative time dilation across all legs. */
     totalDilationFormatted: string | null;
+    /** Starting positions for every planet visible in the route map. */
+    mapPlanetPositions: MapPlanetPosition[];
     /** Ordered list of leg breakdowns (Earth → ... → Earth). */
     legs: Leg[];
 }
