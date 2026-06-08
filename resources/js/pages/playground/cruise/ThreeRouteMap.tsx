@@ -379,6 +379,7 @@ export function ThreeRouteMap({
                     </label>
                     <select
                         value={simulationSpeed}
+                        aria-label={t('cruise.review.map.controls.speedLabel')}
                         onChange={(event) => updateSpeed(Number(event.target.value))}
                         className="cursor-pointer rounded border border-cyan-100/20 bg-slate-950 px-2 py-2 text-xs font-bold text-cyan-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
                     >

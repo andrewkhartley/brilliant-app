@@ -155,6 +155,7 @@ return [
                 'pause' => 'Pause',
                 'play' => 'Play',
                 'speed' => ':speed',
+                'speedLabel' => 'Simulation speed',
                 'timeline' => 'Trip timeline',
             ],
             'phase' => [
