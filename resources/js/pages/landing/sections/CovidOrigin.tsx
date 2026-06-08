@@ -158,7 +158,7 @@ export function CovidOrigin() {
             <div className="relative mx-auto max-w-6xl px-4 py-20 text-white select-text sm:py-24">
                 <div
                     data-clubhouse-reveal
-                    className="mx-auto max-w-5xl text-center"
+                    className="max-w-5xl text-left"
                 >
                     <p className="text-xs font-semibold tracking-[0.28em] text-cyan-200/75 uppercase">
                         {t('landing.covidOrigin.kicker')}
@@ -166,7 +166,7 @@ export function CovidOrigin() {
                     <h2 className="mt-4 text-3xl font-semibold tracking-normal text-white sm:text-5xl">
                         {t('landing.covidOrigin.heading')}
                     </h2>
-                    <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-cyan-50/72">
+                    <p className="mt-5 max-w-2xl text-lg leading-8 text-cyan-50/72">
                         {t('landing.covidOrigin.intro')}
                     </p>
                 </div>

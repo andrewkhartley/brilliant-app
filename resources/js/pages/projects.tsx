@@ -45,6 +45,12 @@ const UNDAUNTED_LINKS = [
     },
 ] as const;
 
+const REFERENCE_CARDS = [
+    'futureSystems',
+    'explorableExplanations',
+    'brilliant',
+] as const;
+
 export default function ProjectsPage() {
     const { t } = useTranslation();
     const [activeScreenshotIndex, setActiveScreenshotIndex] = useState<
@@ -245,6 +251,41 @@ export default function ProjectsPage() {
                             <p className="mt-5 text-sm leading-7 text-cyan-50/72">
                                 {t('projects.note')}
                             </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="relative overflow-hidden border-t border-cyan-100/14 bg-[#08111f] text-white">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-cyan-200/70 to-transparent" />
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_74%_22%,rgba(34,211,238,0.14),transparent_30%),radial-gradient(circle_at_22%_78%,rgba(251,191,36,0.1),transparent_28%),linear-gradient(180deg,rgba(8,17,31,0.98),rgba(10,17,29,0.98))]" />
+
+                <div className="relative mx-auto max-w-6xl px-4 py-16 sm:py-20">
+                    <div className="grid gap-10 lg:grid-cols-[minmax(0,0.382fr)_minmax(0,0.618fr)] lg:items-start">
+                        <div>
+                            <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
+                                {t('projects.references.kicker')}
+                            </p>
+                            <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
+                                {t('projects.references.heading')}
+                            </h2>
+                            <p className="mt-5 text-base leading-8 font-semibold text-cyan-50/82">
+                                {t('projects.references.intro')}
+                            </p>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-3">
+                            {REFERENCE_CARDS.map((card) => (
+                                <FeatureCard
+                                    key={card}
+                                    title={t(
+                                        `projects.references.cards.${card}.title`,
+                                    )}
+                                    body={t(
+                                        `projects.references.cards.${card}.body`,
+                                    )}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>

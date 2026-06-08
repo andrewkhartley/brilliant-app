@@ -30,6 +30,32 @@ return [
         ],
     ],
 
+    'orientation' => [
+        'kicker' => 'Built for Brilliant',
+        'heading' => 'An application, built as the application.',
+        'paragraph1' => 'You do some neat things, so I wanted to change things up for my application. Read the story, try the demos, then open the traditional CV. I built this to show how I think as an engineer, why interactive learning matters to me, and what I believe Brilliant is specifically well positioned to build next.',
+        'paragraph2Prefix' => 'I build interactive learning tools for curious communities.',
+        'paragraph2Emphasis' => 'With Brilliant, the scale grows.',
+        'actions' => [
+            'playgrounds' => 'Explore the demos',
+            'projects' => 'View projects',
+            'cv' => 'Open traditional CV',
+            'talk' => 'Start the conversation',
+        ],
+    ],
+
+    'contextBar' => [
+        'label' => 'Landing page quick actions',
+        'title' => 'Andrew Hartley :.: Brilliant application',
+        'summary' => 'Read the story, try the demos, open the CV.',
+        'actions' => [
+            'playgrounds' => 'Demos',
+            'projects' => 'Projects',
+            'cv' => 'CV',
+            'talk' => 'Let\'s talk',
+        ],
+    ],
+
     'covidOrigin' => [
         'kicker' => 'Clubhouse',
         'heading' => 'Curiosity in Motion',
@@ -59,7 +85,7 @@ return [
             'heading' => 'Curiosity needs a place to go.',
             'brilliantName' => 'Brilliant',
             'paragraph1' => 'A good story has rules and constraints, and rooms built around the art of the possible have to embrace them: what would the city need, where would the material come from, what breaks first, and what has to be learned before any of it becomes possible? Week after week, hundreds (and sometimes thousands) would listen or take the leap to join us on stage.',
-            'paragraph2' => 'As the world adjusted and opened back up, the rooms on Clubhouse began to empty, but the inspiration did not. Curiosity needs a place to go. That is where Brilliant feels so aligned to me: it turns learning into something active, playful, and worth returning to.',
+            'paragraph2' => 'As the world adjusted and opened back up, the rooms on Clubhouse began to empty, but the inspiration did not. Teaching through those conversations is what led me down this path: curiosity needs a place to go, and people return when learning feels active, playful, and shared. That is where Brilliant feels so aligned to me.',
         ],
         'gallery' => [
             'analytics' => [
@@ -95,13 +121,13 @@ return [
 
     'tryOne' => [
         'kicker' => 'Storytelling Experiences',
-        'heading' => 'This is what I want to build.',
+        'heading' => 'This is the work I am building toward.',
         'intro' => 'Every generation has a different window into wonder: radios and model planes, arcades and home computers, or smartphones a toddler can understand before she can read.',
         'paragraph1' => 'I once watched my niece pick up my phone, swipe across the bottom by instinct, reach the lock screen, and hand it back for me to unlock. Not exactly a triumph of early-childhood screen restraint, but she already knew there could be something worth discovering inside.',
         'paragraph2' => 'Curiosity is potential energy. It is why people keep reaching for the next thing, even as the brain changes pace with age. The right story can make a difficult path feel worth entering.',
         'potentialEnergyPhrase' => 'Curiosity is potential energy.',
         'paragraph3' => 'One day, someone may plan real travel itineraries through the solar system. To make that possible, people will need to solve fuel, radiation, biology, and materials problems that are currently a barrier. Some of the people critical to those answers are alive today, but may not yet know what they will contribute.',
-        'capstonePrefix' => 'That is why Brilliant feels like the right place to build. I want to create near and distant future scenarios that connect imagination to the educational paths required to solve real problems.',
+        'capstonePrefix' => 'That is why Brilliant feels like the right place to build. Near and distant future scenarios can connect imagination to the educational paths required to solve real problems.',
         'alexandriaLinkLabel' => 'Alexandria',
         'capstoneSuffix' => 'comes from the same instinct in another direction: use technology wisely, so creative human beings can think, organize, and build with more clarity, not less.',
         'demoKicker' => 'Scenario math',
@@ -134,7 +160,7 @@ return [
     'whatElse' => [
         'kicker' => 'Interactive playgrounds',
         'heading' => 'Give it a spin',
-        'intro' => 'Three playgrounds built around the same idea: create a plausible scenario and see how our future selves will navigate it.',
+        'intro' => 'These are small prototypes for story-led learning tools with room to grow: interactive maps, live renders, and community challenges that let people reason their way through possible futures.',
         'cards' => [
             'interstellar' => [
                 'title' => 'Interstellar',
@@ -154,8 +180,8 @@ return [
 
     'contactFooter' => [
         'kicker' => 'Next conversation',
-        'heading' => 'I would like to talk.',
-        'pitch' => 'I would love to contribute as an engineer, and I would love to discuss where this kind of work could go. I believe inspiration can change what people feel capable of learning, building, and becoming. Brilliant already helps people turn curiosity into capability; I want to help build the next experiences that make that transformation feel possible, and the community of visionaries who carry it forward.',
+        'heading' => 'Let\'s talk.',
+        'pitch' => 'Inspiration changes what people feel capable of learning, building, and becoming. Brilliant already turns curiosity into capability. Let\'s build the next experiences that make that transformation feel possible, and the community of visionaries who carry it forward.',
         'links' => [
             'email' => 'Email',
             'emailHref' => 'mailto:ahartley@gmail.com',
