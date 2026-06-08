@@ -43,7 +43,7 @@ export function ResumeLink({
         isOpen && typeof document !== 'undefined'
             ? createPortal(
                   <div
-                      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/78 px-4 backdrop-blur-md"
+                      className="fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/78 px-4 backdrop-blur-md"
                       onMouseDown={() => setIsOpen(false)}
                   >
                       <section

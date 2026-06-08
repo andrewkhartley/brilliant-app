@@ -11,6 +11,8 @@ interface AppLayoutProps {
     children: ReactNode;
     /** Hide the global footer links when a page has its own contact CTA. */
     hideFooterLinks?: boolean;
+    /** Show compact contact/CV actions in the primary nav. */
+    showNavActions?: boolean;
     /**
      * Optional page-specific title appended to the site name in <title>.
      * Example: pageTitle="Playground" -> "<title>Playground :.: Brilliant</title>"
@@ -47,6 +49,7 @@ export function AppLayout({
     children,
     hideFooterLinks = false,
     pageTitle,
+    showNavActions = false,
 }: AppLayoutProps) {
     const { t } = useTranslation();
     const siteName = t('common.siteName');
@@ -64,8 +67,8 @@ export function AppLayout({
             </a>
 
             <div className="flex min-h-screen flex-col bg-[#08111f]">
-                <header>
-                    <Nav />
+                <header className="sticky top-0 z-50">
+                    <Nav showActionLinks={showNavActions} />
                 </header>
 
                 <main

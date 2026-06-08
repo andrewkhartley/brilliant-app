@@ -44,18 +44,6 @@ return [
         ],
     ],
 
-    'contextBar' => [
-        'label' => 'Landing page quick actions',
-        'title' => 'Andrew Hartley :.: Brilliant application',
-        'summary' => 'Read the story, try the demos, open the CV.',
-        'actions' => [
-            'playgrounds' => 'Demos',
-            'projects' => 'Projects',
-            'cv' => 'CV',
-            'talk' => 'Let\'s talk',
-        ],
-    ],
-
     'covidOrigin' => [
         'kicker' => 'Clubhouse',
         'heading' => 'Curiosity in Motion',

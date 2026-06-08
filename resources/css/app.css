@@ -257,3 +257,61 @@
         animation: cruise-error-drift 6s ease-in-out infinite;
     }
 }
+
+@keyframes nav-mobile-menu-overlay-enter {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes nav-mobile-menu-overlay-exit {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes nav-mobile-menu-panel-enter {
+    from {
+        opacity: 0;
+        transform: translateY(0.85rem) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes nav-mobile-menu-panel-exit {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(0.85rem) scale(0.985);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .nav-mobile-menu-overlay-enter {
+        animation: nav-mobile-menu-overlay-enter 180ms ease-out both;
+    }
+
+    .nav-mobile-menu-overlay-exit {
+        animation: nav-mobile-menu-overlay-exit 180ms ease-in both;
+    }
+
+    .nav-mobile-menu-panel-enter {
+        animation: nav-mobile-menu-panel-enter 220ms ease-out both;
+    }
+
+    .nav-mobile-menu-panel-exit {
+        animation: nav-mobile-menu-panel-exit 180ms ease-in both;
+    }
+}
