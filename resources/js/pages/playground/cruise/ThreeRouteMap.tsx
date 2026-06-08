@@ -53,6 +53,11 @@ interface TimelineSegment {
     startSeconds: number;
 }
 
+interface LegSegment {
+    end: THREE.Vector3;
+    start: THREE.Vector3;
+}
+
 const AU_KM = 149_597_870.7;
 const MAX_AU = 30.1;
 const ORBIT_SCALE = 15.5;
@@ -94,6 +99,7 @@ export function ThreeRouteMap({
     const [simulationProgress, setSimulationProgress] = useState(0);
     const [simulationSpeed, setSimulationSpeed] = useState(SIMULATION_SPEEDS[1]);
     const routePoints = useMemo(() => normalizeRoutePoints(points), [points]);
+    const legSegments = useMemo(() => buildLegSegments(routePoints), [routePoints]);
     const timeline = useMemo(() => buildTimeline(legs), [legs]);
     const totalSeconds = timeline.at(-1)?.endSeconds ?? 0;
 
@@ -116,7 +122,7 @@ export function ThreeRouteMap({
     useEffect(() => {
         const canvas = canvasRef.current;
 
-        if (canvas === null || routePoints.length < 2) {
+        if (canvas === null || legSegments.length === 0) {
             return;
         }
 
@@ -165,14 +171,10 @@ export function ThreeRouteMap({
             planetMeshes.push(marker);
         }
 
-        const routeCurve = new THREE.CatmullRomCurve3(
-            routePoints,
-            false,
-            'catmullrom',
-            0.18,
+        const routeLines = legSegments.map((segment) =>
+            createRouteLine(segment.start, segment.end),
         );
-        const routeLine = createRouteLine(routeCurve);
-        root.add(routeLine);
+        routeLines.forEach((routeLine) => root.add(routeLine));
 
         const routeMarkers = points.map((point, index) => {
             const marker = createRouteMarker(index === 0);
@@ -272,16 +274,26 @@ export function ThreeRouteMap({
                 simulationProgressRef.current,
             );
             const progress = timelineState.routeProgress;
-            const routePosition = routeCurve.getPoint(progress);
-            const tangent = routeCurve.getTangent(progress);
+            const legSegment =
+                legSegments[timelineState.legIndex] ?? legSegments.at(-1);
+
+            if (legSegment === undefined) {
+                return;
+            }
+
+            const routePosition = legSegment.start
+                .clone()
+                .lerp(legSegment.end, progress);
+            const tangent = legSegment.end.clone().sub(legSegment.start);
             const activeIndex = Math.min(
                 points.length - 1,
-                Math.floor(progress * (points.length - 1) + 0.5),
+                timelineState.legIndex * 2 + (progress >= 0.5 ? 1 : 0),
             );
             const nextActiveName = points[activeIndex]?.name ?? '';
 
             ship.position.copy(routePosition);
             ship.rotation.z = Math.atan2(tangent.y, tangent.x) - Math.PI / 2;
+            ship.visible = timelineState.phase !== 'layover';
 
             if (activePointNameRef.current !== nextActiveName) {
                 activePointNameRef.current = nextActiveName;
@@ -332,9 +344,9 @@ export function ThreeRouteMap({
             disposeObject(scene);
             renderer.dispose();
         };
-    }, [points, routePoints, timeline, totalSeconds]);
+    }, [legSegments, points, routePoints, timeline, totalSeconds]);
 
-    if (webglFailed || routePoints.length < 2) {
+    if (webglFailed || legSegments.length === 0) {
         return <>{fallback}</>;
     }
 
@@ -442,6 +454,23 @@ function normalizeRoutePoints(points: RouteMapPoint[]): THREE.Vector3[] {
     });
 }
 
+function buildLegSegments(points: THREE.Vector3[]): LegSegment[] {
+    const segments: LegSegment[] = [];
+
+    for (let index = 0; index < points.length - 1; index += 2) {
+        const start = points[index];
+        const end = points[index + 1];
+
+        if (start === undefined || end === undefined) {
+            continue;
+        }
+
+        segments.push({ end, start });
+    }
+
+    return segments;
+}
+
 function buildTimeline(legs: Leg[]): TimelineSegment[] {
     const totalSeconds = legs.reduce(
         (total, leg) =>
@@ -468,9 +497,6 @@ function buildTimeline(legs: Leg[]): TimelineSegment[] {
     const segments: TimelineSegment[] = [];
 
     legs.forEach((leg, legIndex) => {
-        const routeStart = legIndex / legs.length;
-        const routeEnd = (legIndex + 1) / legs.length;
-        const routeSpan = routeEnd - routeStart;
         const travelSeconds = Math.max(leg.durationSeconds, 1);
         let legTravelCursor = 0;
         const phaseDurations: Array<[FlightPhase, number]> = [
@@ -491,9 +517,8 @@ function buildTimeline(legs: Leg[]): TimelineSegment[] {
             const endSeconds = cursor + duration;
             const phaseRouteStart =
                 label === 'layover'
-                    ? routeEnd
-                    : routeStart
-                        + routeSpan * Math.min(legTravelCursor / travelSeconds, 1);
+                    ? 1
+                    : Math.min(legTravelCursor / travelSeconds, 1);
 
             if (label !== 'layover') {
                 legTravelCursor += duration;
@@ -501,9 +526,8 @@ function buildTimeline(legs: Leg[]): TimelineSegment[] {
 
             const phaseRouteEnd =
                 label === 'layover'
-                    ? routeEnd
-                    : routeStart
-                        + routeSpan * Math.min(legTravelCursor / travelSeconds, 1);
+                    ? 1
+                    : Math.min(legTravelCursor / travelSeconds, 1);
 
             segments.push({
                 endProgress: endSeconds / totalSeconds,
@@ -525,7 +549,12 @@ function buildTimeline(legs: Leg[]): TimelineSegment[] {
 function resolveTimeline(
     timeline: TimelineSegment[],
     progress: number,
-): { elapsedSeconds: number; phase: FlightPhase; routeProgress: number } {
+): {
+    elapsedSeconds: number;
+    legIndex: number;
+    phase: FlightPhase;
+    routeProgress: number;
+} {
     const segment =
         timeline.find(
             (entry) =>
@@ -533,7 +562,12 @@ function resolveTimeline(
         ) ?? timeline.at(-1);
 
     if (segment === undefined) {
-        return { elapsedSeconds: 0, phase: 'cruise', routeProgress: 0 };
+        return {
+            elapsedSeconds: 0,
+            legIndex: 0,
+            phase: 'cruise',
+            routeProgress: 0,
+        };
     }
 
     const totalSeconds = timeline.at(-1)?.endSeconds ?? 1;
@@ -555,6 +589,7 @@ function resolveTimeline(
 
     return {
         elapsedSeconds,
+        legIndex: segment.legIndex,
         phase: segment.label,
         routeProgress: clamp(routeProgress, 0, 1),
     };
@@ -673,8 +708,14 @@ function createOrbitLine(
     return new THREE.Line(geometry, material);
 }
 
-function createRouteLine(curve: THREE.CatmullRomCurve3): THREE.Line {
-    const geometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(180));
+function createRouteLine(start: THREE.Vector3, end: THREE.Vector3): THREE.Line {
+    const points = [];
+
+    for (let index = 0; index <= 80; index++) {
+        points.push(start.clone().lerp(end, index / 80));
+    }
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
     const material = new THREE.LineBasicMaterial({
         color: 0xfbbf24,
         opacity: 0.92,

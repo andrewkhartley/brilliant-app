@@ -471,47 +471,38 @@ function SvgRouteMap({ cruise, trip }: ComputedTripViewProps) {
 }
 
 function buildRouteMapPoints(trip: Trip): RouteMapPoint[] {
-    const firstLeg = trip.legs[0];
-
-    if (firstLeg === undefined || firstLeg.depCoordinates === null) {
-        return [];
-    }
-
+    const points: RouteMapPoint[] = [];
     let elapsedSeconds = 0;
 
-    return [
-        {
-            code: firstLeg.departure,
-            elapsedDays: 0,
-            name: firstLeg.departureName,
-            x: firstLeg.depCoordinates.x,
-            y: firstLeg.depCoordinates.y,
-            radiusKm: Math.hypot(
-                firstLeg.depCoordinates.x,
-                firstLeg.depCoordinates.y,
-            ),
-        },
-        ...trip.legs
-            .filter((leg) => leg.arrCoordinates !== null)
-            .map((leg) => {
-                const coordinates = leg.arrCoordinates as Coordinates;
+    for (const leg of trip.legs) {
+        if (leg.depCoordinates === null || leg.arrCoordinates === null) {
+            continue;
+        }
 
-                elapsedSeconds += leg.durationSeconds;
+        points.push({
+            code: leg.departure,
+            elapsedDays: elapsedSeconds / 86400,
+            name: leg.departureName,
+            x: leg.depCoordinates.x,
+            y: leg.depCoordinates.y,
+            radiusKm: Math.hypot(leg.depCoordinates.x, leg.depCoordinates.y),
+        });
 
-                const point = {
-                    code: leg.arrival,
-                    elapsedDays: elapsedSeconds / 86400,
-                    name: leg.arrivalName,
-                    x: coordinates.x,
-                    y: coordinates.y,
-                    radiusKm: Math.hypot(coordinates.x, coordinates.y),
-                };
+        elapsedSeconds += leg.durationSeconds;
 
-                elapsedSeconds += leg.layoverDurationSeconds;
+        points.push({
+            code: leg.arrival,
+            elapsedDays: elapsedSeconds / 86400,
+            name: leg.arrivalName,
+            x: leg.arrCoordinates.x,
+            y: leg.arrCoordinates.y,
+            radiusKm: Math.hypot(leg.arrCoordinates.x, leg.arrCoordinates.y),
+        });
 
-                return point;
-            }),
-    ];
+        elapsedSeconds += leg.layoverDurationSeconds;
+    }
+
+    return points;
 }
 
 function buildRouteStops(trip: Trip): string[] {
