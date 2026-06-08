@@ -86,7 +86,7 @@ return [
     'references' => [
         'kicker' => 'Reference points',
         'heading' => 'Where this fits',
-        'intro' => 'When I picture what this could become, I think about how people responded in those Clubhoues rooms years ago. I am thinking about the places where future-facing science communication, explorable explanations, and active problem-solving can be united in a community.',
+        'intro' => 'When I picture what this could become, I think about how people responded in those Clubhouse rooms years ago. I am thinking about the places where future-facing science communication, explorable explanations, and active problem-solving can be united in a community.',
         'cards' => [
             'futureSystems' => [
                 'title' => 'Future systems thinking',
