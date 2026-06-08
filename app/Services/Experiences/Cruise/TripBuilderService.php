@@ -561,6 +561,9 @@ class TripBuilderService
         return $tripLegs;
     }
 
+    /**
+     * @throws GuzzleException
+     */
     private function positionQuery(
         string $code,
         string|int $horizonsId,
