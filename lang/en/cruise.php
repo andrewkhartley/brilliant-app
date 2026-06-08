@@ -149,6 +149,8 @@ return [
             'title' => 'Now the itinerary has a shape.',
             'body' => 'The same coordinates used for the trip math become a top-down map of the route. The scale is compressed so the whole Solar System can fit in one readable view.',
             'ariaLabel' => 'Top-down map of the selected Sol Cruise route',
+            'simulationLabel' => 'Active waypoint',
+            'interactionHint' => 'Drag to rotate the route plane. Scroll to zoom. Planetary orbits stay visible even when they are not part of this itinerary.',
             'source' => [
                 'horizons' => 'Source: live NASA Horizons vectors.',
                 'ephemeris' => 'Source: coded approximate ephemeris for fast exploration and expanded destinations.',

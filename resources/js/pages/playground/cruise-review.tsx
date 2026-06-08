@@ -9,6 +9,8 @@ import { CruiseLaunchOverlay } from './cruise/CruiseLaunchOverlay';
 import type { Destination, SelectedSlot } from './cruise/DestinationPicker';
 import { HorizonsError } from './cruise/HorizonsError';
 import { CruisePossibilitiesSection } from './cruise/PossibilitiesSection';
+import { ThreeRouteMap } from './cruise/ThreeRouteMap';
+import type { RouteMapPoint } from './cruise/ThreeRouteMap';
 import type { Coordinates, CruiseInput, Leg, Trip } from './cruise/types';
 
 /**
@@ -298,6 +300,18 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
 }
 
 function RouteMap({ cruise, trip }: ComputedTripViewProps) {
+    const points = buildRouteMapPoints(trip);
+
+    return (
+        <ThreeRouteMap
+            dataSource={cruise.dataSource}
+            points={points}
+            fallback={<SvgRouteMap cruise={cruise} trip={trip} />}
+        />
+    );
+}
+
+function SvgRouteMap({ cruise, trip }: ComputedTripViewProps) {
     const { t } = useTranslation();
     const points = buildRouteMapPoints(trip);
 
@@ -323,12 +337,19 @@ function RouteMap({ cruise, trip }: ComputedTripViewProps) {
         };
     });
     const path = plotted
-        .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.plotX} ${point.plotY}`)
+        .map(
+            (point, index) =>
+                `${index === 0 ? 'M' : 'L'} ${point.plotX} ${point.plotY}`,
+        )
         .join(' ');
     const orbitRadii = Array.from(
         new Set(
             plotted
-                .map((point) => Math.round(Math.hypot(point.plotX - centerX, point.plotY - centerY)))
+                .map((point) =>
+                    Math.round(
+                        Math.hypot(point.plotX - centerX, point.plotY - centerY),
+                    ),
+                )
                 .filter((radius) => radius > 10),
         ),
     ).slice(0, 5);
@@ -363,7 +384,13 @@ function RouteMap({ cruise, trip }: ComputedTripViewProps) {
                                 <stop offset="0%" stopColor="#fde68a" />
                                 <stop offset="100%" stopColor="#f97316" />
                             </radialGradient>
-                            <filter id="cruise-map-glow" x="-40%" y="-40%" width="180%" height="180%">
+                            <filter
+                                id="cruise-map-glow"
+                                x="-40%"
+                                y="-40%"
+                                width="180%"
+                                height="180%"
+                            >
                                 <feGaussianBlur stdDeviation="4" result="blur" />
                                 <feMerge>
                                     <feMergeNode in="blur" />
@@ -427,14 +454,6 @@ function RouteMap({ cruise, trip }: ComputedTripViewProps) {
             </div>
         </section>
     );
-}
-
-interface RouteMapPoint {
-    code: string;
-    name: string;
-    x: number;
-    y: number;
-    radiusKm: number;
 }
 
 function buildRouteMapPoints(trip: Trip): RouteMapPoint[] {

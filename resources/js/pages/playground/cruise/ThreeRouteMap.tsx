@@ -1,0 +1,432 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
+import * as THREE from 'three';
+
+import { useTranslation } from '@/hooks/useTranslation';
+
+type DataSource = 'horizons' | 'ephemeris';
+
+export interface RouteMapPoint {
+    code: string;
+    name: string;
+    x: number;
+    y: number;
+    radiusKm: number;
+}
+
+interface ThreeRouteMapProps {
+    dataSource: DataSource;
+    fallback: ReactNode;
+    points: RouteMapPoint[];
+}
+
+interface PlanetOrbit {
+    code: string;
+    name: string;
+    au: number;
+    periodDays: number;
+    color: number;
+    size: number;
+    phase: number;
+}
+
+const AU_KM = 149_597_870.7;
+const MAX_AU = 30.1;
+const ORBIT_SCALE = 15.5;
+const PLANETS: PlanetOrbit[] = [
+    { code: 'mer', name: 'Mercury', au: 0.387, periodDays: 88, color: 0xb8b1a4, size: 0.09, phase: 1.2 },
+    { code: 'ven', name: 'Venus', au: 0.723, periodDays: 224.7, color: 0xe8c27a, size: 0.13, phase: 2.4 },
+    { code: 'ear', name: 'Earth', au: 1, periodDays: 365.25, color: 0x67e8f9, size: 0.14, phase: 3.1 },
+    { code: 'mar', name: 'Mars', au: 1.524, periodDays: 687, color: 0xf97316, size: 0.12, phase: 4.2 },
+    { code: 'jup', name: 'Jupiter', au: 5.203, periodDays: 4332.6, color: 0xf6d7a8, size: 0.24, phase: 0.7 },
+    { code: 'sat', name: 'Saturn', au: 9.537, periodDays: 10759, color: 0xfacc15, size: 0.21, phase: 1.7 },
+    { code: 'ura', name: 'Uranus', au: 19.191, periodDays: 30685, color: 0x7dd3fc, size: 0.18, phase: 2.9 },
+    { code: 'nep', name: 'Neptune', au: 30.069, periodDays: 60189, color: 0x60a5fa, size: 0.18, phase: 4.7 },
+];
+
+export function ThreeRouteMap({ dataSource, fallback, points }: ThreeRouteMapProps) {
+    const { t } = useTranslation();
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const activePointNameRef = useRef(points[0]?.name ?? '');
+    const [webglFailed, setWebglFailed] = useState(false);
+    const [activePointName, setActivePointName] = useState(points[0]?.name ?? '');
+    const routePoints = useMemo(() => normalizeRoutePoints(points), [points]);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+
+        if (canvas === null || routePoints.length < 2) {
+            return;
+        }
+
+        const activeCanvas = canvas;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 120);
+        camera.position.set(0, -32, 22);
+        camera.lookAt(0, 0, 0);
+
+        let renderer: THREE.WebGLRenderer;
+
+        try {
+            renderer = new THREE.WebGLRenderer({
+                alpha: true,
+                antialias: true,
+                canvas: activeCanvas,
+            });
+        } catch {
+            window.setTimeout(() => setWebglFailed(true), 0);
+
+            return;
+        }
+
+        renderer.setClearColor(0x000000, 0);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const root = new THREE.Group();
+        root.rotation.x = -0.48;
+        scene.add(root);
+
+        root.add(createStarfield());
+        root.add(createSun());
+
+        const planetMeshes: THREE.Mesh[] = [];
+
+        for (const planet of PLANETS) {
+            const orbit = createOrbitLine(planet);
+            root.add(orbit);
+
+            const marker = createPlanetMarker(planet);
+            marker.position.copy(positionForPlanet(planet, 0));
+            root.add(marker);
+            planetMeshes.push(marker);
+        }
+
+        const routeCurve = new THREE.CatmullRomCurve3(routePoints, false, 'catmullrom', 0.18);
+        const routeLine = createRouteLine(routeCurve);
+        root.add(routeLine);
+
+        const routeMarkers = points.map((point, index) => {
+            const marker = createRouteMarker(index === 0);
+            marker.position.copy(routePoints[index]);
+            root.add(marker);
+
+            return marker;
+        });
+
+        const ship = createShip();
+        root.add(ship);
+
+        const ambient = new THREE.AmbientLight(0x8ecae6, 1.4);
+        const pointLight = new THREE.PointLight(0xfff3bf, 3.2, 80);
+        pointLight.position.set(0, 0, 7);
+        scene.add(ambient, pointLight);
+
+        const resize = () => {
+            const rect = activeCanvas.getBoundingClientRect();
+            const width = Math.max(rect.width, 1);
+            const height = Math.max(rect.height, 1);
+
+            renderer.setSize(width, height, false);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        };
+        resize();
+
+        const resizeObserver = new ResizeObserver(resize);
+        resizeObserver.observe(activeCanvas);
+
+        let frame = 0;
+        let running = true;
+        let dragStart: { x: number; y: number; rotationZ: number; rotationX: number } | null = null;
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        const onPointerDown = (event: PointerEvent) => {
+            dragStart = {
+                x: event.clientX,
+                y: event.clientY,
+                rotationZ: root.rotation.z,
+                rotationX: root.rotation.x,
+            };
+            activeCanvas.setPointerCapture(event.pointerId);
+        };
+        const onPointerMove = (event: PointerEvent) => {
+            if (dragStart === null) {
+                return;
+            }
+
+            root.rotation.z = dragStart.rotationZ + (event.clientX - dragStart.x) * 0.006;
+            root.rotation.x = clamp(dragStart.rotationX + (event.clientY - dragStart.y) * 0.003, -0.9, -0.18);
+        };
+        const onPointerUp = (event: PointerEvent) => {
+            dragStart = null;
+            activeCanvas.releasePointerCapture(event.pointerId);
+        };
+        const onWheel = (event: WheelEvent) => {
+            event.preventDefault();
+            camera.position.z = clamp(camera.position.z + event.deltaY * 0.018, 13, 38);
+            camera.position.y = -camera.position.z * 1.45;
+            camera.lookAt(0, 0, 0);
+        };
+
+        activeCanvas.addEventListener('pointerdown', onPointerDown);
+        activeCanvas.addEventListener('pointermove', onPointerMove);
+        activeCanvas.addEventListener('pointerup', onPointerUp);
+        activeCanvas.addEventListener('pointercancel', onPointerUp);
+        activeCanvas.addEventListener('wheel', onWheel, { passive: false });
+
+        const animate = () => {
+            if (!running) {
+                return;
+            }
+
+            const elapsed = frame / 60;
+            const progress = reducedMotion ? 0.16 : (elapsed * 0.055) % 1;
+            const routePosition = routeCurve.getPointAt(progress);
+            const tangent = routeCurve.getTangentAt(progress);
+            const activeIndex = Math.min(
+                points.length - 1,
+                Math.floor(progress * (points.length - 1) + 0.5),
+            );
+            const nextActiveName = points[activeIndex]?.name ?? '';
+
+            ship.position.copy(routePosition);
+            ship.rotation.z = Math.atan2(tangent.y, tangent.x) - Math.PI / 2;
+
+            if (activePointNameRef.current !== nextActiveName) {
+                activePointNameRef.current = nextActiveName;
+                setActivePointName(nextActiveName);
+            }
+
+            planetMeshes.forEach((mesh, index) => {
+                const planet = PLANETS[index];
+                const speed = reducedMotion ? 0 : elapsed / Math.sqrt(planet.periodDays) * 0.1;
+                mesh.position.copy(positionForPlanet(planet, speed));
+            });
+
+            if (!reducedMotion && dragStart === null) {
+                root.rotation.z += 0.00055;
+            }
+
+            routeMarkers.forEach((marker, index) => {
+                const pulse = reducedMotion ? 1 : 1 + Math.sin(elapsed * 2.4 + index) * 0.08;
+                marker.scale.setScalar(pulse);
+            });
+
+            renderer.render(scene, camera);
+            frame += 1;
+            window.requestAnimationFrame(animate);
+        };
+
+        animate();
+
+        return () => {
+            running = false;
+            resizeObserver.disconnect();
+            activeCanvas.removeEventListener('pointerdown', onPointerDown);
+            activeCanvas.removeEventListener('pointermove', onPointerMove);
+            activeCanvas.removeEventListener('pointerup', onPointerUp);
+            activeCanvas.removeEventListener('pointercancel', onPointerUp);
+            activeCanvas.removeEventListener('wheel', onWheel);
+            disposeObject(scene);
+            renderer.dispose();
+        };
+    }, [points, routePoints]);
+
+    if (webglFailed || routePoints.length < 2) {
+        return <>{fallback}</>;
+    }
+
+    return (
+        <div className="relative overflow-hidden rounded border border-cyan-100/14 bg-slate-950/68">
+            <canvas
+                ref={canvasRef}
+                aria-label={t('cruise.review.map.ariaLabel')}
+                className="block aspect-[16/10] w-full cursor-grab touch-none active:cursor-grabbing"
+            />
+            <div className="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-start justify-between gap-3">
+                <div className="rounded border border-cyan-100/16 bg-slate-950/72 px-3 py-2 shadow-xl shadow-black/20 backdrop-blur">
+                    <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-cyan-200/78 uppercase">
+                        {t('cruise.review.map.simulationLabel')}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-white">
+                        {activePointName || points[0]?.name}
+                    </p>
+                </div>
+                <p className="max-w-48 rounded border border-amber-200/18 bg-amber-200/10 px-3 py-2 text-right text-[0.68rem] font-semibold leading-5 text-amber-100/86 backdrop-blur">
+                    {t(`cruise.review.map.source.${dataSource}`)}
+                </p>
+            </div>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950/86 to-transparent px-4 pb-3 pt-12">
+                <p className="text-xs leading-5 text-cyan-50/66">
+                    {t('cruise.review.map.interactionHint')}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+function normalizeRoutePoints(points: RouteMapPoint[]): THREE.Vector3[] {
+    return points.map((point) => {
+        const radiusAu = point.radiusKm / AU_KM;
+        const scaledRadius = scaleAu(radiusAu);
+        const angle = Math.atan2(point.y, point.x);
+
+        return new THREE.Vector3(
+            Math.cos(angle) * scaledRadius,
+            Math.sin(angle) * scaledRadius,
+            0.7 + Math.sin(angle * 1.7) * 0.22,
+        );
+    });
+}
+
+function scaleAu(au: number): number {
+    if (au <= 0) {
+        return 0;
+    }
+
+    return Math.sqrt(au / MAX_AU) * ORBIT_SCALE;
+}
+
+function positionForPlanet(planet: PlanetOrbit, offset: number): THREE.Vector3 {
+    const radius = scaleAu(planet.au);
+    const angle = planet.phase + offset;
+
+    return new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
+}
+
+function createOrbitLine(planet: PlanetOrbit): THREE.Line {
+    const radius = scaleAu(planet.au);
+    const points = [];
+
+    for (let i = 0; i <= 192; i++) {
+        const angle = (i / 192) * Math.PI * 2;
+        points.push(new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, -0.05));
+    }
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({
+        color: planet.code === 'ear' ? 0x67e8f9 : 0x7dd3fc,
+        opacity: planet.code === 'ear' ? 0.38 : 0.16,
+        transparent: true,
+    });
+
+    return new THREE.Line(geometry, material);
+}
+
+function createRouteLine(curve: THREE.CatmullRomCurve3): THREE.Line {
+    const geometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(180));
+    const material = new THREE.LineBasicMaterial({
+        color: 0xfbbf24,
+        opacity: 0.92,
+        transparent: true,
+    });
+
+    return new THREE.Line(geometry, material);
+}
+
+function createPlanetMarker(planet: PlanetOrbit): THREE.Mesh {
+    const geometry = new THREE.SphereGeometry(planet.size, 24, 16);
+    const material = new THREE.MeshStandardMaterial({
+        color: planet.color,
+        emissive: planet.color,
+        emissiveIntensity: 0.16,
+        roughness: 0.55,
+        metalness: 0.08,
+    });
+
+    return new THREE.Mesh(geometry, material);
+}
+
+function createRouteMarker(isOrigin: boolean): THREE.Mesh {
+    const geometry = new THREE.SphereGeometry(isOrigin ? 0.2 : 0.16, 28, 18);
+    const material = new THREE.MeshStandardMaterial({
+        color: isOrigin ? 0x67e8f9 : 0xf8fafc,
+        emissive: isOrigin ? 0x0891b2 : 0xfbbf24,
+        emissiveIntensity: isOrigin ? 0.5 : 0.35,
+        roughness: 0.36,
+    });
+
+    return new THREE.Mesh(geometry, material);
+}
+
+function createShip(): THREE.Group {
+    const ship = new THREE.Group();
+    const body = new THREE.Mesh(
+        new THREE.ConeGeometry(0.18, 0.52, 4),
+        new THREE.MeshStandardMaterial({
+            color: 0xf8fafc,
+            emissive: 0xfbbf24,
+            emissiveIntensity: 0.24,
+            metalness: 0.2,
+            roughness: 0.3,
+        }),
+    );
+    const glow = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08, 16, 10),
+        new THREE.MeshBasicMaterial({
+            color: 0x67e8f9,
+            transparent: true,
+            opacity: 0.66,
+        }),
+    );
+
+    glow.position.y = -0.28;
+    ship.add(body, glow);
+
+    return ship;
+}
+
+function createSun(): THREE.Mesh {
+    return new THREE.Mesh(
+        new THREE.SphereGeometry(0.36, 32, 18),
+        new THREE.MeshBasicMaterial({ color: 0xfbbf24 }),
+    );
+}
+
+function createStarfield(): THREE.Points {
+    const count = 420;
+    const positions = new Float32Array(count * 3);
+
+    for (let i = 0; i < count; i++) {
+        const radius = 8 + Math.random() * 16;
+        const angle = Math.random() * Math.PI * 2;
+        positions[i * 3] = Math.cos(angle) * radius;
+        positions[i * 3 + 1] = Math.sin(angle) * radius;
+        positions[i * 3 + 2] = -4 - Math.random() * 8;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    return new THREE.Points(
+        geometry,
+        new THREE.PointsMaterial({
+            color: 0xcffafe,
+            opacity: 0.54,
+            size: 0.035,
+            transparent: true,
+        }),
+    );
+}
+
+function disposeObject(object: THREE.Object3D): void {
+    object.traverse((child) => {
+        if ('geometry' in child && child.geometry instanceof THREE.BufferGeometry) {
+            child.geometry.dispose();
+        }
+
+        if ('material' in child) {
+            const material = child.material;
+
+            if (Array.isArray(material)) {
+                material.forEach((entry) => entry.dispose());
+            } else if (material instanceof THREE.Material) {
+                material.dispose();
+            }
+        }
+    });
+}
+
+function clamp(value: number, min: number, max: number): number {
+    return Math.min(max, Math.max(min, value));
+}
