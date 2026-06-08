@@ -80,12 +80,16 @@ const PLANETS: PlanetOrbit[] = [
 ];
 
 const SECONDS_PER_DAY = 86400;
+const SECONDS_PER_HOUR = 3600;
 const SIMULATION_SPEEDS = [
+    SECONDS_PER_HOUR,
+    SECONDS_PER_HOUR * 6,
     SECONDS_PER_DAY,
+    SECONDS_PER_DAY * 3,
     SECONDS_PER_DAY * 7,
     SECONDS_PER_DAY * 30,
 ];
-const MIN_SIMULATION_DAYS_PER_SECOND = 0.25;
+const MIN_SIMULATION_DAYS_PER_SECOND = 1 / 24;
 const MAX_SIMULATION_DAYS_PER_SECOND = 120;
 const FLIGHT_PHASE_STYLES: Array<{
     activeClass: string;
@@ -126,6 +130,10 @@ export function ThreeRouteMap({
     const [activePointName, setActivePointName] = useState(points[0]?.name ?? '');
     const [currentPhase, setCurrentPhase] = useState<FlightPhase>('acceleration');
     const [isPlaying, setIsPlaying] = useState(true);
+    const [showMobileSpeedControls, setShowMobileSpeedControls] =
+        useState(false);
+    const [showMobileTimelineControls, setShowMobileTimelineControls] =
+        useState(false);
     const [simulationProgress, setSimulationProgress] = useState(0);
     const [simulationSpeed, setSimulationSpeed] = useState(SIMULATION_SPEEDS[1]);
     const routePoints = useMemo(() => normalizeRoutePoints(points), [points]);
@@ -444,83 +452,136 @@ export function ThreeRouteMap({
                 </p>
             </div>
             <div className="absolute inset-x-3 bottom-10 rounded border border-cyan-100/14 bg-slate-950/76 p-3 shadow-xl shadow-black/24 backdrop-blur">
-                <div className="flex flex-wrap items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={togglePlaying}
-                        className="inline-flex cursor-pointer items-center gap-2 rounded bg-cyan-200 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
-                    >
-                        <i
-                            aria-hidden="true"
-                            className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}`}
-                        />
-                        {t(
-                            isPlaying
-                                ? 'cruise.review.map.controls.pause'
-                                : 'cruise.review.map.controls.play',
-                        )}
-                    </button>
-                    <label className="min-w-0 flex-1 text-xs font-semibold text-cyan-50/78">
-                        <span className="sr-only">
-                            {t('cruise.review.map.controls.timeline')}
-                        </span>
-                        <input
-                            type="range"
-                            min={0}
-                            max={1000}
-                            value={Math.round(simulationProgress * 1000)}
-                            onChange={(event) => {
-                                updatePlaying(false);
-                                updateProgress(Number(event.target.value) / 1000);
-                            }}
-                            className="h-2 w-full cursor-pointer accent-cyan-200"
-                        />
-                    </label>
-                    <div className="min-w-[12rem] flex-1 sm:flex-none">
-                        <label className="block text-[0.65rem] font-bold tracking-[0.16em] text-cyan-100/62 uppercase">
-                            <span className="sr-only">
-                                {t('cruise.review.map.controls.speedLabel')}
+                <div className="grid gap-3 md:grid-cols-[1.618fr_1fr] md:items-start">
+                    <div className="rounded border border-cyan-100/10 bg-cyan-50/5 p-2.5">
+                        <div className="flex items-center justify-between gap-3">
+                            <button
+                                type="button"
+                                onClick={togglePlaying}
+                                className="inline-flex cursor-pointer items-center gap-2 rounded bg-cyan-200 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
+                            >
+                                <i
+                                    aria-hidden="true"
+                                    className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}`}
+                                />
+                                {t(
+                                    isPlaying
+                                        ? 'cruise.review.map.controls.pause'
+                                        : 'cruise.review.map.controls.play',
+                                )}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setShowMobileTimelineControls(
+                                        (current) => !current,
+                                    )
+                                }
+                                className="inline-flex cursor-pointer items-center gap-2 rounded border border-cyan-100/18 bg-slate-950/50 px-3 py-2 text-xs font-bold text-cyan-50 transition hover:bg-cyan-100/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 md:hidden"
+                            >
+                                <i aria-hidden="true" className="fa-solid fa-sliders" />
+                                {t('cruise.review.map.controls.timeline')}
+                            </button>
+                            <span className="ms-auto text-xs font-semibold text-cyan-50/70">
+                                {formatElapsedTime(
+                                    simulationProgress * totalSeconds,
+                                )}
                             </span>
-                            <span aria-hidden="true">
+                        </div>
+                        <div
+                            className={`mt-3 ${
+                                showMobileTimelineControls
+                                    ? 'block'
+                                    : 'hidden md:block'
+                            }`}
+                        >
+                            <label className="block text-[0.65rem] font-bold tracking-[0.16em] text-cyan-100/62 uppercase">
+                                <span>
+                                    {t('cruise.review.map.controls.timeline')}
+                                </span>
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={1000}
+                                    value={Math.round(simulationProgress * 1000)}
+                                    onChange={(event) => {
+                                        updatePlaying(false);
+                                        updateProgress(
+                                            Number(event.target.value) / 1000,
+                                        );
+                                    }}
+                                    className="mt-2 h-2 w-full cursor-pointer accent-cyan-200"
+                                />
+                            </label>
+                        </div>
+                    </div>
+                    <div className="rounded border border-amber-200/12 bg-amber-200/8 p-2.5">
+                        <div className="flex items-center justify-between gap-3 md:min-h-[2rem]">
+                            <p className="text-[0.65rem] font-bold tracking-[0.16em] text-amber-100/70 uppercase">
                                 {t('cruise.review.map.controls.speed', {
                                     speed: formatSpeed(simulationSpeed),
                                 })}
-                            </span>
-                            <input
-                                type="range"
-                                min={MIN_SIMULATION_DAYS_PER_SECOND}
-                                max={MAX_SIMULATION_DAYS_PER_SECOND}
-                                step={0.25}
-                                value={simulationSpeed / SECONDS_PER_DAY}
-                                onChange={(event) =>
-                                    updateSpeed(
-                                        Number(event.target.value)
-                                            * SECONDS_PER_DAY,
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setShowMobileSpeedControls(
+                                        (current) => !current,
                                     )
                                 }
-                                className="mt-1 h-2 w-full cursor-pointer accent-amber-200"
-                            />
-                        </label>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                            {SIMULATION_SPEEDS.map((speed) => (
-                                <button
-                                    key={speed}
-                                    type="button"
-                                    onClick={() => updateSpeed(speed)}
-                                    className={`cursor-pointer rounded border px-2 py-1 text-[0.65rem] font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ${
-                                        simulationSpeed === speed
-                                            ? 'border-amber-200/60 bg-amber-200/18 text-amber-100'
-                                            : 'border-cyan-100/14 bg-slate-950/45 text-cyan-50/62 hover:bg-cyan-100/10 hover:text-cyan-50'
-                                    }`}
-                                >
-                                    {formatSpeed(speed)}
-                                </button>
-                            ))}
+                                className="inline-flex cursor-pointer items-center gap-2 rounded border border-amber-100/18 bg-slate-950/50 px-3 py-2 text-xs font-bold text-amber-50 transition hover:bg-amber-100/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 md:hidden"
+                            >
+                                <i aria-hidden="true" className="fa-solid fa-gauge-high" />
+                                {t('cruise.review.map.controls.speedLabel')}
+                            </button>
+                        </div>
+                        <div
+                            className={`mt-3 ${
+                                showMobileSpeedControls
+                                    ? 'block'
+                                    : 'hidden md:block'
+                            }`}
+                        >
+                            <label className="block">
+                                <span className="sr-only">
+                                    {t('cruise.review.map.controls.speedLabel')}
+                                </span>
+                                <input
+                                    type="range"
+                                    min={MIN_SIMULATION_DAYS_PER_SECOND}
+                                    max={MAX_SIMULATION_DAYS_PER_SECOND}
+                                    step={1 / 24}
+                                    value={simulationSpeed / SECONDS_PER_DAY}
+                                    onChange={(event) =>
+                                        updateSpeed(
+                                            Number(event.target.value)
+                                                * SECONDS_PER_DAY,
+                                        )
+                                    }
+                                    className="mt-2 h-2 w-full cursor-pointer accent-amber-200"
+                                />
+                            </label>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                                {SIMULATION_SPEEDS.map((speed) => (
+                                    <button
+                                        key={speed}
+                                        type="button"
+                                        onClick={() => updateSpeed(speed)}
+                                        className={`cursor-pointer rounded border px-2 py-1 text-[0.65rem] font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ${
+                                            isSpeedPresetActive(
+                                                simulationSpeed,
+                                                speed,
+                                            )
+                                                ? 'border-amber-200/60 bg-amber-200/18 text-amber-100'
+                                                : 'border-cyan-100/14 bg-slate-950/45 text-cyan-50/62 hover:bg-cyan-100/10 hover:text-cyan-50'
+                                        }`}
+                                    >
+                                        {formatSpeed(speed)}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                    <span className="text-xs font-semibold text-cyan-50/70">
-                        {formatElapsedTime(simulationProgress * totalSeconds)}
-                    </span>
                 </div>
             </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950/86 to-transparent px-4 pb-3 pt-12">
@@ -745,7 +806,20 @@ function formatSpeed(speed: number): string {
         return `${Math.round(daysPerSecond).toLocaleString()}d/s`;
     }
 
-    return `${Math.round(speed).toLocaleString()}x`;
+    const hoursPerSecond = speed / SECONDS_PER_HOUR;
+
+    return `${formatCompactNumber(hoursPerSecond)}h/s`;
+}
+
+function formatCompactNumber(value: number): string {
+    return value.toLocaleString(undefined, {
+        maximumFractionDigits: value < 1 ? 2 : 1,
+        minimumFractionDigits: 0,
+    });
+}
+
+function isSpeedPresetActive(currentSpeed: number, presetSpeed: number): boolean {
+    return Math.abs(currentSpeed - presetSpeed) < 1;
 }
 
 function formatSimulationDate(tripStart: string, elapsedSeconds: number): string {
