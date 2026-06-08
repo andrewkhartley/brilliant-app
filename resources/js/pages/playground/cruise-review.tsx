@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
@@ -76,13 +76,25 @@ export default function CruiseReviewPage({
     attemptedDestinationNames,
 }: CruiseReviewPageProps) {
     const { t } = useTranslation();
-    const [transition] = useState(() =>
-        readCruiseReviewTransition(cruise, trip),
-    );
-    const [showRevealOverlay, setShowRevealOverlay] = useState(
-        transition !== null,
-    );
+    const [transition, setTransition] =
+        useState<CruiseReviewTransition | null>(null);
+    const [showRevealOverlay, setShowRevealOverlay] = useState(false);
     const [isRevealingItinerary, setIsRevealingItinerary] = useState(false);
+
+    useEffect(() => {
+        const nextTransition = readCruiseReviewTransition(cruise, trip);
+
+        if (nextTransition === null) {
+            return;
+        }
+
+        const timeout = window.setTimeout(() => {
+            setTransition(nextTransition);
+            setShowRevealOverlay(true);
+        }, 0);
+
+        return () => window.clearTimeout(timeout);
+    }, [cruise, trip]);
 
     return (
         <AppLayout pageTitle={t('cruise.review.summary.ticketHeading')}>
@@ -817,13 +829,38 @@ interface PlanetIconProps {
 }
 
 function PlanetIcon({ code, name }: PlanetIconProps) {
+    const [src, setSrc] = useState(destinationImageSrc(code));
+
     return (
         <img
-            src={`/assets/img/destinations/${code}.png`}
+            src={src}
             alt={name}
             className="h-12 w-12 object-contain"
+            onError={() => setSrc('/assets/img/destinations/obs.png')}
         />
     );
+}
+
+const DESTINATION_IMAGE_CODES = new Set([
+    'ear',
+    'jup',
+    'mar',
+    'mer',
+    'nep',
+    'obs',
+    'plu',
+    'sat',
+    'sun',
+    'ura',
+    'ven',
+]);
+
+function destinationImageSrc(code: string): string {
+    if (DESTINATION_IMAGE_CODES.has(code)) {
+        return `/assets/img/destinations/${code}.png`;
+    }
+
+    return '/assets/img/destinations/obs.png';
 }
 
 interface SummaryItemProps {

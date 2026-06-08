@@ -367,8 +367,26 @@ function SortableItem({
 }
 
 function destinationImageSrc(code: string): string {
+    if (!DESTINATION_IMAGE_CODES.has(code)) {
+        return '/assets/img/destinations/obs.png';
+    }
+
     return `/assets/img/destinations/${code}.png`;
 }
+
+const DESTINATION_IMAGE_CODES = new Set([
+    'ear',
+    'jup',
+    'mar',
+    'mer',
+    'nep',
+    'obs',
+    'plu',
+    'sat',
+    'sun',
+    'ura',
+    'ven',
+]);
 
 function DestinationImage({
     code,
