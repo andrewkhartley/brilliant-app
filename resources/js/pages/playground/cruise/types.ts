@@ -34,6 +34,18 @@ export interface MapPlanetPosition extends Coordinates {
     radiusKm: number;
 }
 
+export interface MapOrbitPoint extends Coordinates {
+    elapsedDays: number;
+    radiusKm: number;
+}
+
+export interface MapOrbitPath {
+    code: string;
+    name: string;
+    periodDays: number;
+    points: MapOrbitPoint[];
+}
+
 export interface Leg {
     /** 1-based leg ordinal — surfaces in the "Leg N" heading. */
     leg: number;
@@ -132,6 +144,8 @@ export interface Trip {
     totalDilationFormatted: string | null;
     /** Starting positions for every planet visible in the route map. */
     mapPlanetPositions: MapPlanetPosition[];
+    /** Sampled ephemeris paths for every orbit visible in the route map. */
+    mapOrbitPaths: MapOrbitPath[];
     /** Ordered list of leg breakdowns (Earth → ... → Earth). */
     legs: Leg[];
 }

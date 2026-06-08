@@ -297,6 +297,8 @@ class TripBuilderService
                 'y' => $arrDetails['y'],
                 'z' => $arrDetails['z'],
             ];
+            $arrCoordinates = $arrData;
+            $finArrCoordinates = $arrData;
 
         } else {
 
@@ -317,23 +319,18 @@ class TripBuilderService
             $durationSearch = ($legStart + $legEstimate + $layover + (86400 * 2)) - $startRange;
             $stepSize = $this->config->stepSize();
 
-            // Horizon Data
-            $sessionKey = $arrDetails['code'].'Data';
-            if (! $this->session->has($sessionKey)) {
-                $arrData = $this->positionQuery(
-                    $arrDetails['code'],
-                    $arrDetails['horizonsId'],
-                    $startRange,
-                    $stepSize,
-                    $durationSearch,
-                    $tripSettings['dataSource'],
-                );
-
-                // Set Session
-                $this->session->set($sessionKey, $arrData);
-            } else {
-                $arrData = $this->session->get($sessionKey);
-            }
+            // Per-leg arrival data must match this trip's current time window.
+            // Reusing a prior session's `{body}Data` can freeze later legs at
+            // an old arrival coordinate after the user replans a route.
+            $arrData = $this->positionQuery(
+                $arrDetails['code'],
+                $arrDetails['horizonsId'],
+                $startRange,
+                $stepSize,
+                $durationSearch,
+                $tripSettings['dataSource'],
+            );
+            $this->session->set($arrDetails['code'].'Data', $arrData);
 
             // Begin Search
             $lowest = 1000000000;

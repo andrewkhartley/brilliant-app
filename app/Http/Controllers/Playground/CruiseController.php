@@ -346,6 +346,7 @@ class CruiseController extends Controller
             ->all();
 
         $totals = $computedTrip['total'] ?? [];
+        $mapBodyCodes = $this->mapBodyCodes($legs);
 
         return [
             'departureTime' => $computedTrip['departureTime'] === null
@@ -373,6 +374,12 @@ class CruiseController extends Controller
                 ? strip_tags(secondsToDuration((int) round((float) $totals['totalDilation'])))
                 : null,
             'mapPlanetPositions' => $this->presentMapPlanetPositions(
+                $mapBodyCodes,
+                $tripStartTimestamp,
+                $ephemerisService,
+            ),
+            'mapOrbitPaths' => $this->presentMapOrbitPaths(
+                $mapBodyCodes,
                 $tripStartTimestamp,
                 $ephemerisService,
             ),
@@ -386,38 +393,151 @@ class CruiseController extends Controller
      * solved departure/arrival coordinates; this only prevents
      * non-selected planets from falling back to placeholder phases.
      *
-     * @return array<int, array{code: string, elapsedDays: int, name: string, x: int, y: int, radiusKm: int}>
+     * @param  array<int, string>  $codes
+     * @return array<int, array{code: string, elapsedDays: int, name: string, x: int, y: int, z: int, radiusKm: int}>
      */
     private function presentMapPlanetPositions(
+        array $codes,
         int $tripStartTimestamp,
         ApproximateEphemerisService $ephemerisService,
     ): array {
-        return collect(self::MAP_PLANET_CODES)
+        return collect($codes)
             ->map(function (string $code) use ($ephemerisService, $tripStartTimestamp): array {
                 $coordinates = $ephemerisService->positionAt(
                     $code,
                     $tripStartTimestamp,
                 );
 
+                return $this->presentMapPoint(
+                    elapsedDays: 0,
+                    coordinates: $coordinates,
+                    code: $code,
+                    name: $this->destinationName(
+                        $code,
+                        DestinationService::DATA_SOURCE_EPHEMERIS,
+                    ),
+                );
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<int, string>  $codes
+     * @return array<int, array{code: string, name: string, periodDays: float, points: array<int, array{elapsedDays: float, x: int, y: int, z: int, radiusKm: int}>}>
+     */
+    private function presentMapOrbitPaths(
+        array $codes,
+        int $tripStartTimestamp,
+        ApproximateEphemerisService $ephemerisService,
+    ): array {
+        return collect($codes)
+            ->map(function (string $code) use ($ephemerisService, $tripStartTimestamp): ?array {
+                $periodDays = $this->orbitPeriodDays($code);
+
+                if ($periodDays === null || $periodDays <= 0) {
+                    return null;
+                }
+
+                $sampleCount = 192;
+                $points = [];
+
+                for ($index = 0; $index <= $sampleCount; $index++) {
+                    $elapsedDays = ($periodDays * $index) / $sampleCount;
+                    $coordinates = $ephemerisService->positionAt(
+                        $code,
+                        $tripStartTimestamp + (int) round($elapsedDays * 86400),
+                    );
+
+                    $points[] = $this->presentMapPoint(
+                        elapsedDays: $elapsedDays,
+                        coordinates: $coordinates,
+                    );
+                }
+
                 return [
                     'code' => $code,
-                    'elapsedDays' => 0,
                     'name' => $this->destinationName(
                         $code,
                         DestinationService::DATA_SOURCE_EPHEMERIS,
                     ),
-                    'x' => (int) round((float) $coordinates['x']),
-                    'y' => (int) round((float) $coordinates['y']),
-                    'radiusKm' => (int) round(
-                        hypot(
-                            (float) $coordinates['x'],
-                            (float) $coordinates['y'],
-                        ),
-                    ),
+                    'periodDays' => $periodDays,
+                    'points' => $points,
                 ];
             })
+            ->filter()
             ->values()
             ->all();
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $legs
+     * @return array<int, string>
+     */
+    private function mapBodyCodes(array $legs): array
+    {
+        return collect(self::MAP_PLANET_CODES)
+            ->merge(
+                collect($legs)->flatMap(
+                    fn (array $leg): array => [
+                        $leg['departure'],
+                        $leg['arrival'],
+                    ],
+                ),
+            )
+            ->filter(fn (mixed $code): bool => is_string($code) && $code !== 'sun')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function orbitPeriodDays(string $code): ?float
+    {
+        $localBody = EphemerisCatalog::body($code);
+
+        if ($localBody !== null) {
+            return isset($localBody['parent'])
+                ? null
+                : (float) $localBody['periodDays'];
+        }
+
+        $destination = Destination::getCachedFacts()->firstWhere('destination_code', $code);
+        $periodDays = $destination === null ? 0 : (float) $destination->solar_orbit;
+
+        return $periodDays > 0 ? $periodDays : null;
+    }
+
+    /**
+     * @param  array{x?: mixed, y?: mixed, z?: mixed}  $coordinates
+     * @return array{elapsedDays: float, x: int, y: int, z: int, radiusKm: int}
+     */
+    private function presentMapPoint(
+        float $elapsedDays,
+        array $coordinates,
+        ?string $code = null,
+        ?string $name = null,
+    ): array {
+        $x = (float) ($coordinates['x'] ?? 0);
+        $y = (float) ($coordinates['y'] ?? 0);
+        $z = (float) ($coordinates['z'] ?? 0);
+
+        $point = [
+            'elapsedDays' => $elapsedDays,
+            'x' => (int) round($x),
+            'y' => (int) round($y),
+            'z' => (int) round($z),
+            'radiusKm' => (int) round(sqrt(($x ** 2) + ($y ** 2) + ($z ** 2))),
+        ];
+
+        if ($code !== null) {
+            $point['code'] = $code;
+        }
+
+        if ($name !== null) {
+            $point['name'] = $name;
+        }
+
+        return $point;
     }
 
     /**

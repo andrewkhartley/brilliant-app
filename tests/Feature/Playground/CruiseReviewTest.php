@@ -205,6 +205,61 @@ it('surfaces per-leg depth (coordinates, dilation, burn/cruise) and trip totals 
     );
 });
 
+it('refreshes per-leg arrival windows instead of reusing stale body data from the session', function () {
+    $tripStart = '2026-06-09';
+    $staleJupiterData = [
+        'id' => 'jup',
+        'stepSize' => 1440,
+        'duration' => 1,
+        'entries' => 1,
+        'data' => [
+            [
+                'timestamp' => '2025-01-01 00:00:00',
+                'x' => 123,
+                'y' => 456,
+                'z' => 789,
+            ],
+        ],
+    ];
+
+    $response = withSession([
+        'jupData' => $staleJupiterData,
+        'cruise' => [
+            'dataSource' => DestinationService::DATA_SOURCE_EPHEMERIS,
+            'destinations' => ['mer', 'jup'],
+            'layovers' => [20, 60],
+            'tripStart' => $tripStart,
+        ],
+    ])->get('/playground/cruise/review');
+
+    $response->assertOk();
+    $response->assertInertia(function ($page) use ($tripStart) {
+        $props = $page->toArray()['props'];
+        $jupiterArrival = $props['trip']['legs'][1]['arrCoordinates'];
+        $jupiterNextDeparture = $props['trip']['legs'][2]['depCoordinates'];
+
+        expect($jupiterArrival)->not->toEqual([
+            'x' => 123,
+            'y' => 456,
+            'z' => 789,
+        ])
+            ->and($jupiterNextDeparture)->not->toEqual([
+                'x' => 123,
+                'y' => 456,
+                'z' => 789,
+            ])
+            ->and($jupiterNextDeparture)->not->toEqual($jupiterArrival);
+
+        return $page
+            ->component('playground/cruise-review')
+            ->where('cruise.tripStart', $tripStart)
+            ->where('cruise.destinations', ['mer', 'jup'])
+            ->where('horizonsError', false)
+            ->where('trip.legs.1.arrival', 'jup')
+            ->where('trip.legs.2.departure', 'jup');
+    });
+});
+
 it('renders the friendly horizons-error panel with the attempted trip when the upstream API throws', function () {
     $stub = Mockery::mock(HorizonService::class);
     $stub->shouldReceive('horizonQuery')

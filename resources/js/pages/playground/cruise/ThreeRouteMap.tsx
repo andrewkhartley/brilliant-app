@@ -4,7 +4,7 @@ import * as THREE from 'three';
 
 import { useTranslation } from '@/hooks/useTranslation';
 
-import type { Leg } from './types';
+import type { Leg, MapOrbitPath } from './types';
 
 type DataSource = 'horizons' | 'ephemeris';
 
@@ -14,6 +14,7 @@ export interface RouteMapPoint {
     name: string;
     x: number;
     y: number;
+    z: number;
     radiusKm: number;
 }
 
@@ -21,24 +22,30 @@ interface ThreeRouteMapProps {
     dataSource: DataSource;
     fallback: ReactNode;
     legs: Leg[];
+    orbitPaths: MapOrbitPath[];
     planetPositions: RouteMapPoint[];
     points: RouteMapPoint[];
     tripStart: string;
 }
 
-interface PlanetOrbit {
+interface PlanetStyle {
     code: string;
     name: string;
-    au: number;
-    periodDays: number;
     color: number;
     size: number;
-    phase: number;
 }
 
-interface PlanetPositionOverride {
-    phase: number;
-    radius: number;
+interface OrbitTrack {
+    code: string;
+    name: string;
+    periodDays: number;
+    points: OrbitTrackPoint[];
+    style: PlanetStyle;
+}
+
+interface OrbitTrackPoint {
+    elapsedDays: number;
+    position: THREE.Vector3;
 }
 
 type FlightPhase = 'acceleration' | 'cruise' | 'deceleration' | 'layover';
@@ -69,15 +76,17 @@ interface PhaseRouteLine {
 const AU_KM = 149_597_870.7;
 const MAX_AU = 30.1;
 const ORBIT_SCALE = 15.5;
-const PLANETS: PlanetOrbit[] = [
-    { code: 'mer', name: 'Mercury', au: 0.387, periodDays: 88, color: 0xb8b1a4, size: 0.09, phase: 1.2 },
-    { code: 'ven', name: 'Venus', au: 0.723, periodDays: 224.7, color: 0xe8c27a, size: 0.13, phase: 2.4 },
-    { code: 'ear', name: 'Earth', au: 1, periodDays: 365.25, color: 0x67e8f9, size: 0.14, phase: 3.1 },
-    { code: 'mar', name: 'Mars', au: 1.524, periodDays: 687, color: 0xf97316, size: 0.12, phase: 4.2 },
-    { code: 'jup', name: 'Jupiter', au: 5.203, periodDays: 4332.6, color: 0xf6d7a8, size: 0.24, phase: 0.7 },
-    { code: 'sat', name: 'Saturn', au: 9.537, periodDays: 10759, color: 0xfacc15, size: 0.21, phase: 1.7 },
-    { code: 'ura', name: 'Uranus', au: 19.191, periodDays: 30685, color: 0x7dd3fc, size: 0.18, phase: 2.9 },
-    { code: 'nep', name: 'Neptune', au: 30.069, periodDays: 60189, color: 0x60a5fa, size: 0.18, phase: 4.7 },
+const PLANET_STYLES: PlanetStyle[] = [
+    { code: 'mer', name: 'Mercury', color: 0xb8b1a4, size: 0.09 },
+    { code: 'ven', name: 'Venus', color: 0xe8c27a, size: 0.13 },
+    { code: 'ear', name: 'Earth', color: 0x67e8f9, size: 0.14 },
+    { code: 'mar', name: 'Mars', color: 0xf97316, size: 0.12 },
+    { code: 'jup', name: 'Jupiter', color: 0xf6d7a8, size: 0.24 },
+    { code: 'sat', name: 'Saturn', color: 0xfacc15, size: 0.21 },
+    { code: 'ura', name: 'Uranus', color: 0x7dd3fc, size: 0.18 },
+    { code: 'nep', name: 'Neptune', color: 0x60a5fa, size: 0.18 },
+    { code: 'cer', name: 'Ceres', color: 0xd6d3d1, size: 0.08 },
+    { code: 'ves', name: 'Vesta', color: 0xf5deb3, size: 0.07 },
 ];
 
 const SECONDS_PER_DAY = 86400;
@@ -118,6 +127,7 @@ export function ThreeRouteMap({
     dataSource,
     fallback,
     legs,
+    orbitPaths,
     planetPositions,
     points,
     tripStart,
@@ -206,20 +216,17 @@ export function ThreeRouteMap({
         root.add(createStarfield());
         root.add(createSun());
 
-        const planetPositionOverrides =
-            buildPlanetPositionOverrides(planetPositions);
-        const planetMeshes: THREE.Mesh[] = [];
+        const orbitTracks = buildOrbitTracks(orbitPaths, planetPositions, points);
+        const planetMeshes: Array<{ mesh: THREE.Mesh; track: OrbitTrack }> = [];
 
-        for (const planet of PLANETS) {
-            const orbit = createOrbitLine(planet, planetPositionOverrides);
+        for (const track of orbitTracks) {
+            const orbit = createOrbitLine(track);
             root.add(orbit);
 
-            const marker = createPlanetMarker(planet);
-            marker.position.copy(
-                positionForPlanet(planet, 0, planetPositionOverrides),
-            );
+            const marker = createPlanetMarker(track.style);
+            marker.position.copy(positionForTrack(track, 0));
             root.add(marker);
-            planetMeshes.push(marker);
+            planetMeshes.push({ mesh: marker, track });
         }
 
         legSegments.forEach((segment, index) => {
@@ -347,11 +354,11 @@ export function ThreeRouteMap({
             const nextActiveName = points[activeIndex]?.name ?? '';
 
             ship.position.copy(routePosition);
-            const shipAngle = Math.atan2(tangent.y, tangent.x) - Math.PI / 2;
-            ship.rotation.z =
-                timelineState.phase === 'deceleration'
-                    ? shipAngle + Math.PI
-                    : shipAngle;
+            orientShipToTravelLine(
+                ship,
+                tangent,
+                timelineState.phase === 'deceleration',
+            );
             ship.visible = timelineState.phase !== 'layover';
 
             if (activePointNameRef.current !== nextActiveName) {
@@ -368,13 +375,11 @@ export function ThreeRouteMap({
                     : previous,
             );
 
-            planetMeshes.forEach((mesh, index) => {
-                const planet = PLANETS[index];
+            planetMeshes.forEach(({ mesh, track }) => {
                 mesh.position.copy(
-                    positionForPlanet(
-                        planet,
+                    positionForTrack(
+                        track,
                         timelineState.elapsedSeconds / 86400,
-                        planetPositionOverrides,
                     ),
                 );
             });
@@ -406,6 +411,7 @@ export function ThreeRouteMap({
     }, [
         legSegments,
         legs,
+        orbitPaths,
         planetPositions,
         points,
         routePoints,
@@ -423,25 +429,21 @@ export function ThreeRouteMap({
     const controlIcon = isPlaying ? 'fa-pause' : 'fa-play';
 
     return (
-        <section className="mt-10">
-            <div className="mb-5 grid gap-4 lg:grid-cols-[0.618fr_1fr] lg:items-end">
-                <div>
-                    <p className="text-xs font-semibold tracking-[0.22em] text-amber-200/82 uppercase">
-                        {t('cruise.review.map.eyebrow')}
-                    </p>
-                    <h2 className="mt-3 text-2xl font-semibold text-white">
-                        {t('cruise.review.map.title')}
-                    </h2>
-                </div>
-                <div className="max-w-3xl space-y-2 text-sm leading-7 text-cyan-50/72 lg:justify-self-end">
-                    <p>
-                        {t('cruise.review.map.body')}{' '}
-                        {t('cruise.review.map.interactionHint')}
-                    </p>
-                    <p className="inline-flex rounded border border-amber-200/20 bg-amber-200/10 px-3 py-2 text-xs font-semibold leading-5 text-amber-100/86 shadow-[0_12px_34px_rgba(251,191,36,0.08)]">
-                        {t(`cruise.review.map.source.${dataSource}`)}
-                    </p>
-                </div>
+        <section>
+            <div className="mb-5 max-w-4xl">
+                <p className="text-xs font-semibold tracking-[0.22em] text-amber-200/82 uppercase">
+                    {t('cruise.review.map.eyebrow')}
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold text-white">
+                    {t('cruise.review.map.title')}
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-cyan-50/72">
+                    {t('cruise.review.map.body')}{' '}
+                    {t('cruise.review.map.interactionHint')}
+                </p>
+                <p className="mt-3 inline-flex rounded border border-amber-200/20 bg-amber-200/10 px-3 py-2 text-xs font-semibold leading-5 text-amber-100/86 shadow-[0_12px_34px_rgba(251,191,36,0.08)]">
+                    {t(`cruise.review.map.source.${dataSource}`)}
+                </p>
             </div>
 
             <div className="relative overflow-hidden rounded border border-cyan-100/14 bg-slate-950/68 shadow-[0_22px_70px_rgba(8,17,31,0.38)]">
@@ -495,6 +497,7 @@ export function ThreeRouteMap({
                                     className="inline-flex cursor-pointer items-center gap-2 rounded bg-cyan-200 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
                                 >
                                     <i
+                                        key={controlIcon}
                                         aria-hidden="true"
                                         className={`fa-solid ${controlIcon}`}
                                     />
@@ -583,6 +586,7 @@ export function ThreeRouteMap({
                             aria-label={t(controlLabelKey)}
                         >
                             <i
+                                key={controlIcon}
                                 aria-hidden="true"
                                 className={`fa-solid ${controlIcon}`}
                             />
@@ -704,17 +708,7 @@ export function ThreeRouteMap({
 }
 
 function normalizeRoutePoints(points: RouteMapPoint[]): THREE.Vector3[] {
-    return points.map((point) => {
-        const radiusAu = point.radiusKm / AU_KM;
-        const scaledRadius = scaleAu(radiusAu);
-        const angle = Math.atan2(point.y, point.x);
-
-        return new THREE.Vector3(
-            Math.cos(angle) * scaledRadius,
-            Math.sin(angle) * scaledRadius,
-            0,
-        );
-    });
+    return points.map((point) => scaleCoordinates(point));
 }
 
 function buildLegSegments(points: THREE.Vector3[]): LegSegment[] {
@@ -963,65 +957,176 @@ function scaleAu(au: number): number {
     return Math.sqrt(au / MAX_AU) * ORBIT_SCALE;
 }
 
-function buildPlanetPositionOverrides(
-    points: RouteMapPoint[],
-): Map<string, PlanetPositionOverride> {
-    const overrides = new Map<string, PlanetPositionOverride>();
+function buildOrbitTracks(
+    orbitPaths: MapOrbitPath[],
+    planetPositions: RouteMapPoint[],
+    routePoints: RouteMapPoint[],
+): OrbitTrack[] {
+    const tracks = orbitPaths
+        .filter((path) => path.points.length > 1 && path.periodDays > 0)
+        .map((path): OrbitTrack => {
+            const points = path.points.map((point) => ({
+                elapsedDays: clamp(point.elapsedDays, 0, path.periodDays),
+                position: scaleCoordinates(point),
+            }));
 
-    for (const point of points) {
-        const planet = PLANETS.find((entry) => entry.code === point.code);
+            for (const routePoint of routePoints) {
+                if (routePoint.code !== path.code) {
+                    continue;
+                }
 
-        if (planet === undefined) {
+                points.push({
+                    elapsedDays: normalizedOrbitDay(
+                        routePoint.elapsedDays,
+                        path.periodDays,
+                    ),
+                    position: scaleCoordinates(routePoint),
+                });
+            }
+
+            return {
+                code: path.code,
+                name: path.name,
+                periodDays: path.periodDays,
+                points: dedupeOrbitPoints(
+                    points.sort(
+                        (first, second) => first.elapsedDays - second.elapsedDays,
+                    ),
+                ),
+                style: planetStyleFor(path.code, path.name),
+            };
+        });
+
+    const knownTrackCodes = new Set(tracks.map((track) => track.code));
+
+    for (const point of planetPositions) {
+        if (knownTrackCodes.has(point.code)) {
             continue;
         }
 
-        const observedAngle = Math.atan2(point.y, point.x);
-        const elapsedOrbitAngle =
-            (point.elapsedDays / planet.periodDays) * Math.PI * 2;
-        const observedRadius = scaleAu(point.radiusKm / AU_KM);
-
-        overrides.set(planet.code, {
-            phase: observedAngle - elapsedOrbitAngle,
-            radius: observedRadius,
+        tracks.push({
+            code: point.code,
+            name: point.name,
+            periodDays: 1,
+            points: [
+                {
+                    elapsedDays: 0,
+                    position: scaleCoordinates(point),
+                },
+            ],
+            style: planetStyleFor(point.code, point.name),
         });
     }
 
-    return overrides;
+    return tracks;
 }
 
-function positionForPlanet(
-    planet: PlanetOrbit,
-    offsetDays: number,
-    positionOverrides: Map<string, PlanetPositionOverride>,
-): THREE.Vector3 {
-    const override = positionOverrides.get(planet.code);
-    const radius = override?.radius ?? scaleAu(planet.au);
-    const basePhase = override?.phase ?? planet.phase;
-    const angle = basePhase + (offsetDays / planet.periodDays) * Math.PI * 2;
+function positionForTrack(track: OrbitTrack, elapsedDays: number): THREE.Vector3 {
+    if (track.points.length === 0) {
+        return new THREE.Vector3(0, 0, 0);
+    }
 
-    return new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
+    if (track.points.length === 1) {
+        return track.points[0].position.clone();
+    }
+
+    const day = normalizedOrbitDay(elapsedDays, track.periodDays);
+    const exact = track.points.find(
+        (point) => Math.abs(point.elapsedDays - day) <= 0.0001,
+    );
+
+    if (exact !== undefined) {
+        return exact.position.clone();
+    }
+
+    const nextIndex = track.points.findIndex((point) => point.elapsedDays > day);
+
+    if (nextIndex === 0) {
+        return track.points[0].position.clone();
+    }
+
+    const previous =
+        nextIndex === -1 ? track.points.at(-1) : track.points[nextIndex - 1];
+    const next = nextIndex === -1 ? track.points[0] : track.points[nextIndex];
+
+    if (previous === undefined || next === undefined) {
+        return track.points[0].position.clone();
+    }
+
+    const wraps = nextIndex === -1 || next.elapsedDays < previous.elapsedDays;
+    const previousDay = previous.elapsedDays;
+    const nextDay = wraps
+        ? next.elapsedDays + track.periodDays
+        : next.elapsedDays;
+    const adjustedDay = day < previousDay ? day + track.periodDays : day;
+    const span = Math.max(nextDay - previousDay, 0.0001);
+    const progress = clamp((adjustedDay - previousDay) / span, 0, 1);
+
+    return previous.position.clone().lerp(next.position, progress);
 }
 
-function createOrbitLine(
-    planet: PlanetOrbit,
-    positionOverrides: Map<string, PlanetPositionOverride>,
-): THREE.Line {
-    const radius = positionOverrides.get(planet.code)?.radius ?? scaleAu(planet.au);
-    const points = [];
+function createOrbitLine(track: OrbitTrack): THREE.Line {
+    const points = track.points.map((point) => point.position);
 
-    for (let i = 0; i <= 192; i++) {
-        const angle = (i / 192) * Math.PI * 2;
-        points.push(new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, -0.05));
+    if (
+        points.length > 1
+        && !points[0].equals(points[points.length - 1])
+    ) {
+        points.push(points[0].clone());
     }
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     const material = new THREE.LineBasicMaterial({
-        color: planet.code === 'ear' ? 0x67e8f9 : 0x7dd3fc,
-        opacity: planet.code === 'ear' ? 0.38 : 0.16,
+        color: track.code === 'ear' ? 0x67e8f9 : 0x7dd3fc,
+        opacity: track.code === 'ear' ? 0.38 : 0.16,
         transparent: true,
     });
 
     return new THREE.Line(geometry, material);
+}
+
+function dedupeOrbitPoints(points: OrbitTrackPoint[]): OrbitTrackPoint[] {
+    return points.reduce<OrbitTrackPoint[]>((deduped, point) => {
+        const previous = deduped.at(-1);
+
+        if (
+            previous !== undefined
+            && Math.abs(previous.elapsedDays - point.elapsedDays) <= 0.0001
+        ) {
+            deduped[deduped.length - 1] = point;
+        } else {
+            deduped.push(point);
+        }
+
+        return deduped;
+    }, []);
+}
+
+function normalizedOrbitDay(elapsedDays: number, periodDays: number): number {
+    const normalized = elapsedDays % periodDays;
+
+    return normalized < 0 ? normalized + periodDays : normalized;
+}
+
+function planetStyleFor(code: string, name: string): PlanetStyle {
+    return PLANET_STYLES.find((style) => style.code === code) ?? {
+        code,
+        name,
+        color: 0xe0f2fe,
+        size: 0.1,
+    };
+}
+
+function scaleCoordinates(point: { radiusKm: number; x: number; y: number; z: number }): THREE.Vector3 {
+    const magnitudeKm = Math.max(point.radiusKm, 1);
+    const scaledRadius = scaleAu(magnitudeKm / AU_KM);
+    const scale = scaledRadius / magnitudeKm;
+
+    return new THREE.Vector3(
+        point.x * scale,
+        point.y * scale,
+        point.z * scale,
+    );
 }
 
 function createRoutePhaseLines(
@@ -1050,11 +1155,11 @@ function createRoutePhaseLines(
     });
 }
 
-function createPlanetMarker(planet: PlanetOrbit): THREE.Mesh {
-    const geometry = new THREE.SphereGeometry(planet.size, 24, 16);
+function createPlanetMarker(style: PlanetStyle): THREE.Mesh {
+    const geometry = new THREE.SphereGeometry(style.size, 24, 16);
     const material = new THREE.MeshStandardMaterial({
-        color: planet.color,
-        emissive: planet.color,
+        color: style.color,
+        emissive: style.color,
         emissiveIntensity: 0.16,
         roughness: 0.55,
         metalness: 0.08,
@@ -1100,6 +1205,29 @@ function createShip(): THREE.Group {
     ship.add(body, glow);
 
     return ship;
+}
+
+function orientShipToTravelLine(
+    ship: THREE.Group,
+    tangent: THREE.Vector3,
+    isDecelerating: boolean,
+) {
+    const direction = tangent.clone();
+
+    if (direction.lengthSq() <= 0.000001) {
+        return;
+    }
+
+    direction.normalize();
+
+    if (isDecelerating) {
+        direction.negate();
+    }
+
+    ship.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction,
+    );
 }
 
 function createSun(): THREE.Mesh {

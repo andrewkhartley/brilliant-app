@@ -6,6 +6,8 @@ use App\Models\Experiences\Cruise\Destination;
 
 class EphemerisCatalog
 {
+    private const array SELECTABLE_LOCAL_CODES = [];
+
     private const array LOCAL_BODIES = [
         'cer' => [
             'name' => 'Ceres',
@@ -126,6 +128,7 @@ class EphemerisCatalog
             ]);
 
         $local = collect(self::LOCAL_BODIES)
+            ->only(self::SELECTABLE_LOCAL_CODES)
             ->map(fn (array $body, string $code): array => [
                 'code' => $code,
                 'name' => $body['name'],

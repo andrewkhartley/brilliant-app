@@ -3,6 +3,7 @@
 /** @noinspection PhpUndefinedMethodInspection — `assertInertia` is a TestResponse macro registered by inertia-laravel; PHPStorm doesn't pick up runtime macros without the IDE helper plugin. */
 
 use App\Models\Experiences\Cruise\Destination;
+use App\Services\Experiences\Cruise\DestinationService;
 use Database\Seeders\SolarSystemFactsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -34,6 +35,34 @@ it('hands all 11 destinations to the Inertia page as {code, name} pairs', functi
     );
 });
 
+it('limits ephemeris destinations to planets, Pluto, and the observatory', function () {
+    $response = get('/playground/cruise');
+
+    $response->assertInertia(
+        fn ($page) => $page
+            ->has('ephemerisDestinations', 11)
+            ->where(
+                'ephemerisDestinations',
+                fn ($destinations) => $destinations
+                    ->pluck('code')
+                    ->values()
+                    ->all() === [
+                        'sun',
+                        'mer',
+                        'ven',
+                        'ear',
+                        'mar',
+                        'jup',
+                        'sat',
+                        'ura',
+                        'nep',
+                        'plu',
+                        'obs',
+                    ],
+            )
+    );
+});
+
 it('shares the cruise translation namespace for the form labels', function () {
     $response = get('/playground/cruise');
 
@@ -57,6 +86,7 @@ it('shares the cruise translation namespace for the form labels', function () {
 
 it('accepts a valid trip submission and flashes the payload to the cruise page', function () {
     $response = post('/playground/cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['mer', 'ven'],
         'layovers' => [5, 5],
         'tripStart' => now()->addDays(7)->toDateString(),
@@ -65,6 +95,7 @@ it('accepts a valid trip submission and flashes the payload to the cruise page',
     $response->assertRedirect('/playground/cruise');
     $response->assertSessionHas('cruiseReady', true);
     $response->assertSessionHas('cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['mer', 'ven'],
         'layovers' => [5, 5],
         'tripStart' => now()->addDays(7)->toDateString(),
@@ -73,6 +104,7 @@ it('accepts a valid trip submission and flashes the payload to the cruise page',
 
 it('rejects an empty destinations list with a 302 + error bag', function () {
     $response = post('/playground/cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => [],
         'layovers' => [],
         'tripStart' => now()->addDays(7)->toDateString(),
@@ -83,6 +115,7 @@ it('rejects an empty destinations list with a 302 + error bag', function () {
 
 it('rejects more than 8 destinations', function () {
     $response = post('/playground/cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['mer', 'ven', 'ear', 'mar', 'jup', 'sat', 'ura', 'nep', 'plu'],
         'layovers' => [5, 5, 5, 5, 5, 5, 5, 5, 5],
         'tripStart' => now()->addDays(7)->toDateString(),
@@ -93,12 +126,13 @@ it('rejects more than 8 destinations', function () {
 
 it('rejects a destination code that is not in the catalog', function () {
     $response = post('/playground/cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['not-a-real-place'],
         'layovers' => [5],
         'tripStart' => now()->addDays(7)->toDateString(),
     ]);
 
-    $response->assertSessionHasErrors(['destinations.0']);
+    $response->assertSessionHasErrors(['destinations']);
 });
 
 /*
@@ -116,6 +150,7 @@ it('accepts duplicate destination codes when layovers are valid', function () {
     // Two Mercurys, two different layovers — the form's new flow when
     // a user clicks "Add Mercury" twice and sets each slot's days.
     $response = post('/playground/cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['mer', 'mer'],
         'layovers' => [3, 10],
         'tripStart' => now()->addDays(7)->toDateString(),
@@ -124,6 +159,7 @@ it('accepts duplicate destination codes when layovers are valid', function () {
     $response->assertRedirect('/playground/cruise');
     $response->assertSessionHas('cruiseReady', true);
     $response->assertSessionHas('cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['mer', 'mer'],
         'layovers' => [3, 10],
         'tripStart' => now()->addDays(7)->toDateString(),
@@ -132,6 +168,7 @@ it('accepts duplicate destination codes when layovers are valid', function () {
 
 it('rejects layovers with a length that does not match destinations', function () {
     $response = post('/playground/cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['mer', 'ven'],
         'layovers' => [5],
         'tripStart' => now()->addDays(7)->toDateString(),
@@ -142,6 +179,7 @@ it('rejects layovers with a length that does not match destinations', function (
 
 it('rejects a layover at 0 days (below the 1-day minimum)', function () {
     $response = post('/playground/cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['mer'],
         'layovers' => [0],
         'tripStart' => now()->addDays(7)->toDateString(),
@@ -152,6 +190,7 @@ it('rejects a layover at 0 days (below the 1-day minimum)', function () {
 
 it('rejects a layover at 91 days (above the 90-day maximum)', function () {
     $response = post('/playground/cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['mer'],
         'layovers' => [91],
         'tripStart' => now()->addDays(7)->toDateString(),
@@ -162,6 +201,7 @@ it('rejects a layover at 91 days (above the 90-day maximum)', function () {
 
 it('rejects a missing layovers field', function () {
     $response = post('/playground/cruise', [
+        'dataSource' => DestinationService::DATA_SOURCE_HORIZONS,
         'destinations' => ['mer'],
         'tripStart' => now()->addDays(7)->toDateString(),
     ]);

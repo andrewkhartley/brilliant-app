@@ -107,7 +107,7 @@ export default function CruisePage({
         preparedCruise?.tripStart ? 'destinations' : 'date',
     );
     const [dataSource, setDataSource] = useState<CruiseDataSource>(
-        preparedCruise?.dataSource ?? 'horizons',
+        preparedCruise?.dataSource ?? 'ephemeris',
     );
     const [isStoryOpen, setIsStoryOpen] = useState(false);
     const availableDestinations =
@@ -322,7 +322,9 @@ export default function CruisePage({
                             </h2>
                             <div className="mt-5 max-w-4xl space-y-5 text-base leading-8 text-cyan-50/74">
                                 <p>{t('cruise.storyIntro.bodyB')}</p>
-                                <p>{t('cruise.storyIntro.bodyC')}</p>
+                                {t('cruise.storyIntro.bodyC') && (
+                                    <p>{t('cruise.storyIntro.bodyC')}</p>
+                                )}
                             </div>
                         </div>
 
@@ -339,19 +341,38 @@ export default function CruisePage({
                             </div>
 
                             <ol className="mt-4 grid gap-3 md:grid-cols-3">
-                                {['date', 'horizons', 'itinerary'].map(
-                                    (stepKey, index) => (
+                                {[
+                                    ['date', 'fa-calendar-days'],
+                                    ['horizons', 'fa-satellite-dish'],
+                                    ['itinerary', 'fa-route'],
+                                ].map(
+                                    ([stepKey, icon], index) => (
                                         <li
                                             key={stepKey}
-                                            className="rounded border border-cyan-100/14 bg-cyan-50/6 p-3.5"
+                                            className="relative min-h-42 overflow-hidden rounded border border-cyan-100/14 bg-[linear-gradient(135deg,rgba(8,17,31,0.78),rgba(14,116,144,0.12))] p-4 shadow-[0_18px_45px_rgba(8,17,31,0.22)]"
                                         >
-                                            <span className="text-xs font-bold tracking-[0.18em] text-cyan-200/74 uppercase">
-                                                {String(index + 1).padStart(
-                                                    2,
-                                                    '0',
-                                                )}
+                                            <span
+                                                aria-hidden="true"
+                                                className="pointer-events-none absolute bottom-[-1.35rem] left-0 flex w-1/3 justify-center text-[7rem] leading-none text-cyan-100 opacity-[0.05]"
+                                            >
+                                                <i
+                                                    aria-hidden="true"
+                                                    className={`fa-solid ${icon}`}
+                                                />
                                             </span>
-                                            <p className="mt-2 text-sm leading-6 text-cyan-50/78">
+                                            <div className="relative mt-1 flex items-center gap-3">
+                                                <span className="grid size-10 shrink-0 place-items-center rounded-full border border-cyan-100/24 bg-cyan-100/10 text-sm font-bold text-cyan-100 shadow-inner shadow-cyan-200/10">
+                                                    {String(index + 1).padStart(
+                                                        2,
+                                                        '0',
+                                                    )}
+                                                </span>
+                                                <span
+                                                    aria-hidden="true"
+                                                    className="h-px flex-1 bg-linear-to-r from-cyan-200/44 to-transparent"
+                                                />
+                                            </div>
+                                            <p className="relative mt-5 text-sm leading-6 text-cyan-50/78">
                                                 {t(
                                                     `cruise.storyIntro.callout.steps.${stepKey}`,
                                                 )}
@@ -717,8 +738,8 @@ interface SourceToggleProps {
 function SourceToggle({ value, onChange }: SourceToggleProps) {
     const { t } = useTranslation();
     const options: Array<{ value: CruiseDataSource; icon: string }> = [
-        { value: 'horizons', icon: 'fa-satellite-dish' },
         { value: 'ephemeris', icon: 'fa-map-location-dot' },
+        { value: 'horizons', icon: 'fa-satellite-dish' },
     ];
 
     return (
