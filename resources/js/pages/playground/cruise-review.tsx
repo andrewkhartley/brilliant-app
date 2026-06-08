@@ -319,13 +319,12 @@ function RouteMap({ cruise, trip }: ComputedTripViewProps) {
             />
             <div className="pointer-events-none absolute top-0 left-1/2 h-0.75 w-screen -translate-x-1/2 bg-linear-to-r from-transparent via-cyan-200/72 to-transparent" />
             <div className="relative mx-auto max-w-6xl px-4">
-                <ThreeRouteMap
-                    dataSource={cruise.dataSource}
-                    legs={trip.legs}
+        <ThreeRouteMap
+            legs={trip.legs}
                     orbitPaths={trip.mapOrbitPaths}
                     planetPositions={trip.mapPlanetPositions}
                     points={points}
-                    fallback={<SvgRouteMap cruise={cruise} trip={trip} />}
+            fallback={<SvgRouteMap trip={trip} />}
                     tripStart={cruise.tripStart}
                 />
             </div>
@@ -333,7 +332,7 @@ function RouteMap({ cruise, trip }: ComputedTripViewProps) {
     );
 }
 
-function SvgRouteMap({ cruise, trip }: ComputedTripViewProps) {
+function SvgRouteMap({ trip }: Pick<ComputedTripViewProps, 'trip'>) {
     const { t } = useTranslation();
     const points = buildRouteMapPoints(trip);
 
@@ -388,9 +387,6 @@ function SvgRouteMap({ cruise, trip }: ComputedTripViewProps) {
                     </h2>
                     <p className="mt-3 text-sm leading-7 text-cyan-50/72">
                         {t('cruise.review.map.body')}
-                    </p>
-                    <p className="mt-4 rounded border border-amber-200/20 bg-amber-200/10 px-3 py-2 text-xs font-semibold text-amber-100">
-                        {t(`cruise.review.map.source.${cruise.dataSource}`)}
                     </p>
                 </div>
 

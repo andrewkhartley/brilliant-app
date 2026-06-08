@@ -173,6 +173,7 @@ return [
                 'acceleration' => 'Accel',
                 'cruise' => 'Cruise',
                 'deceleration' => 'Decel',
+                'layover' => 'Layover',
             ],
             'source' => [
                 'horizons' => 'Source: live NASA Horizons vectors.',

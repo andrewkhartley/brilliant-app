@@ -6,8 +6,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 import type { Leg, MapOrbitPath } from './types';
 
-type DataSource = 'horizons' | 'ephemeris';
-
 export interface RouteMapPoint {
     code: string;
     elapsedDays: number;
@@ -19,7 +17,6 @@ export interface RouteMapPoint {
 }
 
 interface ThreeRouteMapProps {
-    dataSource: DataSource;
     fallback: ReactNode;
     legs: Leg[];
     orbitPaths: MapOrbitPath[];
@@ -124,7 +121,6 @@ const FLIGHT_PHASE_STYLES: Array<{
 ];
 
 export function ThreeRouteMap({
-    dataSource,
     fallback,
     legs,
     orbitPaths,
@@ -441,9 +437,6 @@ export function ThreeRouteMap({
                     {t('cruise.review.map.body')}{' '}
                     {t('cruise.review.map.interactionHint')}
                 </p>
-                <p className="mt-3 inline-flex rounded border border-amber-200/20 bg-amber-200/10 px-3 py-2 text-xs font-semibold leading-5 text-amber-100/86 shadow-[0_12px_34px_rgba(251,191,36,0.08)]">
-                    {t(`cruise.review.map.source.${dataSource}`)}
-                </p>
             </div>
 
             <div className="relative overflow-hidden rounded border border-cyan-100/14 bg-slate-950/68 shadow-[0_22px_70px_rgba(8,17,31,0.38)]">
@@ -452,7 +445,27 @@ export function ThreeRouteMap({
                     aria-label={t('cruise.review.map.ariaLabel')}
                     className="block aspect-16/10 w-full cursor-grab touch-none active:cursor-grabbing"
                 />
-                <div className="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-start justify-between gap-3">
+                <div className="pointer-events-none absolute inset-x-2 top-2 flex items-center justify-center gap-2 rounded border border-cyan-100/14 bg-slate-950/72 px-2.5 py-1.5 text-center text-[0.66rem] font-semibold text-cyan-50/78 shadow-xl shadow-black/20 backdrop-blur md:hidden">
+                    <span className="min-w-0 truncate text-white">
+                        {activePointName || points[0]?.name}
+                    </span>
+                    <span aria-hidden="true" className="text-cyan-100/32">
+                        {'|'}
+                    </span>
+                    <span className="shrink-0 text-amber-100">
+                        {t(`cruise.review.map.phaseShort.${currentPhase}`)}
+                    </span>
+                    <span aria-hidden="true" className="text-cyan-100/32">
+                        {'|'}
+                    </span>
+                    <span className="min-w-0 truncate font-mono text-cyan-50/62">
+                        {formatSimulationDate(
+                            tripStart,
+                            simulationProgress * totalSeconds,
+                        )}
+                    </span>
+                </div>
+                <div className="pointer-events-none absolute inset-x-3 top-3 hidden flex-wrap items-start justify-between gap-3 md:flex">
                     <div className="rounded border border-cyan-100/16 bg-slate-950/72 px-3 py-2 shadow-xl shadow-black/20 backdrop-blur">
                         <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-cyan-200/78 uppercase">
                             {t('cruise.review.map.simulationLabel')}
