@@ -13,10 +13,7 @@ interface AppLayoutProps {
     hideFooterLinks?: boolean;
     /** Show compact contact/CV actions in the primary nav. */
     showNavActions?: boolean;
-    /**
-     * Optional page-specific title appended to the site name in <title>.
-     * Example: pageTitle="Playground" -> "<title>Playground :.: Brilliant</title>"
-     */
+    /** Optional page-specific title for the browser title. */
     pageTitle?: string;
 }
 
@@ -52,12 +49,10 @@ export function AppLayout({
     showNavActions = false,
 }: AppLayoutProps) {
     const { t } = useTranslation();
-    const siteName = t('common.siteName');
-    const fullTitle = pageTitle ? `${pageTitle} :.: ${siteName}` : siteName;
 
     return (
         <>
-            <Head title={fullTitle} />
+            <Head title={pageTitle} />
 
             <a
                 href="#main"

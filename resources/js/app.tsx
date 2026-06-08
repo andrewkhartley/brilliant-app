@@ -1,7 +1,7 @@
 import { createInertiaApp } from '@inertiajs/react';
 
 const appName =
-    import.meta.env.VITE_APP_NAME || 'Andrew Hartley :.: Brilliant Application';
+    import.meta.env.VITE_APP_NAME || "Andrew's App-App";
 
 declare global {
     interface Window {
@@ -27,7 +27,7 @@ if (import.meta.env.DEV && !import.meta.env.SSR) {
 }
 
 void createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => (title ? `${title} :.: ${appName}` : appName),
     progress: {
         color: '#4B5563',
     },

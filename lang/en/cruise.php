@@ -123,7 +123,7 @@ return [
             'heading' => 'Trip summary',
             'eyebrow' => 'Sol Cruise Packet',
             'routeLabel' => 'Route',
-            'ticketHeading' => 'Your Itinerary is Ready!',
+            'ticketHeading' => 'Itinerary',
             'ticketBody' => 'Take this luxury cruiser around our solar system. Once we are no longer bound to the limits of chemical rockets and can provide consistent thrust, you will be amazed at how quickly we traverse our solar system. We will measure trips in days and weeks: not years.',
             'departureLabel' => 'Departure',
             'arrivalLabel' => 'Arrival',

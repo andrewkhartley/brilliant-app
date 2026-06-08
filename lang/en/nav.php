@@ -13,7 +13,7 @@ return [
     'playground' => 'Playground',
     'projects' => 'Projects',
     'cv' => 'CV',
-    'talk' => 'Let\'s talk',
+    'talk' => 'Let\'s Talk!',
     'openMenu' => 'Open navigation menu',
     'closeMenu' => 'Close navigation menu',
     'menuLabel' => 'Navigation menu',

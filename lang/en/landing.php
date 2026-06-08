@@ -9,7 +9,7 @@
  */
 
 return [
-    'pageTitle' => 'Andrew Hartley',
+    'pageTitle' => 'Curiosity in Motion',
     'pageDescription' => 'Multi-plane scenes, interactive equations, and the craft behind the application.',
 
     'hero' => [
@@ -168,7 +168,7 @@ return [
 
     'contactFooter' => [
         'kicker' => 'Next conversation',
-        'heading' => 'Let\'s talk.',
+        'heading' => 'Let\'s Talk!',
         'pitch' => 'Inspiration changes what people feel capable of learning, building, and becoming. Brilliant already turns curiosity into capability. Let\'s build the next experiences that make that transformation feel possible, and the community of visionaries who carry it forward.',
         'links' => [
             'email' => 'Email',
