@@ -305,63 +305,76 @@ function SortableItem({
         <li
             ref={setNodeRef}
             style={style}
-            className="flex items-center gap-3 rounded border border-cyan-100/20 bg-white/8 px-3 py-2 shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+            className="rounded border border-cyan-100/20 bg-white/8 p-3 shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
             {...attributes}
             {...listeners}
         >
-            <span
-                aria-hidden="true"
-                className="flex size-9 shrink-0 items-center justify-center rounded bg-cyan-200 text-sm font-bold text-slate-950"
-            >
-                {t('cruise.form.destinations.positionLabel', {
-                    position: String(position),
-                })}
-            </span>
-            <span className="flex size-10 shrink-0 items-center justify-center rounded bg-slate-950/80 ring-1 ring-cyan-100/15">
-                <DestinationImage
-                    code={destination.code}
-                    className="size-8 object-contain"
-                />
-            </span>
-            <span className="flex-1 font-semibold text-white">
-                {destination.name}
-            </span>
-            <label htmlFor={layoverInputId} className="text-xs text-slate-400">
-                {t('cruise.form.destinations.layoverLabel', {
-                    name: destination.name,
-                })}
-            </label>
-            <input
-                id={layoverInputId}
-                type="number"
-                inputMode="numeric"
-                min={MIN_LAYOVER_DAYS}
-                max={MAX_LAYOVER_DAYS}
-                step={1}
-                value={slot.layoverDays}
-                onChange={handleInputChange}
-                onPointerDown={(event) => event.stopPropagation()}
-                onKeyDown={(event) => event.stopPropagation()}
-                aria-label={t(
-                    'cruise.form.destinations.layoverInputAriaLabel',
-                    { name: destination.name },
-                )}
-                className="w-16 rounded border border-cyan-100/25 bg-slate-950/80 px-2 py-1 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
-            />
-            <span aria-hidden="true" className="text-xs text-slate-400">
-                {t('cruise.form.destinations.layoverUnitLabel')}
-            </span>
-            <button
-                type="button"
-                onClick={onRemove}
-                onPointerDown={(event) => event.stopPropagation()}
-                aria-label={t('cruise.form.destinations.removeAriaLabel', {
-                    name: destination.name,
-                })}
-                className="cursor-pointer rounded px-2 py-1 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
-            >
-                {t('cruise.form.destinations.removeLabel')}
-            </button>
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                <span
+                    aria-hidden="true"
+                    className="flex size-9 shrink-0 items-center justify-center rounded bg-cyan-200 text-sm font-bold text-slate-950"
+                >
+                    {t('cruise.form.destinations.positionLabel', {
+                        position: String(position),
+                    })}
+                </span>
+                <span className="hidden size-10 shrink-0 items-center justify-center rounded bg-slate-950/80 ring-1 ring-cyan-100/15 sm:flex">
+                    <DestinationImage
+                        code={destination.code}
+                        className="size-8 object-contain"
+                    />
+                </span>
+                <span className="min-w-0 truncate font-semibold text-white sm:flex-1">
+                    {destination.name}
+                </span>
+                <div className="ms-auto flex min-w-0 shrink-0 items-center gap-2">
+                    <label
+                        htmlFor={layoverInputId}
+                        className="sr-only"
+                    >
+                        {t('cruise.form.destinations.layoverLabel', {
+                            name: destination.name,
+                        })}
+                    </label>
+                    <input
+                        id={layoverInputId}
+                        type="number"
+                        inputMode="numeric"
+                        min={MIN_LAYOVER_DAYS}
+                        max={MAX_LAYOVER_DAYS}
+                        step={1}
+                        value={slot.layoverDays}
+                        onChange={handleInputChange}
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => event.stopPropagation()}
+                        aria-label={t(
+                            'cruise.form.destinations.layoverInputAriaLabel',
+                            { name: destination.name },
+                        )}
+                        className="w-16 rounded border border-cyan-100/25 bg-slate-950/80 px-2 py-1 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                    />
+                    <span aria-hidden="true" className="text-xs text-slate-400">
+                        {t('cruise.form.destinations.layoverUnitLabel')}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={onRemove}
+                        onPointerDown={(event) => event.stopPropagation()}
+                        aria-label={t(
+                            'cruise.form.destinations.removeAriaLabel',
+                            {
+                                name: destination.name,
+                            },
+                        )}
+                        className="grid size-8 shrink-0 cursor-pointer place-items-center rounded text-sm text-slate-300 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                    >
+                        <i aria-hidden="true" className="fa-solid fa-xmark" />
+                        <span className="sr-only">
+                            {t('cruise.form.destinations.removeLabel')}
+                        </span>
+                    </button>
+                </div>
+            </div>
         </li>
     );
 }

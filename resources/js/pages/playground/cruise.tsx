@@ -235,7 +235,6 @@ export default function CruisePage({
                 )?.name,
         )
         .filter((name): name is string => name !== undefined);
-    const selectedRoute = selectedDestinationNames.join(' -> ');
     const storyLabels = useMemo(() => buildStoryStageLabels(t), [t]);
     const storyScenes = useMemo(
         () =>
@@ -401,7 +400,7 @@ export default function CruisePage({
                         className="space-y-5"
                     >
                         <div className="grid gap-5 lg:grid-cols-[minmax(220px,0.618fr)_minmax(0,1fr)]">
-                            <div className="rounded border border-cyan-100/15 bg-slate-900/80 p-4 text-slate-100">
+                            <div className="min-w-0 rounded border border-cyan-100/15 bg-slate-900/80 p-4 text-slate-100">
                                 <p className="text-xs font-bold tracking-[0.18em] text-cyan-200 uppercase">
                                     {t('cruise.form.planner.kicker')}
                                 </p>
@@ -477,13 +476,38 @@ export default function CruisePage({
                                                     'cruise.form.planner.routeLabel',
                                                 )}
                                             </dt>
-                                            <dd className="font-semibold text-white">
+                                            <dd className="min-w-0 font-semibold text-white">
                                                 {selectedDestinationNames.length >
-                                                0
-                                                    ? selectedRoute
-                                                    : t(
-                                                          'cruise.form.planner.noRouteSelected',
-                                                      )}
+                                                0 ? (
+                                                    <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                                                        {selectedDestinationNames.map(
+                                                            (name, index) => (
+                                                                <span
+                                                                    key={`${name}-${index}`}
+                                                                    className="inline-flex min-w-0 items-center gap-2"
+                                                                >
+                                                                    <span className="max-w-full break-words">
+                                                                        {name}
+                                                                    </span>
+                                                                    {index <
+                                                                        selectedDestinationNames.length -
+                                                                            1 && (
+                                                                        <span
+                                                                            aria-hidden="true"
+                                                                            className="shrink-0 text-cyan-100/42"
+                                                                        >
+                                                                            {'->'}
+                                                                        </span>
+                                                                    )}
+                                                                </span>
+                                                            ),
+                                                        )}
+                                                    </span>
+                                                ) : (
+                                                    t(
+                                                        'cruise.form.planner.noRouteSelected',
+                                                    )
+                                                )}
                                             </dd>
                                         </div>
                                     </dl>
