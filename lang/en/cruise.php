@@ -14,38 +14,38 @@
 
 return [
     'title' => 'Plan a Sol Cruise',
-    'tagline' => 'Build a trip across planets. NASA Horizons computes positions; the form solves the rest.',
-    'lead' => "Pick your destinations and a departure date. We'll calculate the trip.",
+    'tagline' => 'Build a trip across planets. Use NASA\'s Horizons API or calculate from the ephemeris.',
+    'lead' => "Pick your destinations and a departure date. We'll connect the dots.",
     'scaffoldNote' => 'Scaffolded with :count destinations loaded from the database.',
 
     'storyIntro' => [
         'eyebrow' => 'A route through moving worlds',
         'title' => 'Planning with Physics',
-        'bodyA' => 'A Sol Cruise should feel like a vacation planner, and one day, it might! This guide will make sure there\'s always something at your desetination..',
-        'bodyB' => 'So here, with everything on the move, an itinerary becomes a living model of timing, distance, acceleration, and tradeoffs.',
-        'bodyC' => 'Each stop adds a leg, a layover, and a new set of positions: the route is a sequence of moving targets. We will turn a travel plan into distance, duration, top speed, and a wee bit of time dilation.',
+        'bodyA' => 'A Sol Cruise should feel like a vacation planner, and one day, it might! This guide will make sure you end up where the destination is meant to be.',
+        'bodyB' => 'So here, with everything on the move, an itinerary becomes a model of timing, distance, and acceleration. Each stop adds a leg and a layover along a route of moving targets. We will turn a travel plan into distance, duration, top speed, and a wee bit of time dilation.',
+        'bodyC' => '',
         'callout' => [
-            'eyebrow' => 'Live data path',
-            'title' => 'This version shows the API at work.',
+            'eyebrow' => 'Coordinate paths',
+            'title' => 'Two ways to ask where the worlds are.',
             'steps' => [
-                'date' => 'Pick a departure date and route.',
-                'horizons' => 'The server asks NASA Horizons where each world is in space.',
-                'itinerary' => 'Those positions become leg estimates for distance, duration, speed, and dilation.',
+                'date' => 'Pick a departure date, a route, and a data source.',
+                'horizons' => 'NASA Horizons can provide authoritative vectors. The built-in ephemeris uses the same basic idea locally, so the map does not have to stack API queries.',
+                'itinerary' => 'Either path turns coordinates into leg estimates for distance, duration, speed, and dilation.',
             ],
-            'body' => 'A production version could use an ephemeris-driven cache so the experience feels faster and can support richer route experiments, saved comparisons, and community challenges. This version keeps the live API path visible on purpose, because part of the point is showing how real data can become a playful learning interface.',
+            'body' => 'NASA\'s coordinates come from ephemeris methods too, just with deeper observations, better models, and more powerful systems behind them. Keeping both paths visible shows what I like about learning with publicly available information and APIs: real data can become something playful, testable, and easy to explore.',
         ],
     ],
 
     'stage' => [
-        'openButton' => 'Open the travel desk',
+        'openButton' => 'Open the Travel Desk',
         'scenes' => [
             'desk' => [
-                'speaker' => 'Travel agent',
-                'dialogue' => 'Welcome to the Sol Cruise desk. Most vacations start with a destination. Ours start with a small complication: the destinations are always on the move.',
+                'speaker' => 'Travel Agent',
+                'dialogue' => 'Welcome to the Sol Cruise desk. Most vacations start with a destination. We, however, have a small complication: the destinations are always on the move.',
             ],
             'motion' => [
                 'speaker' => 'Mateo',
-                'dialogue' => 'Mateo Silva, route concierge. The trip is to worlds in motion, and good timing can be the difference between an elegant transfer and an expensive scenic detour.',
+                'dialogue' => 'Mateo Silva, route concierge. The trip is to worlds in motion, and good timing can be the difference between an elegant transfer and an expensive scenic detour. For this, we are assuming access to propulsion beyond chemical rockets.',
             ],
             'manifest' => [
                 'speaker' => 'Mateo',
@@ -121,10 +121,10 @@ return [
         'backToForm' => 'Plan a different trip',
         'summary' => [
             'heading' => 'Trip summary',
-            'eyebrow' => 'Sol Cruise packet',
+            'eyebrow' => 'Sol Cruise Packet',
             'routeLabel' => 'Route',
-            'ticketHeading' => 'Connect the Solar System.',
-            'ticketBody' => 'Maybe this is a luxury cruiser taking passengers around our solar system. Once we are no longer bound to the limits of chemical rockets and can provide consistent thrust, you will be amazed at how quickly we traverse our solar system. We will measure trips in days and weeks: not years.',
+            'ticketHeading' => 'Your Itinerary is Ready!',
+            'ticketBody' => 'Take this luxury cruiser around our solar system. Once we are no longer bound to the limits of chemical rockets and can provide consistent thrust, you will be amazed at how quickly we traverse our solar system. We will measure trips in days and weeks: not years.',
             'departureLabel' => 'Departure',
             'arrivalLabel' => 'Arrival',
             'durationLabel' => 'Total duration',
@@ -137,12 +137,47 @@ return [
             'orbitDetailsLabel' => 'Orbit profile',
             'distanceLabel' => 'Distance',
             'durationValueLabel' => 'Duration',
-            'dilationNoteTitle' => 'The one-way stream',
-            'dilationNoteBody' => 'Time is a one-way stream that is impossible to overcome fully. During this itinerary, the traveler experiences :seconds fewer seconds than clocks back home: roughly :minutes minutes younger by arrival.',
+            'dilationNoteTitle' => 'A Younger You!',
+            'dilationNoteBody' => 'Time is a one-way stream that is impossible to overcome, but it can squeeze and stretch. During this trip, the traveler experiences :seconds fewer seconds than clocks back home: roughly :minutes minutes younger by arrival than if you remained on Earth.',
         ],
         'itinerary' => [
             'heading' => 'Your trip details',
             'label' => 'Trip itinerary, leg by leg',
+            'tabsLabel' => 'Choose a trip leg',
+            'tabLabel' => 'Leg :number',
+            'activeLeg' => 'Leg :current of :total',
+            'previous' => 'Previous leg',
+            'next' => 'Next leg',
+        ],
+        'map' => [
+            'eyebrow' => 'Route map',
+            'title' => 'Visualize Your Trip',
+            'body' => 'Want to see where you are going? Move this map around and see where your trip will take you.',
+            'ariaLabel' => 'zmap of the selected Sol Cruise route',
+            'simulationLabel' => 'Active waypoint',
+            'interactionHint' => 'Drag to rotate the route plane. Scroll to zoom. Planetary orbits stay visible even when they are not part of this itinerary for perspective..',
+            'controls' => [
+                'pause' => 'Pause',
+                'play' => 'Play',
+                'speed' => ':speed',
+                'speedLabel' => 'Simulation speed',
+                'timeline' => 'Trip timeline',
+            ],
+            'phase' => [
+                'acceleration' => 'Acceleration burn',
+                'cruise' => 'Cruise segment',
+                'deceleration' => 'Deceleration burn',
+                'layover' => 'Layover / orbit',
+            ],
+            'phaseShort' => [
+                'acceleration' => 'Accel',
+                'cruise' => 'Cruise',
+                'deceleration' => 'Decel',
+            ],
+            'source' => [
+                'horizons' => 'Source: live NASA Horizons vectors.',
+                'ephemeris' => 'Source: coded approximate ephemeris for local route mapping and expanded destinations.',
+            ],
         ],
         'leg' => [
             'heading' => 'Leg :number :.: :departure to :arrival',
@@ -181,7 +216,7 @@ return [
         ],
         'horizonsError' => [
             'heading' => 'Out of contact',
-            'body' => "NASA's Horizons service didn't answer in time. The trip-builder needs live planetary positions to plot your route — the planets often answer on the second knock.",
+            'body' => "NASA's Horizons service didn't answer in time. The trip-builder needs live planetary positions to plot your route with this method. Try again in a few minutes or switch to the ephemeris model.",
             'retry' => 'Try again',
             'iconAriaLabel' => 'A planet drifting just out of reach',
             'attemptedHeading' => 'The trip you picked',
@@ -204,7 +239,7 @@ return [
             'noDateSelected' => 'Not selected yet',
             'noRouteSelected' => 'No destinations yet',
             'datePanelHeading' => 'Set your launch window',
-            'datePanelBody' => 'Choose the date first so Horizons can anchor the planetary positions before we assemble the route.',
+            'datePanelBody' => 'Choose the date first so Horizons can anchor the planetary positions and assemble an accurate trip.',
             'continueToDestinations' => 'Choose destinations',
             'destinationsEyebrow' => 'Route assembly',
             'destinationsPanelHeading' => 'Choose your Sol Cruise stops',
@@ -219,9 +254,21 @@ return [
         'submitDisabledHint' => 'Pick at least one destination and a departure date to plan a trip.',
         'plottingAriaLabel' => 'Plotting your trip :.: please wait',
 
+        'dataSource' => [
+            'label' => 'Data source',
+            'horizons' => [
+                'title' => 'NASA Horizons',
+                'body' => 'Use live vector data from NASA for the classic planet route.',
+            ],
+            'ephemeris' => [
+                'title' => 'Ephemeris-Driven Map',
+                'body' => 'Use the built-in orbit model for local map generation without stacking NASA requests.',
+            ],
+        ],
+
         'destinations' => [
             'label' => 'Destinations',
-            'hint' => 'Order matters. Drag to reorder, or use the keyboard: Tab to focus, Space to grab, ↑/↓ to move, Space to drop. Pick the same planet twice if you want two layovers there.',
+            'hint' => 'Drag to reorder, or use the keyboard: Tab to focus, Space to grab, ↑/↓ to move, Space to drop. Pick the same planet twice if you want two layovers there.',
             'emptyState' => 'No destinations picked yet. Add one from the list below.',
             'selectedAriaLabel' => 'Selected destinations, in order',
             'availableLabel' => 'Available destinations',

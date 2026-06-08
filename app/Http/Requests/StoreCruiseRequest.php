@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Experiences\Cruise\Destination;
+use App\Services\Experiences\Cruise\DestinationService;
+use App\Services\Experiences\Cruise\EphemerisCatalog;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -41,16 +44,20 @@ class StoreCruiseRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
+            'dataSource' => [
+                'required',
+                'string',
+                'in:'.DestinationService::DATA_SOURCE_HORIZONS.','.DestinationService::DATA_SOURCE_EPHEMERIS,
+            ],
             'destinations' => ['required', 'array', 'min:1', 'max:8'],
             'destinations.*' => [
                 'required',
                 'string',
-                'exists:solar_system_facts,destination_code',
             ],
             'tripStart' => ['required', 'date'],
             'layovers' => ['required', 'array'],
@@ -86,6 +93,22 @@ class StoreCruiseRequest extends FormRequest
                     'layovers',
                     'Layover counts must match destination count.',
                 );
+            }
+
+            $dataSource = $this->input('dataSource', DestinationService::DATA_SOURCE_HORIZONS);
+            $validCodes = $dataSource === DestinationService::DATA_SOURCE_EPHEMERIS
+                ? collect(EphemerisCatalog::destinations())->pluck('code')
+                : Destination::getCachedFacts()->pluck('destination_code');
+
+            foreach ($destinations as $destination) {
+                if (! is_string($destination) || ! $validCodes->contains($destination)) {
+                    $validator->errors()->add(
+                        'destinations',
+                        'One or more destinations is not recognized.',
+                    );
+
+                    return;
+                }
             }
         });
     }

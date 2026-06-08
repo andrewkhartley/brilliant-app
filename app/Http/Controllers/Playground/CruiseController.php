@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Playground;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCruiseRequest;
 use App\Models\Experiences\Cruise\Destination;
+use App\Services\Experiences\Cruise\ApproximateEphemerisService;
 use App\Services\Experiences\Cruise\DestinationService;
+use App\Services\Experiences\Cruise\EphemerisCatalog;
 use App\Services\Experiences\Cruise\TripBuilderService;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\RedirectResponse;
@@ -32,6 +34,17 @@ use Inertia\Response;
  */
 class CruiseController extends Controller
 {
+    private const array MAP_PLANET_CODES = [
+        'mer',
+        'ven',
+        'ear',
+        'mar',
+        'jup',
+        'sat',
+        'ura',
+        'nep',
+    ];
+
     /**
      * Default layover at each stop, in days. Matches the initial value
      * the lifted Undaunted Cruise form set per destination, and serves
@@ -64,6 +77,7 @@ class CruiseController extends Controller
 
         return Inertia::render('playground/cruise', [
             'destinations' => $destinations,
+            'ephemerisDestinations' => EphemerisCatalog::destinations(),
             'cruiseReady' => $cruiseReady,
             // `preparedCruise` is gated on `cruiseReady` so the form only
             // pre-fills on the just-submitted "trip is ready" landing.
@@ -118,6 +132,7 @@ class CruiseController extends Controller
      */
     public function review(
         DestinationService $destinationService,
+        ApproximateEphemerisService $ephemerisService,
         TripBuilderService $tripBuilderService,
     ): Response|RedirectResponse {
         $cruise = session('cruise');
@@ -132,20 +147,25 @@ class CruiseController extends Controller
 
         session()->keep(['cruise']);
 
+        $dataSource = $cruise['dataSource'] ?? DestinationService::DATA_SOURCE_HORIZONS;
+
         $destinationsInput = $this->buildDestinationsInput(
             $cruise['destinations'],
             $cruise['layovers'],
+            $dataSource,
         );
         $tripStartTimestamp = strtotime($cruise['tripStart']);
 
         $tripData = [
             'tripDate' => $cruise['tripStart'],
+            'dataSource' => $dataSource,
         ];
 
         try {
             $destinationsData = $destinationService->prepareDestinationsData(
                 $destinationsInput,
                 $tripStartTimestamp,
+                $dataSource,
             );
 
             $computedTrip = $tripBuilderService->tripBuild($tripData, $destinationsData);
@@ -164,9 +184,8 @@ class CruiseController extends Controller
             // the names directly from the cached destination catalog here.
             // Codes that don't resolve fall back to the raw code, matching
             // `buildDestinationsInput()`'s defensive behavior.
-            $catalog = Destination::getCachedFacts()->keyBy('destination_code');
             $attemptedDestinationNames = collect($cruise['destinations'])
-                ->map(fn (string $code): string => $catalog->get($code)?->destination ?? $code)
+                ->map(fn (string $code): string => $this->destinationName($code, $dataSource))
                 ->values()
                 ->all();
 
@@ -181,7 +200,11 @@ class CruiseController extends Controller
 
         return Inertia::render('playground/cruise-review', [
             'cruise' => $cruise,
-            'trip' => $this->presentTrip($computedTrip),
+            'trip' => $this->presentTrip(
+                $computedTrip,
+                $tripStartTimestamp,
+                $ephemerisService,
+            ),
             'horizonsError' => false,
             'attemptedDestinationNames' => [],
             'translations' => translations(['cruise', 'storyStage']),
@@ -212,19 +235,36 @@ class CruiseController extends Controller
      * @param  array<int, int>  $layovers
      * @return array<int, array{destination: string, name: string, dur: int, durType: string}>
      */
-    private function buildDestinationsInput(array $destinationCodes, array $layovers): array
+    private function buildDestinationsInput(
+        array $destinationCodes,
+        array $layovers,
+        string $dataSource,
+    ): array
     {
         $catalog = Destination::getCachedFacts()->keyBy('destination_code');
 
         return collect($destinationCodes)
             ->map(fn (string $code, int $index): array => [
                 'destination' => $code,
-                'name' => $catalog->get($code)?->destination ?? $code,
+                'name' => $dataSource === DestinationService::DATA_SOURCE_EPHEMERIS
+                    ? EphemerisCatalog::name($code)
+                    : ($catalog->get($code)?->destination ?? $code),
                 'dur' => (int) ($layovers[$index] ?? self::DEFAULT_LAYOVER_DAYS),
                 'durType' => 'day',
             ])
             ->values()
             ->all();
+    }
+
+    private function destinationName(string $code, string $dataSource): string
+    {
+        if ($dataSource === DestinationService::DATA_SOURCE_EPHEMERIS) {
+            return EphemerisCatalog::name($code);
+        }
+
+        $catalog = Destination::getCachedFacts()->keyBy('destination_code');
+
+        return $catalog->get($code)?->destination ?? $code;
     }
 
     /**
@@ -261,7 +301,11 @@ class CruiseController extends Controller
      * @param  array<string, mixed>  $computedTrip
      * @return array<string, mixed>
      */
-    private function presentTrip(array $computedTrip): array
+    private function presentTrip(
+        array $computedTrip,
+        int $tripStartTimestamp,
+        ApproximateEphemerisService $ephemerisService,
+    ): array
     {
         $legs = collect($computedTrip['legData'] ?? [])
             ->values()
@@ -279,13 +323,18 @@ class CruiseController extends Controller
                 'durationFormatted' => strip_tags((string) ($leg['finalLegDetails']['legDurationFormatted'] ?? '')),
                 'maxSpeedFormatted' => strip_tags((string) ($leg['finalLegDetails']['legMaxSpeedFormatted'] ?? '0')),
                 'burnDistanceFormatted' => strip_tags((string) ($leg['finalLegDetails']['burnDistanceFormatted'] ?? '0')),
+                'accelerationDurationSeconds' => (float) ($leg['finalLegDetails']['accBurnDuration'] ?? 0),
                 'burnDurationFormatted' => strip_tags((string) ($leg['finalLegDetails']['burnDurationFormatted'] ?? '')),
+                'cruiseDurationSeconds' => (float) ($leg['finalLegDetails']['cruiseDuration'] ?? 0),
                 'cruiseDistanceKm' => $leg['finalLegDetails']['cruiseDistance'] ?? 0,
                 'cruiseDistanceFormatted' => strip_tags((string) ($leg['finalLegDetails']['cruiseDistanceFormatted'] ?? '0')),
                 'cruiseDurationFormatted' => strip_tags((string) ($leg['finalLegDetails']['cruiseDurationFormatted'] ?? '')),
                 'flipDistanceFormatted' => strip_tags((string) ($leg['finalLegDetails']['flipDistanceFormatted'] ?? '0')),
+                'flipDurationSeconds' => (float) ($leg['finalLegDetails']['flipDuration'] ?? 0),
                 'flipDurationFormatted' => strip_tags((string) ($leg['finalLegDetails']['flipDurationFormatted'] ?? '')),
+                'decelerationDurationSeconds' => (float) ($leg['finalLegDetails']['decBurnDuration'] ?? 0),
                 'dilationFormatted' => strip_tags((string) ($leg['finalLegDetails']['legDilationFormatted'] ?? '')),
+                'layoverDurationSeconds' => (float) ($leg['layoverDetails']['duration'] ?? 0),
                 'layoverDistanceFormatted' => strip_tags((string) ($leg['layoverDetails']['distanceFormatted'] ?? '0')),
                 'layoverDurationFormatted' => strip_tags((string) ($leg['layoverDetails']['durationFormatted'] ?? '')),
                 'layoverQuantityFormatted' => strip_tags((string) ($leg['layoverDetails']['quantityFormatted'] ?? '0')),
@@ -297,6 +346,7 @@ class CruiseController extends Controller
             ->all();
 
         $totals = $computedTrip['total'] ?? [];
+        $mapBodyCodes = $this->mapBodyCodes($legs);
 
         return [
             'departureTime' => $computedTrip['departureTime'] === null
@@ -323,8 +373,171 @@ class CruiseController extends Controller
             'totalDilationFormatted' => isset($totals['totalDilation'])
                 ? strip_tags(secondsToDuration((int) round((float) $totals['totalDilation'])))
                 : null,
+            'mapPlanetPositions' => $this->presentMapPlanetPositions(
+                $mapBodyCodes,
+                $tripStartTimestamp,
+                $ephemerisService,
+            ),
+            'mapOrbitPaths' => $this->presentMapOrbitPaths(
+                $mapBodyCodes,
+                $tripStartTimestamp,
+                $ephemerisService,
+            ),
             'legs' => $legs,
         ];
+    }
+
+    /**
+     * Seed the client map with a real start angle for every visible
+     * planet. The itinerary legs still use the selected source's
+     * solved departure/arrival coordinates; this only prevents
+     * non-selected planets from falling back to placeholder phases.
+     *
+     * @param  array<int, string>  $codes
+     * @return array<int, array{code: string, elapsedDays: int, name: string, x: int, y: int, z: int, radiusKm: int}>
+     */
+    private function presentMapPlanetPositions(
+        array $codes,
+        int $tripStartTimestamp,
+        ApproximateEphemerisService $ephemerisService,
+    ): array {
+        return collect($codes)
+            ->map(function (string $code) use ($ephemerisService, $tripStartTimestamp): array {
+                $coordinates = $ephemerisService->positionAt(
+                    $code,
+                    $tripStartTimestamp,
+                );
+
+                return $this->presentMapPoint(
+                    elapsedDays: 0,
+                    coordinates: $coordinates,
+                    code: $code,
+                    name: $this->destinationName(
+                        $code,
+                        DestinationService::DATA_SOURCE_EPHEMERIS,
+                    ),
+                );
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<int, string>  $codes
+     * @return array<int, array{code: string, name: string, periodDays: float, points: array<int, array{elapsedDays: float, x: int, y: int, z: int, radiusKm: int}>}>
+     */
+    private function presentMapOrbitPaths(
+        array $codes,
+        int $tripStartTimestamp,
+        ApproximateEphemerisService $ephemerisService,
+    ): array {
+        return collect($codes)
+            ->map(function (string $code) use ($ephemerisService, $tripStartTimestamp): ?array {
+                $periodDays = $this->orbitPeriodDays($code);
+
+                if ($periodDays === null || $periodDays <= 0) {
+                    return null;
+                }
+
+                $sampleCount = 192;
+                $points = [];
+
+                for ($index = 0; $index <= $sampleCount; $index++) {
+                    $elapsedDays = ($periodDays * $index) / $sampleCount;
+                    $coordinates = $ephemerisService->positionAt(
+                        $code,
+                        $tripStartTimestamp + (int) round($elapsedDays * 86400),
+                    );
+
+                    $points[] = $this->presentMapPoint(
+                        elapsedDays: $elapsedDays,
+                        coordinates: $coordinates,
+                    );
+                }
+
+                return [
+                    'code' => $code,
+                    'name' => $this->destinationName(
+                        $code,
+                        DestinationService::DATA_SOURCE_EPHEMERIS,
+                    ),
+                    'periodDays' => $periodDays,
+                    'points' => $points,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $legs
+     * @return array<int, string>
+     */
+    private function mapBodyCodes(array $legs): array
+    {
+        return collect(self::MAP_PLANET_CODES)
+            ->merge(
+                collect($legs)->flatMap(
+                    fn (array $leg): array => [
+                        $leg['departure'],
+                        $leg['arrival'],
+                    ],
+                ),
+            )
+            ->filter(fn (mixed $code): bool => is_string($code) && $code !== 'sun')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function orbitPeriodDays(string $code): ?float
+    {
+        $localBody = EphemerisCatalog::body($code);
+
+        if ($localBody !== null) {
+            return isset($localBody['parent'])
+                ? null
+                : (float) $localBody['periodDays'];
+        }
+
+        $destination = Destination::getCachedFacts()->firstWhere('destination_code', $code);
+        $periodDays = $destination === null ? 0 : (float) $destination->solar_orbit;
+
+        return $periodDays > 0 ? $periodDays : null;
+    }
+
+    /**
+     * @param  array{x?: mixed, y?: mixed, z?: mixed}  $coordinates
+     * @return array{elapsedDays: float, x: int, y: int, z: int, radiusKm: int}
+     */
+    private function presentMapPoint(
+        float $elapsedDays,
+        array $coordinates,
+        ?string $code = null,
+        ?string $name = null,
+    ): array {
+        $x = (float) ($coordinates['x'] ?? 0);
+        $y = (float) ($coordinates['y'] ?? 0);
+        $z = (float) ($coordinates['z'] ?? 0);
+
+        $point = [
+            'elapsedDays' => $elapsedDays,
+            'x' => (int) round($x),
+            'y' => (int) round($y),
+            'z' => (int) round($z),
+            'radiusKm' => (int) round(sqrt(($x ** 2) + ($y ** 2) + ($z ** 2))),
+        ];
+
+        if ($code !== null) {
+            $point['code'] = $code;
+        }
+
+        if ($name !== null) {
+            $point['name'] = $name;
+        }
+
+        return $point;
     }
 
     /**

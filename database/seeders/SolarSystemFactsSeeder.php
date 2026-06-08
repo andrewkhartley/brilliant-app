@@ -18,7 +18,7 @@ class SolarSystemFactsSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('solar_system_facts')->insert([
+        $facts = [
             [
                 'destination_code' => 'sun',
                 'destination' => 'The Sun',
@@ -371,6 +371,13 @@ class SolarSystemFactsSeeder extends Seeder
                 'long_peri_corr' => 0,
                 'long_mean_corr' => 0,
             ],
-        ]);
+        ];
+
+        foreach ($facts as $fact) {
+            DB::table('solar_system_facts')->updateOrInsert(
+                ['destination_code' => $fact['destination_code']],
+                $fact,
+            );
+        }
     }
 }

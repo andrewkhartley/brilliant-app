@@ -25,12 +25,14 @@ interface CruisePageProps {
      * trip-build time (T5 wiring).
      */
     destinations: Destination[];
+    ephemerisDestinations: Destination[];
     cruiseReady?: boolean;
     preparedCruise?: CruiseFormPayload | null;
 }
 
 type LaunchState = 'idle' | 'plotting' | 'ready' | 'transitioning';
 type PlannerStep = 'date' | 'destinations';
+type CruiseDataSource = 'horizons' | 'ephemeris';
 
 /**
  * Wire shape we hand Inertia.post — derived from the zod-inferred
@@ -74,6 +76,7 @@ type CruiseFormPayload = Omit<CruiseFormValues, 'tripStart'> & {
  */
 export default function CruisePage({
     destinations,
+    ephemerisDestinations,
     cruiseReady = false,
     preparedCruise = null,
 }: CruisePageProps) {
@@ -103,7 +106,12 @@ export default function CruisePage({
     const [plannerStep, setPlannerStep] = useState<PlannerStep>(() =>
         preparedCruise?.tripStart ? 'destinations' : 'date',
     );
+    const [dataSource, setDataSource] = useState<CruiseDataSource>(
+        preparedCruise?.dataSource ?? 'ephemeris',
+    );
     const [isStoryOpen, setIsStoryOpen] = useState(false);
+    const availableDestinations =
+        dataSource === 'ephemeris' ? ephemerisDestinations : destinations;
 
     // Server-side errors come in via Inertia's shared `errors` prop
     // (Inertia v3 auto-shares them after a 302-with-errors). Merge
@@ -135,6 +143,7 @@ export default function CruisePage({
         }
 
         const parsed = cruiseFormSchema.safeParse({
+            dataSource,
             destinations: selected.map((slot) => slot.code),
             layovers: selected.map((slot) => slot.layoverDays),
             tripStart,
@@ -160,6 +169,7 @@ export default function CruisePage({
         }
 
         const payload: CruiseFormPayload = {
+            dataSource: parsed.data.dataSource,
             destinations: parsed.data.destinations,
             layovers: parsed.data.layovers,
             tripStart: toISODate(parsed.data.tripStart),
@@ -189,6 +199,7 @@ export default function CruisePage({
             'cruise-review-transition',
             JSON.stringify({
                 selected,
+                dataSource,
                 tripStart:
                     tripStart === undefined ? null : toISODate(tripStart),
             }),
@@ -219,7 +230,7 @@ export default function CruisePage({
     const selectedDestinationNames = selected
         .map(
             (slot) =>
-                destinations.find(
+                availableDestinations.find(
                     (destination) => destination.code === slot.code,
                 )?.name,
         )
@@ -251,7 +262,7 @@ export default function CruisePage({
 
             {launchState !== 'idle' && (
                 <CruiseLaunchOverlay
-                    destinations={destinations}
+                    destinations={availableDestinations}
                     selected={selected}
                     tripStart={tripStart}
                     isReady={launchState === 'ready'}
@@ -311,7 +322,9 @@ export default function CruisePage({
                             </h2>
                             <div className="mt-5 max-w-4xl space-y-5 text-base leading-8 text-cyan-50/74">
                                 <p>{t('cruise.storyIntro.bodyB')}</p>
-                                <p>{t('cruise.storyIntro.bodyC')}</p>
+                                {t('cruise.storyIntro.bodyC') && (
+                                    <p>{t('cruise.storyIntro.bodyC')}</p>
+                                )}
                             </div>
                         </div>
 
@@ -328,19 +341,38 @@ export default function CruisePage({
                             </div>
 
                             <ol className="mt-4 grid gap-3 md:grid-cols-3">
-                                {['date', 'horizons', 'itinerary'].map(
-                                    (stepKey, index) => (
+                                {[
+                                    ['date', 'fa-calendar-days'],
+                                    ['horizons', 'fa-satellite-dish'],
+                                    ['itinerary', 'fa-route'],
+                                ].map(
+                                    ([stepKey, icon], index) => (
                                         <li
                                             key={stepKey}
-                                            className="rounded border border-cyan-100/14 bg-cyan-50/6 p-3.5"
+                                            className="relative min-h-42 overflow-hidden rounded border border-cyan-100/14 bg-[linear-gradient(135deg,rgba(8,17,31,0.78),rgba(14,116,144,0.12))] p-4 shadow-[0_18px_45px_rgba(8,17,31,0.22)]"
                                         >
-                                            <span className="text-xs font-bold tracking-[0.18em] text-cyan-200/74 uppercase">
-                                                {String(index + 1).padStart(
-                                                    2,
-                                                    '0',
-                                                )}
+                                            <span
+                                                aria-hidden="true"
+                                                className="pointer-events-none absolute bottom-[-1.35rem] left-0 flex w-1/3 justify-center text-[7rem] leading-none text-cyan-100 opacity-[0.05]"
+                                            >
+                                                <i
+                                                    aria-hidden="true"
+                                                    className={`fa-solid ${icon}`}
+                                                />
                                             </span>
-                                            <p className="mt-2 text-sm leading-6 text-cyan-50/78">
+                                            <div className="relative mt-1 flex items-center gap-3">
+                                                <span className="grid size-10 shrink-0 place-items-center rounded-full border border-cyan-100/24 bg-cyan-100/10 text-sm font-bold text-cyan-100 shadow-inner shadow-cyan-200/10">
+                                                    {String(index + 1).padStart(
+                                                        2,
+                                                        '0',
+                                                    )}
+                                                </span>
+                                                <span
+                                                    aria-hidden="true"
+                                                    className="h-px flex-1 bg-linear-to-r from-cyan-200/44 to-transparent"
+                                                />
+                                            </div>
+                                            <p className="relative mt-5 text-sm leading-6 text-cyan-50/78">
                                                 {t(
                                                     `cruise.storyIntro.callout.steps.${stepKey}`,
                                                 )}
@@ -373,6 +405,24 @@ export default function CruisePage({
                                 <p className="text-xs font-bold tracking-[0.18em] text-cyan-200 uppercase">
                                     {t('cruise.form.planner.kicker')}
                                 </p>
+                                <SourceToggle
+                                    value={dataSource}
+                                    onChange={(nextSource) => {
+                                        setDataSource(nextSource);
+                                        setSelected((current) =>
+                                            current.filter((slot) =>
+                                                (nextSource === 'ephemeris'
+                                                    ? ephemerisDestinations
+                                                    : destinations
+                                                ).some(
+                                                    (destination) =>
+                                                        destination.code ===
+                                                        slot.code,
+                                                ),
+                                            ),
+                                        );
+                                    }}
+                                />
                                 <div className="mt-5 space-y-3">
                                     <StepButton
                                         step="date"
@@ -480,7 +530,9 @@ export default function CruisePage({
 
                                         <div className="rounded border border-cyan-100/15 bg-slate-950/55 p-4 text-slate-100 shadow-inner shadow-black/20">
                                             <DestinationPicker
-                                                destinations={destinations}
+                                                destinations={
+                                                    availableDestinations
+                                                }
                                                 selected={selected}
                                                 onChange={setSelected}
                                             />
@@ -675,6 +727,77 @@ function StepButton({
                 </span>
             </span>
         </button>
+    );
+}
+
+interface SourceToggleProps {
+    value: CruiseDataSource;
+    onChange: (source: CruiseDataSource) => void;
+}
+
+function SourceToggle({ value, onChange }: SourceToggleProps) {
+    const { t } = useTranslation();
+    const options: Array<{ value: CruiseDataSource; icon: string }> = [
+        { value: 'ephemeris', icon: 'fa-map-location-dot' },
+        { value: 'horizons', icon: 'fa-satellite-dish' },
+    ];
+
+    return (
+        <fieldset className="mt-4 rounded border border-cyan-100/15 bg-slate-950/44 p-3">
+            <legend className="px-1 text-xs font-bold tracking-[0.18em] text-cyan-200 uppercase">
+                {t('cruise.form.dataSource.label')}
+            </legend>
+            <div className="mt-2 grid gap-2">
+                {options.map((option) => {
+                    const isActive = value === option.value;
+
+                    return (
+                        <button
+                            key={option.value}
+                            type="button"
+                            aria-pressed={isActive}
+                            onClick={() => onChange(option.value)}
+                            className={`flex cursor-pointer items-start gap-3 rounded border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
+                                isActive
+                                    ? 'border-cyan-200 bg-cyan-200 text-slate-950 shadow-[0_0_22px_rgba(103,232,249,0.22)]'
+                                    : 'border-cyan-100/14 bg-white/5 text-slate-100 hover:bg-white/10'
+                            }`}
+                        >
+                            <span
+                                className={`mt-0.5 grid size-8 shrink-0 place-items-center rounded ${
+                                    isActive
+                                        ? 'bg-slate-950 text-cyan-100'
+                                        : 'bg-cyan-50/10 text-cyan-200'
+                                }`}
+                            >
+                                <i
+                                    aria-hidden="true"
+                                    className={`fa-solid ${option.icon}`}
+                                />
+                            </span>
+                            <span>
+                                <span className="block text-sm font-bold">
+                                    {t(
+                                        `cruise.form.dataSource.${option.value}.title`,
+                                    )}
+                                </span>
+                                <span
+                                    className={`mt-1 block text-xs leading-5 ${
+                                        isActive
+                                            ? 'text-slate-700'
+                                            : 'text-slate-400'
+                                    }`}
+                                >
+                                    {t(
+                                        `cruise.form.dataSource.${option.value}.body`,
+                                    )}
+                                </span>
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+        </fieldset>
     );
 }
 

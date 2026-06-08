@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
@@ -9,6 +9,8 @@ import { CruiseLaunchOverlay } from './cruise/CruiseLaunchOverlay';
 import type { Destination, SelectedSlot } from './cruise/DestinationPicker';
 import { HorizonsError } from './cruise/HorizonsError';
 import { CruisePossibilitiesSection } from './cruise/PossibilitiesSection';
+import { ThreeRouteMap } from './cruise/ThreeRouteMap';
+import type { RouteMapPoint } from './cruise/ThreeRouteMap';
 import type { Coordinates, CruiseInput, Leg, Trip } from './cruise/types';
 
 /**
@@ -74,13 +76,25 @@ export default function CruiseReviewPage({
     attemptedDestinationNames,
 }: CruiseReviewPageProps) {
     const { t } = useTranslation();
-    const [transition] = useState(() =>
-        readCruiseReviewTransition(cruise, trip),
-    );
-    const [showRevealOverlay, setShowRevealOverlay] = useState(
-        transition !== null,
-    );
+    const [transition, setTransition] =
+        useState<CruiseReviewTransition | null>(null);
+    const [showRevealOverlay, setShowRevealOverlay] = useState(false);
     const [isRevealingItinerary, setIsRevealingItinerary] = useState(false);
+
+    useEffect(() => {
+        const nextTransition = readCruiseReviewTransition(cruise, trip);
+
+        if (nextTransition === null) {
+            return;
+        }
+
+        const timeout = window.setTimeout(() => {
+            setTransition(nextTransition);
+            setShowRevealOverlay(true);
+        }, 0);
+
+        return () => window.clearTimeout(timeout);
+    }, [cruise, trip]);
 
     return (
         <AppLayout pageTitle={t('cruise.review.summary.ticketHeading')}>
@@ -102,7 +116,13 @@ export default function CruiseReviewPage({
                     className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.42)_1px,transparent_1px)] [background-size:42px_42px] opacity-35"
                 />
 
-                <div className="relative mx-auto max-w-6xl px-4 py-12 sm:py-16">
+                <div
+                    className={`relative mx-auto max-w-6xl px-4 ${
+                        trip !== null && !horizonsError
+                            ? 'pt-12 pb-0 sm:pt-16'
+                            : 'py-12 sm:py-16'
+                    }`}
+                >
                     <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
                         <div className="max-w-3xl">
                             <div className="inline-flex items-center gap-3 rounded-full border border-cyan-200/30 bg-cyan-50/10 px-4 py-2 text-sm font-semibold text-cyan-100">
@@ -269,23 +289,15 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
                         })}
                     </p>
                 </div>
+                <section
+                    aria-label={t('cruise.review.itinerary.label')}
+                    className="mt-7"
+                >
+                    <ItineraryLegPanel legs={trip.legs} />
+                </section>
             </section>
 
-            <section
-                aria-label={t('cruise.review.itinerary.label')}
-                className="mt-10 space-y-4"
-            >
-                <h2 className="text-xl font-semibold text-white">
-                    {t('cruise.review.itinerary.heading')}
-                </h2>
-                {trip.legs.map((leg, index) => (
-                    <LegRow
-                        key={`${leg.leg}-${leg.departure}-${leg.arrival}`}
-                        leg={leg}
-                        index={index}
-                    />
-                ))}
-            </section>
+            <RouteMap cruise={cruise} trip={trip} />
 
             {/* Hidden helper — keeps the `cruise` prop referenced
                 so tooling doesn't strip it; T6 uses it for the
@@ -293,6 +305,222 @@ function ComputedTripView({ cruise, trip }: ComputedTripViewProps) {
             <span className="sr-only">{cruise.destinations.join(' → ')}</span>
         </>
     );
+}
+
+function RouteMap({ cruise, trip }: ComputedTripViewProps) {
+    const points = buildRouteMapPoints(trip);
+
+    return (
+        <section className="relative left-1/2 mt-14 w-screen -translate-x-1/2 overflow-hidden border-t border-cyan-100/14 bg-[#050c18] py-12">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,rgba(34,211,238,0.13),transparent_30%),radial-gradient(circle_at_18%_82%,rgba(251,191,36,0.08),transparent_28%),linear-gradient(180deg,rgba(5,12,24,0.98),rgba(8,17,31,0.96))]" />
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.24)_1px,transparent_1px)] [background-size:54px_54px] opacity-22"
+            />
+            <div className="pointer-events-none absolute top-0 left-1/2 h-0.75 w-screen -translate-x-1/2 bg-linear-to-r from-transparent via-cyan-200/72 to-transparent" />
+            <div className="relative mx-auto max-w-6xl px-4">
+                <ThreeRouteMap
+                    dataSource={cruise.dataSource}
+                    legs={trip.legs}
+                    orbitPaths={trip.mapOrbitPaths}
+                    planetPositions={trip.mapPlanetPositions}
+                    points={points}
+                    fallback={<SvgRouteMap cruise={cruise} trip={trip} />}
+                    tripStart={cruise.tripStart}
+                />
+            </div>
+        </section>
+    );
+}
+
+function SvgRouteMap({ cruise, trip }: ComputedTripViewProps) {
+    const { t } = useTranslation();
+    const points = buildRouteMapPoints(trip);
+
+    if (points.length < 2) {
+        return null;
+    }
+
+    const maxRadius = Math.max(...points.map((point) => point.radiusKm), 1);
+    const centerX = 320;
+    const centerY = 190;
+    const maxPlotRadius = 145;
+    const plotted = points.map((point) => {
+        const scaledRadius =
+            point.radiusKm === 0
+                ? 0
+                : Math.sqrt(point.radiusKm / maxRadius) * maxPlotRadius;
+        const angle = Math.atan2(point.y, point.x);
+
+        return {
+            ...point,
+            plotX: centerX + Math.cos(angle) * scaledRadius,
+            plotY: centerY + Math.sin(angle) * scaledRadius,
+        };
+    });
+    const path = plotted
+        .map(
+            (point, index) =>
+                `${index === 0 ? 'M' : 'L'} ${point.plotX} ${point.plotY}`,
+        )
+        .join(' ');
+    const orbitRadii = Array.from(
+        new Set(
+            plotted
+                .map((point) =>
+                    Math.round(
+                        Math.hypot(point.plotX - centerX, point.plotY - centerY),
+                    ),
+                )
+                .filter((radius) => radius > 10),
+        ),
+    ).slice(0, 5);
+
+    return (
+        <section className="mt-8 overflow-hidden rounded-lg border border-amber-200/22 bg-[linear-gradient(135deg,rgba(251,191,36,0.1),rgba(8,17,31,0.94)_46%,rgba(34,211,238,0.08))] p-5 text-cyan-50 shadow-[0_22px_70px_rgba(8,17,31,0.38)] md:p-6">
+            <div className="grid gap-6 lg:grid-cols-[0.618fr_1fr] lg:items-center">
+                <div>
+                    <p className="text-xs font-semibold tracking-[0.22em] text-amber-200/82 uppercase">
+                        {t('cruise.review.map.eyebrow')}
+                    </p>
+                    <h2 className="mt-3 text-2xl font-semibold text-white">
+                        {t('cruise.review.map.title')}
+                    </h2>
+                    <p className="mt-3 text-sm leading-7 text-cyan-50/72">
+                        {t('cruise.review.map.body')}
+                    </p>
+                    <p className="mt-4 rounded border border-amber-200/20 bg-amber-200/10 px-3 py-2 text-xs font-semibold text-amber-100">
+                        {t(`cruise.review.map.source.${cruise.dataSource}`)}
+                    </p>
+                </div>
+
+                <div className="rounded border border-cyan-100/14 bg-slate-950/68 p-3">
+                    <svg
+                        viewBox="0 0 640 380"
+                        role="img"
+                        aria-label={t('cruise.review.map.ariaLabel')}
+                        className="h-auto w-full"
+                    >
+                        <defs>
+                            <radialGradient id="cruise-map-sun">
+                                <stop offset="0%" stopColor="#fde68a" />
+                                <stop offset="100%" stopColor="#f97316" />
+                            </radialGradient>
+                            <filter
+                                id="cruise-map-glow"
+                                x="-40%"
+                                y="-40%"
+                                width="180%"
+                                height="180%"
+                            >
+                                <feGaussianBlur stdDeviation="4" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <rect width="640" height="380" rx="10" fill="#07111f" />
+                        <g opacity="0.38">
+                            {orbitRadii.map((radius) => (
+                                <circle
+                                    key={radius}
+                                    cx={centerX}
+                                    cy={centerY}
+                                    r={radius}
+                                    fill="none"
+                                    stroke="#67e8f9"
+                                    strokeDasharray="3 8"
+                                    strokeWidth="1"
+                                />
+                            ))}
+                        </g>
+                        <circle
+                            cx={centerX}
+                            cy={centerY}
+                            r="8"
+                            fill="url(#cruise-map-sun)"
+                            filter="url(#cruise-map-glow)"
+                        />
+                        <path
+                            d={path}
+                            fill="none"
+                            stroke="#fbbf24"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="3"
+                        />
+                        {plotted.map((point, index) => (
+                            <g key={`${point.code}-${index}`}>
+                                <circle
+                                    cx={point.plotX}
+                                    cy={point.plotY}
+                                    r={index === 0 ? 6 : 5}
+                                    fill={index === 0 ? '#67e8f9' : '#f8fafc'}
+                                    stroke="#0f172a"
+                                    strokeWidth="2"
+                                />
+                                <text
+                                    x={point.plotX + 9}
+                                    y={point.plotY - 8}
+                                    fill="#cffafe"
+                                    fontSize="12"
+                                    fontWeight="700"
+                                >
+                                    {point.name}
+                                </text>
+                            </g>
+                        ))}
+                    </svg>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function buildRouteMapPoints(trip: Trip): RouteMapPoint[] {
+    const points: RouteMapPoint[] = [];
+    let elapsedSeconds = 0;
+
+    for (const leg of trip.legs) {
+        if (leg.depCoordinates === null || leg.arrCoordinates === null) {
+            continue;
+        }
+
+        points.push({
+            code: leg.departure,
+            elapsedDays: elapsedSeconds / 86400,
+            name: leg.departureName,
+            x: leg.depCoordinates.x,
+            y: leg.depCoordinates.y,
+            z: leg.depCoordinates.z,
+            radiusKm: Math.hypot(
+                leg.depCoordinates.x,
+                leg.depCoordinates.y,
+                leg.depCoordinates.z,
+            ),
+        });
+
+        elapsedSeconds += leg.durationSeconds;
+
+        points.push({
+            code: leg.arrival,
+            elapsedDays: elapsedSeconds / 86400,
+            name: leg.arrivalName,
+            x: leg.arrCoordinates.x,
+            y: leg.arrCoordinates.y,
+            z: leg.arrCoordinates.z,
+            radiusKm: Math.hypot(
+                leg.arrCoordinates.x,
+                leg.arrCoordinates.y,
+                leg.arrCoordinates.z,
+            ),
+        });
+
+        elapsedSeconds += leg.layoverDurationSeconds;
+    }
+
+    return points;
 }
 
 function buildRouteStops(trip: Trip): string[] {
@@ -374,6 +602,120 @@ interface LegRowProps {
      * are gated behind `@media (prefers-reduced-motion: no-preference)`.
      */
     index: number;
+}
+
+interface ItineraryLegPanelProps {
+    legs: Leg[];
+}
+
+function ItineraryLegPanel({ legs }: ItineraryLegPanelProps) {
+    const { t } = useTranslation();
+    const [selectedLegIndex, setSelectedLegIndex] = useState(0);
+    const selectedIndex = Math.min(
+        selectedLegIndex,
+        Math.max(legs.length - 1, 0),
+    );
+    const selectedLeg = legs[selectedIndex];
+
+    if (selectedLeg === undefined) {
+        return null;
+    }
+
+    const isFirstLeg = selectedIndex === 0;
+    const isLastLeg = selectedIndex === legs.length - 1;
+
+    return (
+        <>
+            <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <h2 className="text-xl font-semibold text-white">
+                        {t('cruise.review.itinerary.heading')}
+                    </h2>
+                    <p className="mt-1 text-sm text-cyan-100/58">
+                        {t('cruise.review.itinerary.activeLeg', {
+                            current: selectedIndex + 1,
+                            total: legs.length,
+                        })}
+                    </p>
+                </div>
+                <div
+                    aria-label={t('cruise.review.itinerary.tabsLabel')}
+                    className="flex max-w-full gap-2 overflow-x-auto pb-1"
+                    role="tablist"
+                >
+                    {legs.map((leg, index) => {
+                        const isSelected = index === selectedIndex;
+
+                        return (
+                            <button
+                                key={`${leg.leg}-${leg.departure}-${leg.arrival}`}
+                                type="button"
+                                role="tab"
+                                aria-selected={isSelected}
+                                aria-controls="selected-cruise-leg-panel"
+                                id={`cruise-leg-tab-${leg.leg}`}
+                                onClick={() => setSelectedLegIndex(index)}
+                                className={`shrink-0 cursor-pointer rounded border px-3 py-2 text-left text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ${
+                                    isSelected
+                                        ? 'border-cyan-200 bg-cyan-200 text-slate-950 shadow-[0_0_22px_rgba(103,232,249,0.22)]'
+                                        : 'border-cyan-100/16 bg-cyan-50/6 text-cyan-50/70 hover:bg-cyan-50/12 hover:text-white'
+                                }`}
+                            >
+                                <span className="block">
+                                    {t('cruise.review.itinerary.tabLabel', {
+                                        number: leg.leg,
+                                    })}
+                                </span>
+                                <span
+                                    className={`mt-0.5 block font-medium ${
+                                        isSelected
+                                            ? 'text-slate-700'
+                                            : 'text-cyan-100/48'
+                                    }`}
+                                >
+                                    {leg.departureName} {'->'} {leg.arrivalName}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div
+                id="selected-cruise-leg-panel"
+                role="tabpanel"
+                aria-labelledby={`cruise-leg-tab-${selectedLeg.leg}`}
+                className="mt-4"
+            >
+                <LegRow
+                    key={`${selectedLeg.leg}-${selectedLeg.departure}-${selectedLeg.arrival}`}
+                    leg={selectedLeg}
+                    index={selectedIndex}
+                />
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-3">
+                <button
+                    type="button"
+                    disabled={isFirstLeg}
+                    onClick={() => setSelectedLegIndex(selectedIndex - 1)}
+                    className="inline-flex cursor-pointer items-center gap-2 rounded border border-cyan-100/16 bg-cyan-50/6 px-3 py-2 text-xs font-bold text-cyan-50/76 transition hover:bg-cyan-50/12 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                    <i aria-hidden="true" className="fa-solid fa-arrow-left" />
+                    {t('cruise.review.itinerary.previous')}
+                </button>
+                <button
+                    type="button"
+                    disabled={isLastLeg}
+                    onClick={() => setSelectedLegIndex(selectedIndex + 1)}
+                    className="inline-flex cursor-pointer items-center gap-2 rounded border border-cyan-100/16 bg-cyan-50/6 px-3 py-2 text-xs font-bold text-cyan-50/76 transition hover:bg-cyan-50/12 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                    {t('cruise.review.itinerary.next')}
+                    <i aria-hidden="true" className="fa-solid fa-arrow-right" />
+                </button>
+            </div>
+        </>
+    );
 }
 
 /**
@@ -621,13 +963,38 @@ interface PlanetIconProps {
 }
 
 function PlanetIcon({ code, name }: PlanetIconProps) {
+    const [src, setSrc] = useState(destinationImageSrc(code));
+
     return (
         <img
-            src={`/assets/img/destinations/${code}.png`}
+            src={src}
             alt={name}
             className="h-12 w-12 object-contain"
+            onError={() => setSrc('/assets/img/destinations/obs.png')}
         />
     );
+}
+
+const DESTINATION_IMAGE_CODES = new Set([
+    'ear',
+    'jup',
+    'mar',
+    'mer',
+    'nep',
+    'obs',
+    'plu',
+    'sat',
+    'sun',
+    'ura',
+    'ven',
+]);
+
+function destinationImageSrc(code: string): string {
+    if (DESTINATION_IMAGE_CODES.has(code)) {
+        return `/assets/img/destinations/${code}.png`;
+    }
+
+    return '/assets/img/destinations/obs.png';
 }
 
 interface SummaryItemProps {

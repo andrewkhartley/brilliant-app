@@ -32,6 +32,7 @@ export function CruiseLaunchOverlay({
     const { t } = useTranslation();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rootRef = useRef<HTMLDivElement | null>(null);
+    const [isCanvasUnavailable, setIsCanvasUnavailable] = useState(false);
     const itineraryLabel = useMemo(
         () =>
             buildItineraryLabel(
@@ -241,7 +242,7 @@ export function CruiseLaunchOverlay({
     useEffect(() => {
         const canvas = canvasRef.current;
 
-        if (!canvas) {
+        if (!canvas || isCanvasUnavailable) {
             return;
         }
 
@@ -250,11 +251,20 @@ export function CruiseLaunchOverlay({
         const camera = new THREE.OrthographicCamera(-5, 5, 3.1, -3.1, 0.1, 100);
         camera.position.z = 10;
 
-        const renderer = new THREE.WebGLRenderer({
-            alpha: true,
-            antialias: true,
-            canvas: activeCanvas,
-        });
+        let renderer: THREE.WebGLRenderer;
+
+        try {
+            renderer = new THREE.WebGLRenderer({
+                alpha: true,
+                antialias: true,
+                canvas: activeCanvas,
+            });
+        } catch {
+            window.setTimeout(() => setIsCanvasUnavailable(true), 0);
+
+            return;
+        }
+
         renderer.setClearColor(0x000000, 0);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -377,7 +387,7 @@ export function CruiseLaunchOverlay({
             renderer.dispose();
             disposeObject(scene);
         };
-    }, [destinations, selected]);
+    }, [destinations, isCanvasUnavailable, selected]);
 
     return (
         <div
@@ -387,12 +397,18 @@ export function CruiseLaunchOverlay({
             aria-label={t('cruise.launchOverlay.ariaLabel')}
             className="fixed inset-0 z-[9999] overflow-hidden bg-[#08111f] text-white"
         >
-            <canvas
-                ref={canvasRef}
-                data-scene-canvas
-                aria-hidden="true"
-                className="absolute inset-0 h-full w-full"
-            />
+            {isCanvasUnavailable ? (
+                <LaunchOverlayCanvasFallback
+                    itineraryStops={itineraryStops}
+                />
+            ) : (
+                <canvas
+                    ref={canvasRef}
+                    data-scene-canvas
+                    aria-hidden="true"
+                    className="absolute inset-0 h-full w-full"
+                />
+            )}
 
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_34%,rgba(125,211,252,0.16),transparent_30%),linear-gradient(135deg,rgba(8,17,31,0.2),rgba(15,23,42,0.72))]" />
 
@@ -568,15 +584,40 @@ function CruiseOverlayIcon({ icon }: { icon: 'route' | 'shuttle' }) {
     );
 }
 
+function LaunchOverlayCanvasFallback({
+    itineraryStops,
+}: {
+    itineraryStops: string[];
+}) {
+    return (
+        <div
+            data-scene-canvas
+            aria-hidden="true"
+            className="absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_72%_36%,rgba(103,232,249,0.18),transparent_30%),radial-gradient(circle_at_28%_68%,rgba(250,204,21,0.12),transparent_26%),linear-gradient(135deg,#08111f,#111827)]"
+        >
+            <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle,rgba(255,255,255,0.55)_1px,transparent_1px)] [background-size:46px_46px]" />
+            <div className="absolute top-[30%] right-[10%] left-[42%] h-px bg-gradient-to-r from-cyan-200/10 via-cyan-100/55 to-transparent" />
+            <div className="absolute top-[30%] right-[10%] flex translate-y-[-50%] flex-wrap justify-end gap-3">
+                {itineraryStops.map((stop, index) => (
+                    <span
+                        key={`${stop}-${index}`}
+                        className="rounded-full border border-cyan-100/22 bg-slate-950/58 px-3 py-1 text-xs font-bold text-cyan-50 shadow-[0_0_22px_rgba(103,232,249,0.14)]"
+                    >
+                        {stop}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 function createDestinationMarker(
     destination: Destination,
     index: number,
     textureLoader: THREE.TextureLoader,
 ) {
     const group = new THREE.Group();
-    const texture = textureLoader.load(
-        `/assets/img/destinations/${destination.code}.png`,
-    );
+    const texture = textureLoader.load(destinationImageSrc(destination.code));
     texture.colorSpace = THREE.SRGBColorSpace;
 
     const halo = createCircle(0.39, index === 0 ? 0xbae6fd : 0xe0f2fe);
@@ -596,6 +637,28 @@ function createDestinationMarker(
     group.add(halo, sprite);
 
     return group;
+}
+
+const DESTINATION_IMAGE_CODES = new Set([
+    'ear',
+    'jup',
+    'mar',
+    'mer',
+    'nep',
+    'obs',
+    'plu',
+    'sat',
+    'sun',
+    'ura',
+    'ven',
+]);
+
+function destinationImageSrc(code: string): string {
+    if (DESTINATION_IMAGE_CODES.has(code)) {
+        return `/assets/img/destinations/${code}.png`;
+    }
+
+    return '/assets/img/destinations/obs.png';
 }
 
 function createShip() {

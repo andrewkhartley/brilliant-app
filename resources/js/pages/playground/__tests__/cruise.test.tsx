@@ -113,6 +113,10 @@ describe('CruisePage planner flow', () => {
                     { code: 'mars', name: 'Mars' },
                     { code: 'jupiter', name: 'Jupiter' },
                 ]}
+                ephemerisDestinations={[
+                    { code: 'mars', name: 'Mars' },
+                    { code: 'jupiter', name: 'Jupiter' },
+                ]}
             />,
         );
 

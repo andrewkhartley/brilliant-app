@@ -31,6 +31,7 @@ import { z } from 'zod';
  */
 export const cruiseFormSchema = z
     .object({
+        dataSource: z.enum(['horizons', 'ephemeris']),
         destinations: z.array(z.string()).min(1).max(8),
         layovers: z.array(z.number().int().min(1).max(90)),
         tripStart: z
