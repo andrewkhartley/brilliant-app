@@ -22,6 +22,7 @@ interface ThreeRouteMapProps {
     fallback: ReactNode;
     legs: Leg[];
     points: RouteMapPoint[];
+    tripStart: string;
 }
 
 interface PlanetOrbit {
@@ -73,6 +74,7 @@ export function ThreeRouteMap({
     fallback,
     legs,
     points,
+    tripStart,
 }: ThreeRouteMapProps) {
     const { t } = useTranslation();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -217,7 +219,11 @@ export function ThreeRouteMap({
             }
 
             root.rotation.z = dragStart.rotationZ + (event.clientX - dragStart.x) * 0.006;
-            root.rotation.x = clamp(dragStart.rotationX + (event.clientY - dragStart.y) * 0.003, -0.9, -0.18);
+            root.rotation.x = clamp(
+                dragStart.rotationX + (event.clientY - dragStart.y) * 0.006,
+                -Math.PI,
+                Math.PI,
+            );
         };
         const onPointerUp = (event: PointerEvent) => {
             dragStart = null;
@@ -297,10 +303,6 @@ export function ThreeRouteMap({
                 );
             });
 
-            if (!reducedMotion && dragStart === null) {
-                root.rotation.z += 0.00055;
-            }
-
             routeMarkers.forEach((marker, index) => {
                 const pulse = reducedMotion
                     ? 1
@@ -348,6 +350,12 @@ export function ThreeRouteMap({
                     </p>
                     <p className="mt-1 text-xs font-semibold text-amber-100">
                         {t(`cruise.review.map.phase.${currentPhase}`)}
+                    </p>
+                    <p className="mt-1 font-mono text-xs text-cyan-50/70">
+                        {formatSimulationDate(
+                            tripStart,
+                            simulationProgress * totalSeconds,
+                        )}
                     </p>
                 </div>
                 <p className="max-w-48 rounded border border-amber-200/18 bg-amber-200/10 px-3 py-2 text-right text-[0.68rem] font-semibold leading-5 text-amber-100/86 backdrop-blur">
@@ -566,6 +574,29 @@ function formatSpeed(speed: number): string {
     }
 
     return `${Math.round(speed).toLocaleString()}x`;
+}
+
+function formatSimulationDate(tripStart: string, elapsedSeconds: number): string {
+    const [year, month, day] = tripStart.split('-').map(Number);
+
+    if (
+        !Number.isFinite(year) ||
+        !Number.isFinite(month) ||
+        !Number.isFinite(day)
+    ) {
+        return tripStart;
+    }
+
+    const timestamp = Date.UTC(year, month - 1, day)
+        + Math.round(elapsedSeconds) * 1000;
+    const date = new Date(timestamp);
+    const displayYear = date.getUTCFullYear();
+    const displayMonth = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const displayDay = String(date.getUTCDate()).padStart(2, '0');
+    const displayHour = String(date.getUTCHours()).padStart(2, '0');
+    const displayMinute = String(date.getUTCMinutes()).padStart(2, '0');
+
+    return `${displayYear}-${displayMonth}-${displayDay} ${displayHour}:${displayMinute} UTC`;
 }
 
 function scaleAu(au: number): number {

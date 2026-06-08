@@ -320,6 +320,7 @@ function RouteMap({ cruise, trip }: ComputedTripViewProps) {
             legs={trip.legs}
             points={points}
             fallback={<SvgRouteMap cruise={cruise} trip={trip} />}
+            tripStart={cruise.tripStart}
         />
     );
 }
