@@ -164,6 +164,11 @@ return [
                 'deceleration' => 'Deceleration burn',
                 'layover' => 'Layover / orbit',
             ],
+            'phaseShort' => [
+                'acceleration' => 'Accel',
+                'cruise' => 'Cruise',
+                'deceleration' => 'Decel',
+            ],
             'source' => [
                 'horizons' => 'Source: live NASA Horizons vectors.',
                 'ephemeris' => 'Source: coded approximate ephemeris for fast exploration and expanded destinations.',

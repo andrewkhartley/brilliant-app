@@ -41,6 +41,7 @@ interface PlanetPositionOverride {
 }
 
 type FlightPhase = 'acceleration' | 'cruise' | 'deceleration' | 'layover';
+type VisibleFlightPhase = Exclude<FlightPhase, 'layover'>;
 
 interface TimelineSegment {
     endProgress: number;
@@ -56,6 +57,12 @@ interface TimelineSegment {
 interface LegSegment {
     end: THREE.Vector3;
     start: THREE.Vector3;
+}
+
+interface PhaseRouteLine {
+    color: number;
+    end: number;
+    start: number;
 }
 
 const AU_KM = 149_597_870.7;
@@ -77,6 +84,27 @@ const SIMULATION_SPEEDS = [
     SECONDS_PER_DAY,
     SECONDS_PER_DAY * 7,
     SECONDS_PER_DAY * 30,
+];
+const FLIGHT_PHASE_STYLES: Array<{
+    activeClass: string;
+    color: number;
+    key: VisibleFlightPhase;
+}> = [
+    {
+        activeClass: 'border-cyan-200/50 bg-cyan-200/18 text-cyan-100',
+        color: 0x67e8f9,
+        key: 'acceleration',
+    },
+    {
+        activeClass: 'border-amber-200/50 bg-amber-200/18 text-amber-100',
+        color: 0xfbbf24,
+        key: 'cruise',
+    },
+    {
+        activeClass: 'border-rose-200/50 bg-rose-200/18 text-rose-100',
+        color: 0xfda4af,
+        key: 'deceleration',
+    },
 ];
 
 export function ThreeRouteMap({
@@ -171,10 +199,14 @@ export function ThreeRouteMap({
             planetMeshes.push(marker);
         }
 
-        const routeLines = legSegments.map((segment) =>
-            createRouteLine(segment.start, segment.end),
-        );
-        routeLines.forEach((routeLine) => root.add(routeLine));
+        legSegments.forEach((segment, index) => {
+            const phaseLines = createRoutePhaseLines(
+                segment,
+                phaseRouteLinesForLeg(legs[index]),
+            );
+
+            phaseLines.forEach((routeLine) => root.add(routeLine));
+        });
 
         const routeMarkers = points.map((point, index) => {
             const marker = createRouteMarker(index === 0);
@@ -292,7 +324,11 @@ export function ThreeRouteMap({
             const nextActiveName = points[activeIndex]?.name ?? '';
 
             ship.position.copy(routePosition);
-            ship.rotation.z = Math.atan2(tangent.y, tangent.x) - Math.PI / 2;
+            const shipAngle = Math.atan2(tangent.y, tangent.x) - Math.PI / 2;
+            ship.rotation.z =
+                timelineState.phase === 'deceleration'
+                    ? shipAngle + Math.PI
+                    : shipAngle;
             ship.visible = timelineState.phase !== 'layover';
 
             if (activePointNameRef.current !== nextActiveName) {
@@ -344,7 +380,7 @@ export function ThreeRouteMap({
             disposeObject(scene);
             renderer.dispose();
         };
-    }, [legSegments, points, routePoints, timeline, totalSeconds]);
+    }, [legSegments, legs, points, routePoints, timeline, totalSeconds]);
 
     if (webglFailed || legSegments.length === 0) {
         return <>{fallback}</>;
@@ -374,6 +410,22 @@ export function ThreeRouteMap({
                             simulationProgress * totalSeconds,
                         )}
                     </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                        {FLIGHT_PHASE_STYLES.map((phase) => (
+                            <span
+                                key={phase.key}
+                                className={`rounded border px-2 py-0.5 text-[0.62rem] font-bold tracking-[0.14em] uppercase transition ${
+                                    currentPhase === phase.key
+                                        ? phase.activeClass
+                                        : 'border-cyan-100/12 bg-slate-950/50 text-cyan-50/45'
+                                }`}
+                            >
+                                {t(
+                                    `cruise.review.map.phaseShort.${phase.key}`,
+                                )}
+                            </span>
+                        ))}
+                    </div>
                 </div>
                 <p className="max-w-48 rounded border border-amber-200/18 bg-amber-200/10 px-3 py-2 text-right text-[0.68rem] font-semibold leading-5 text-amber-100/86 backdrop-blur">
                     {t(`cruise.review.map.source.${dataSource}`)}
@@ -497,8 +549,7 @@ function buildTimeline(legs: Leg[]): TimelineSegment[] {
     const segments: TimelineSegment[] = [];
 
     legs.forEach((leg, legIndex) => {
-        const travelSeconds = Math.max(leg.durationSeconds, 1);
-        let legTravelCursor = 0;
+        const routeRanges = phaseRouteRangesForLeg(leg);
         const phaseDurations: Array<[FlightPhase, number]> = [
             ['acceleration', leg.accelerationDurationSeconds],
             ['cruise', leg.cruiseDurationSeconds + leg.flipDurationSeconds],
@@ -515,27 +566,15 @@ function buildTimeline(legs: Leg[]): TimelineSegment[] {
 
             const startSeconds = cursor;
             const endSeconds = cursor + duration;
-            const phaseRouteStart =
-                label === 'layover'
-                    ? 1
-                    : Math.min(legTravelCursor / travelSeconds, 1);
-
-            if (label !== 'layover') {
-                legTravelCursor += duration;
-            }
-
-            const phaseRouteEnd =
-                label === 'layover'
-                    ? 1
-                    : Math.min(legTravelCursor / travelSeconds, 1);
+            const routeRange = routeRanges[label];
 
             segments.push({
                 endProgress: endSeconds / totalSeconds,
                 endSeconds,
                 label,
                 legIndex,
-                routeEnd: phaseRouteEnd,
-                routeStart: phaseRouteStart,
+                routeEnd: routeRange.end,
+                routeStart: routeRange.start,
                 startProgress: startSeconds / totalSeconds,
                 startSeconds,
             });
@@ -581,11 +620,15 @@ function resolveTimeline(
         0,
         1,
     );
+    const easedPhaseProgress = easePhaseProgress(
+        segment.label,
+        phaseProgress,
+    );
     const routeProgress =
         segment.label === 'layover'
             ? segment.routeEnd
             : segment.routeStart
-                + (segment.routeEnd - segment.routeStart) * phaseProgress;
+                + (segment.routeEnd - segment.routeStart) * easedPhaseProgress;
 
     return {
         elapsedSeconds,
@@ -593,6 +636,55 @@ function resolveTimeline(
         phase: segment.label,
         routeProgress: clamp(routeProgress, 0, 1),
     };
+}
+
+function phaseRouteRangesForLeg(
+    leg: Leg,
+): Record<FlightPhase, { end: number; start: number }> {
+    const distance = Math.max(leg.distanceKm, 1);
+    const cruiseDistance = clamp(leg.cruiseDistanceKm, 0, distance);
+    const burnDistance = Math.max(distance - cruiseDistance, 0);
+    const accelerationEnd = clamp((burnDistance / 2) / distance, 0, 0.5);
+    const decelerationStart = clamp(1 - accelerationEnd, 0.5, 1);
+
+    return {
+        acceleration: { end: accelerationEnd, start: 0 },
+        cruise: { end: decelerationStart, start: accelerationEnd },
+        deceleration: { end: 1, start: decelerationStart },
+        layover: { end: 1, start: 1 },
+    };
+}
+
+function phaseRouteLinesForLeg(leg: Leg | undefined): PhaseRouteLine[] {
+    if (leg === undefined) {
+        return [
+            {
+                color: FLIGHT_PHASE_STYLES[1].color,
+                end: 1,
+                start: 0,
+            },
+        ];
+    }
+
+    const ranges = phaseRouteRangesForLeg(leg);
+
+    return FLIGHT_PHASE_STYLES.map((phase) => ({
+        color: phase.color,
+        end: ranges[phase.key].end,
+        start: ranges[phase.key].start,
+    })).filter((phase) => phase.end > phase.start);
+}
+
+function easePhaseProgress(phase: FlightPhase, progress: number): number {
+    if (phase === 'acceleration') {
+        return progress * progress;
+    }
+
+    if (phase === 'deceleration') {
+        return 1 - (1 - progress) * (1 - progress);
+    }
+
+    return progress;
 }
 
 function formatElapsedTime(seconds: number): string {
@@ -708,21 +800,30 @@ function createOrbitLine(
     return new THREE.Line(geometry, material);
 }
 
-function createRouteLine(start: THREE.Vector3, end: THREE.Vector3): THREE.Line {
-    const points = [];
+function createRoutePhaseLines(
+    segment: LegSegment,
+    phaseLines: PhaseRouteLine[],
+): THREE.Line[] {
+    return phaseLines.map((phaseLine) => {
+        const points = [];
 
-    for (let index = 0; index <= 80; index++) {
-        points.push(start.clone().lerp(end, index / 80));
-    }
+        for (let index = 0; index <= 40; index++) {
+            const progress =
+                phaseLine.start
+                + (phaseLine.end - phaseLine.start) * (index / 40);
 
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({
-        color: 0xfbbf24,
-        opacity: 0.92,
-        transparent: true,
+            points.push(segment.start.clone().lerp(segment.end, progress));
+        }
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({
+            color: phaseLine.color,
+            opacity: 0.92,
+            transparent: true,
+        });
+
+        return new THREE.Line(geometry, material);
     });
-
-    return new THREE.Line(geometry, material);
 }
 
 function createPlanetMarker(planet: PlanetOrbit): THREE.Mesh {
