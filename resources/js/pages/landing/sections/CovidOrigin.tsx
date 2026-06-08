@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { GlowPhrase } from '@/components/GlowPhrase';
 import { useTranslation } from '@/hooks/useTranslation';
 
+import { SolarSystemMiniMap } from '../components/SolarSystemMiniMap';
+
 /**
  * Clubhouse origin section: how live audio rooms turned curiosity into the
  * work this site is trying to show. The visual area is intentionally built
@@ -158,17 +160,22 @@ export function CovidOrigin() {
             <div className="relative mx-auto max-w-6xl px-4 py-20 text-white select-text sm:py-24">
                 <div
                     data-clubhouse-reveal
-                    className="max-w-5xl text-left"
+                    className="grid gap-8 text-left lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.618fr)] lg:items-center"
                 >
-                    <p className="text-xs font-semibold tracking-[0.28em] text-cyan-200/75 uppercase">
-                        {t('landing.covidOrigin.kicker')}
-                    </p>
-                    <h2 className="mt-4 text-3xl font-semibold tracking-normal text-white sm:text-5xl">
-                        {t('landing.covidOrigin.heading')}
-                    </h2>
-                    <p className="mt-5 max-w-2xl text-lg leading-8 text-cyan-50/72">
-                        {t('landing.covidOrigin.intro')}
-                    </p>
+                    <div className="max-w-5xl">
+                        <p className="text-xs font-semibold tracking-[0.28em] text-cyan-200/75 uppercase">
+                            {t('landing.covidOrigin.kicker')}
+                        </p>
+                        <h2 className="mt-4 text-3xl font-semibold tracking-normal text-white sm:text-5xl">
+                            {t('landing.covidOrigin.heading')}
+                        </h2>
+                        <p className="mt-5 max-w-2xl text-lg leading-8 text-cyan-50/72">
+                            {t('landing.covidOrigin.intro')}
+                        </p>
+                    </div>
+                    <div className="mx-auto w-full max-w-sm lg:mx-0 lg:justify-self-end">
+                        <SolarSystemMiniMap />
+                    </div>
                 </div>
 
                 <article

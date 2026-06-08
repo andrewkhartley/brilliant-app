@@ -75,7 +75,7 @@ export function TryOne() {
 
             <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-24">
                 <div className="grid gap-8 lg:grid-cols-[minmax(0,0.618fr)_minmax(0,1fr)] lg:items-start">
-                    <div>
+                    <div data-landing-reveal>
                         <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
                             {t('landing.tryOne.kicker')}
                         </p>
@@ -100,7 +100,11 @@ export function TryOne() {
                         </div>
                     </div>
 
-                    <div className="relative">
+                    <div
+                        data-landing-reveal
+                        data-landing-delay="0.08"
+                        className="relative"
+                    >
                         <div
                             aria-hidden="true"
                             className="absolute -inset-4 rounded-xl bg-cyan-300/7 blur-2xl"

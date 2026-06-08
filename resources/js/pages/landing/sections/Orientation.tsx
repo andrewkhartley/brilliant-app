@@ -13,14 +13,17 @@ export function Orientation() {
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-200/54 to-transparent" />
 
             <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 lg:grid-cols-[0.72fr_1.18fr] lg:items-start">
-                <div>
+                <div data-landing-reveal>
                     <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
                         {t('landing.orientation.kicker')}
                     </p>
                     <h2 className="mt-4 text-3xl leading-tight font-semibold tracking-normal text-white sm:text-4xl">
                         {t('landing.orientation.heading')}
                     </h2>
-                    <div className="mt-8 grid max-w-md grid-cols-2 gap-3 text-sm font-semibold">
+                    <div
+                        data-landing-stagger
+                        className="mt-8 grid max-w-md grid-cols-2 gap-3 text-sm font-semibold"
+                    >
                         <Link
                             href="/playground"
                             className="inline-flex min-h-11 items-center justify-center rounded border border-cyan-100/25 bg-cyan-100/10 px-4 py-2 text-center text-cyan-100 transition hover:bg-cyan-100/16 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
@@ -50,7 +53,11 @@ export function Orientation() {
                     </div>
                 </div>
 
-                <div className="text-lg leading-8 text-slate-200">
+                <div
+                    data-landing-reveal
+                    data-landing-delay="0.08"
+                    className="text-lg leading-8 text-slate-200"
+                >
                     <p>{t('landing.orientation.paragraph1')}</p>
                     <p className="mt-5">
                         {t('landing.orientation.paragraph2Prefix')}{' '}

@@ -38,17 +38,22 @@ export function ContactFooter() {
             <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-cyan-200/72 to-transparent" />
             <div className="pointer-events-none absolute inset-x-12 top-0 h-8 bg-cyan-200/12 blur-2xl" />
             <div className="relative mx-auto max-w-6xl px-4 py-20 text-left">
-                <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
-                    {t('landing.contactFooter.kicker')}
-                </p>
-                <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                    {t('landing.contactFooter.heading')}
-                </h2>
-                <p className="mt-6 w-full text-lg leading-relaxed text-slate-200">
-                    {t('landing.contactFooter.pitch')}
-                </p>
+                <div data-landing-reveal>
+                    <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
+                        {t('landing.contactFooter.kicker')}
+                    </p>
+                    <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                        {t('landing.contactFooter.heading')}
+                    </h2>
+                    <p className="mt-6 w-full text-lg leading-relaxed text-slate-200">
+                        {t('landing.contactFooter.pitch')}
+                    </p>
+                </div>
 
-                <ul className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-4 text-base font-semibold">
+                <ul
+                    data-landing-stagger
+                    className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-4 text-base font-semibold"
+                >
                     <li>
                         <a
                             href={t('landing.contactFooter.links.emailHref')}
