@@ -54,8 +54,12 @@ export interface Leg {
     maxSpeedFormatted: string;
     /** Pre-formatted burn (accel + decel) distance. */
     burnDistanceFormatted: string;
+    /** Numeric acceleration burn duration in seconds. */
+    accelerationDurationSeconds: number;
     /** Pre-formatted burn (accel + decel) duration. */
     burnDurationFormatted: string;
+    /** Numeric cruise/coast duration in seconds. */
+    cruiseDurationSeconds: number;
     /** Numeric cruise/coast distance in km. Zero when the leg flips directly. */
     cruiseDistanceKm: number;
     /** Pre-formatted cruise (coast) distance. */
@@ -64,10 +68,16 @@ export interface Leg {
     cruiseDurationFormatted: string;
     /** Pre-formatted direct flip distance when there is no cruise segment. */
     flipDistanceFormatted: string;
+    /** Numeric flip duration in seconds when there is no cruise segment. */
+    flipDurationSeconds: number;
     /** Pre-formatted direct flip duration when there is no cruise segment. */
     flipDurationFormatted: string;
+    /** Numeric deceleration burn duration in seconds. */
+    decelerationDurationSeconds: number;
     /** Pre-formatted relativistic time dilation across the leg. */
     dilationFormatted: string;
+    /** Numeric layover/orbit duration after arrival in seconds. */
+    layoverDurationSeconds: number;
     /** Pre-formatted layover/orbit distance at the arrival body. */
     layoverDistanceFormatted: string;
     /** Pre-formatted layover/orbit duration at the arrival body. */

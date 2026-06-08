@@ -305,6 +305,7 @@ function RouteMap({ cruise, trip }: ComputedTripViewProps) {
     return (
         <ThreeRouteMap
             dataSource={cruise.dataSource}
+            legs={trip.legs}
             points={points}
             fallback={<SvgRouteMap cruise={cruise} trip={trip} />}
         />

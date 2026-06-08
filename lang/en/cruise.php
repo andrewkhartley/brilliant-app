@@ -151,6 +151,18 @@ return [
             'ariaLabel' => 'Top-down map of the selected Sol Cruise route',
             'simulationLabel' => 'Active waypoint',
             'interactionHint' => 'Drag to rotate the route plane. Scroll to zoom. Planetary orbits stay visible even when they are not part of this itinerary.',
+            'controls' => [
+                'pause' => 'Pause',
+                'play' => 'Play',
+                'speed' => ':speed',
+                'timeline' => 'Trip timeline',
+            ],
+            'phase' => [
+                'acceleration' => 'Acceleration burn',
+                'cruise' => 'Cruise segment',
+                'deceleration' => 'Deceleration burn',
+                'layover' => 'Layover / orbit',
+            ],
             'source' => [
                 'horizons' => 'Source: live NASA Horizons vectors.',
                 'ephemeris' => 'Source: coded approximate ephemeris for fast exploration and expanded destinations.',

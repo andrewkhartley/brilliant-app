@@ -4,6 +4,8 @@ import * as THREE from 'three';
 
 import { useTranslation } from '@/hooks/useTranslation';
 
+import type { Leg } from './types';
+
 type DataSource = 'horizons' | 'ephemeris';
 
 export interface RouteMapPoint {
@@ -17,6 +19,7 @@ export interface RouteMapPoint {
 interface ThreeRouteMapProps {
     dataSource: DataSource;
     fallback: ReactNode;
+    legs: Leg[];
     points: RouteMapPoint[];
 }
 
@@ -28,6 +31,19 @@ interface PlanetOrbit {
     color: number;
     size: number;
     phase: number;
+}
+
+type FlightPhase = 'acceleration' | 'cruise' | 'deceleration' | 'layover';
+
+interface TimelineSegment {
+    endProgress: number;
+    endSeconds: number;
+    label: FlightPhase;
+    legIndex: number;
+    routeEnd: number;
+    routeStart: number;
+    startProgress: number;
+    startSeconds: number;
 }
 
 const AU_KM = 149_597_870.7;
@@ -44,13 +60,45 @@ const PLANETS: PlanetOrbit[] = [
     { code: 'nep', name: 'Neptune', au: 30.069, periodDays: 60189, color: 0x60a5fa, size: 0.18, phase: 4.7 },
 ];
 
-export function ThreeRouteMap({ dataSource, fallback, points }: ThreeRouteMapProps) {
+const SIMULATION_SPEEDS = [240, 1200, 6000];
+
+export function ThreeRouteMap({
+    dataSource,
+    fallback,
+    legs,
+    points,
+}: ThreeRouteMapProps) {
     const { t } = useTranslation();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const activePointNameRef = useRef(points[0]?.name ?? '');
+    const simulationProgressRef = useRef(0);
+    const simulationSpeedRef = useRef(SIMULATION_SPEEDS[1]);
+    const isPlayingRef = useRef(true);
     const [webglFailed, setWebglFailed] = useState(false);
     const [activePointName, setActivePointName] = useState(points[0]?.name ?? '');
+    const [currentPhase, setCurrentPhase] = useState<FlightPhase>('acceleration');
+    const [isPlaying, setIsPlaying] = useState(true);
+    const [simulationProgress, setSimulationProgress] = useState(0);
+    const [simulationSpeed, setSimulationSpeed] = useState(SIMULATION_SPEEDS[1]);
     const routePoints = useMemo(() => normalizeRoutePoints(points), [points]);
+    const timeline = useMemo(() => buildTimeline(legs), [legs]);
+    const totalSeconds = timeline.at(-1)?.endSeconds ?? 0;
+
+    function updateProgress(nextProgress: number) {
+        const clamped = clamp(nextProgress, 0, 1);
+        simulationProgressRef.current = clamped;
+        setSimulationProgress(clamped);
+    }
+
+    function updatePlaying(nextPlaying: boolean) {
+        isPlayingRef.current = nextPlaying;
+        setIsPlaying(nextPlaying);
+    }
+
+    function updateSpeed(nextSpeed: number) {
+        simulationSpeedRef.current = nextSpeed;
+        setSimulationSpeed(nextSpeed);
+    }
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -101,7 +149,12 @@ export function ThreeRouteMap({ dataSource, fallback, points }: ThreeRouteMapPro
             planetMeshes.push(marker);
         }
 
-        const routeCurve = new THREE.CatmullRomCurve3(routePoints, false, 'catmullrom', 0.18);
+        const routeCurve = new THREE.CatmullRomCurve3(
+            routePoints,
+            false,
+            'catmullrom',
+            0.18,
+        );
         const routeLine = createRouteLine(routeCurve);
         root.add(routeLine);
 
@@ -135,7 +188,7 @@ export function ThreeRouteMap({ dataSource, fallback, points }: ThreeRouteMapPro
         const resizeObserver = new ResizeObserver(resize);
         resizeObserver.observe(activeCanvas);
 
-        let frame = 0;
+        let lastFrameTime = performance.now();
         let running = true;
         let dragStart: { x: number; y: number; rotationZ: number; rotationX: number } | null = null;
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -179,8 +232,26 @@ export function ThreeRouteMap({ dataSource, fallback, points }: ThreeRouteMapPro
                 return;
             }
 
-            const elapsed = frame / 60;
-            const progress = reducedMotion ? 0.16 : (elapsed * 0.055) % 1;
+            const now = performance.now();
+            const elapsedFrameSeconds = Math.min(
+                (now - lastFrameTime) / 1000,
+                0.1,
+            );
+            lastFrameTime = now;
+
+            if (!reducedMotion && isPlayingRef.current && totalSeconds > 0) {
+                const nextProgress =
+                    simulationProgressRef.current
+                    + (elapsedFrameSeconds * simulationSpeedRef.current)
+                        / totalSeconds;
+                simulationProgressRef.current = nextProgress >= 1 ? 0 : nextProgress;
+            }
+
+            const timelineState = resolveTimeline(
+                timeline,
+                simulationProgressRef.current,
+            );
+            const progress = timelineState.routeProgress;
             const routePosition = routeCurve.getPointAt(progress);
             const tangent = routeCurve.getTangentAt(progress);
             const activeIndex = Math.min(
@@ -197,10 +268,23 @@ export function ThreeRouteMap({ dataSource, fallback, points }: ThreeRouteMapPro
                 setActivePointName(nextActiveName);
             }
 
+            setCurrentPhase((previous) =>
+                previous === timelineState.phase ? previous : timelineState.phase,
+            );
+            setSimulationProgress((previous) =>
+                Math.abs(previous - simulationProgressRef.current) > 0.004
+                    ? simulationProgressRef.current
+                    : previous,
+            );
+
             planetMeshes.forEach((mesh, index) => {
                 const planet = PLANETS[index];
-                const speed = reducedMotion ? 0 : elapsed / Math.sqrt(planet.periodDays) * 0.1;
-                mesh.position.copy(positionForPlanet(planet, speed));
+                mesh.position.copy(
+                    positionForPlanet(
+                        planet,
+                        timelineState.elapsedSeconds / 86400,
+                    ),
+                );
             });
 
             if (!reducedMotion && dragStart === null) {
@@ -208,12 +292,13 @@ export function ThreeRouteMap({ dataSource, fallback, points }: ThreeRouteMapPro
             }
 
             routeMarkers.forEach((marker, index) => {
-                const pulse = reducedMotion ? 1 : 1 + Math.sin(elapsed * 2.4 + index) * 0.08;
+                const pulse = reducedMotion
+                    ? 1
+                    : 1 + Math.sin(now * 0.0024 + index) * 0.08;
                 marker.scale.setScalar(pulse);
             });
 
             renderer.render(scene, camera);
-            frame += 1;
             window.requestAnimationFrame(animate);
         };
 
@@ -230,7 +315,7 @@ export function ThreeRouteMap({ dataSource, fallback, points }: ThreeRouteMapPro
             disposeObject(scene);
             renderer.dispose();
         };
-    }, [points, routePoints]);
+    }, [points, routePoints, timeline, totalSeconds]);
 
     if (webglFailed || routePoints.length < 2) {
         return <>{fallback}</>;
@@ -251,10 +336,64 @@ export function ThreeRouteMap({ dataSource, fallback, points }: ThreeRouteMapPro
                     <p className="mt-1 text-sm font-semibold text-white">
                         {activePointName || points[0]?.name}
                     </p>
+                    <p className="mt-1 text-xs font-semibold text-amber-100">
+                        {t(`cruise.review.map.phase.${currentPhase}`)}
+                    </p>
                 </div>
                 <p className="max-w-48 rounded border border-amber-200/18 bg-amber-200/10 px-3 py-2 text-right text-[0.68rem] font-semibold leading-5 text-amber-100/86 backdrop-blur">
                     {t(`cruise.review.map.source.${dataSource}`)}
                 </p>
+            </div>
+            <div className="absolute inset-x-3 bottom-10 rounded border border-cyan-100/14 bg-slate-950/76 p-3 shadow-xl shadow-black/24 backdrop-blur">
+                <div className="flex flex-wrap items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => updatePlaying(!isPlaying)}
+                        className="inline-flex cursor-pointer items-center gap-2 rounded bg-cyan-200 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
+                    >
+                        <i
+                            aria-hidden="true"
+                            className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}`}
+                        />
+                        {t(
+                            isPlaying
+                                ? 'cruise.review.map.controls.pause'
+                                : 'cruise.review.map.controls.play',
+                        )}
+                    </button>
+                    <label className="min-w-0 flex-1 text-xs font-semibold text-cyan-50/78">
+                        <span className="sr-only">
+                            {t('cruise.review.map.controls.timeline')}
+                        </span>
+                        <input
+                            type="range"
+                            min={0}
+                            max={1000}
+                            value={Math.round(simulationProgress * 1000)}
+                            onChange={(event) => {
+                                updatePlaying(false);
+                                updateProgress(Number(event.target.value) / 1000);
+                            }}
+                            className="h-2 w-full cursor-pointer accent-cyan-200"
+                        />
+                    </label>
+                    <select
+                        value={simulationSpeed}
+                        onChange={(event) => updateSpeed(Number(event.target.value))}
+                        className="cursor-pointer rounded border border-cyan-100/20 bg-slate-950 px-2 py-2 text-xs font-bold text-cyan-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
+                    >
+                        {SIMULATION_SPEEDS.map((speed) => (
+                            <option key={speed} value={speed}>
+                                {t('cruise.review.map.controls.speed', {
+                                    speed: formatSpeed(speed),
+                                })}
+                            </option>
+                        ))}
+                    </select>
+                    <span className="text-xs font-semibold text-cyan-50/70">
+                        {formatElapsedTime(simulationProgress * totalSeconds)}
+                    </span>
+                </div>
             </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950/86 to-transparent px-4 pb-3 pt-12">
                 <p className="text-xs leading-5 text-cyan-50/66">
@@ -277,6 +416,143 @@ function normalizeRoutePoints(points: RouteMapPoint[]): THREE.Vector3[] {
             0.7 + Math.sin(angle * 1.7) * 0.22,
         );
     });
+}
+
+function buildTimeline(legs: Leg[]): TimelineSegment[] {
+    const totalSeconds = legs.reduce(
+        (total, leg) =>
+            total + leg.durationSeconds + leg.layoverDurationSeconds,
+        0,
+    );
+
+    if (totalSeconds <= 0 || legs.length === 0) {
+        return [
+            {
+                endProgress: 1,
+                endSeconds: 1,
+                label: 'cruise',
+                legIndex: 0,
+                routeEnd: 1,
+                routeStart: 0,
+                startProgress: 0,
+                startSeconds: 0,
+            },
+        ];
+    }
+
+    let cursor = 0;
+    const segments: TimelineSegment[] = [];
+
+    legs.forEach((leg, legIndex) => {
+        const routeStart = legIndex / legs.length;
+        const routeEnd = (legIndex + 1) / legs.length;
+        const routeSpan = routeEnd - routeStart;
+        const travelSeconds = Math.max(leg.durationSeconds, 1);
+        let legTravelCursor = 0;
+        const phaseDurations: Array<[FlightPhase, number]> = [
+            ['acceleration', leg.accelerationDurationSeconds],
+            ['cruise', leg.cruiseDurationSeconds + leg.flipDurationSeconds],
+            ['deceleration', leg.decelerationDurationSeconds],
+            ['layover', leg.layoverDurationSeconds],
+        ];
+
+        for (const [label, rawDuration] of phaseDurations) {
+            const duration = Math.max(rawDuration, 0);
+
+            if (duration <= 0) {
+                continue;
+            }
+
+            const startSeconds = cursor;
+            const endSeconds = cursor + duration;
+            const phaseRouteStart =
+                label === 'layover'
+                    ? routeEnd
+                    : routeStart
+                        + routeSpan * Math.min(legTravelCursor / travelSeconds, 1);
+
+            if (label !== 'layover') {
+                legTravelCursor += duration;
+            }
+
+            const phaseRouteEnd =
+                label === 'layover'
+                    ? routeEnd
+                    : routeStart
+                        + routeSpan * Math.min(legTravelCursor / travelSeconds, 1);
+
+            segments.push({
+                endProgress: endSeconds / totalSeconds,
+                endSeconds,
+                label,
+                legIndex,
+                routeEnd: phaseRouteEnd,
+                routeStart: phaseRouteStart,
+                startProgress: startSeconds / totalSeconds,
+                startSeconds,
+            });
+            cursor = endSeconds;
+        }
+    });
+
+    return segments;
+}
+
+function resolveTimeline(
+    timeline: TimelineSegment[],
+    progress: number,
+): { elapsedSeconds: number; phase: FlightPhase; routeProgress: number } {
+    const segment =
+        timeline.find(
+            (entry) =>
+                progress >= entry.startProgress && progress <= entry.endProgress,
+        ) ?? timeline.at(-1);
+
+    if (segment === undefined) {
+        return { elapsedSeconds: 0, phase: 'cruise', routeProgress: 0 };
+    }
+
+    const totalSeconds = timeline.at(-1)?.endSeconds ?? 1;
+    const elapsedSeconds = progress * totalSeconds;
+    const segmentDuration = Math.max(
+        segment.endSeconds - segment.startSeconds,
+        1,
+    );
+    const phaseProgress = clamp(
+        (elapsedSeconds - segment.startSeconds) / segmentDuration,
+        0,
+        1,
+    );
+    const routeProgress =
+        segment.label === 'layover'
+            ? segment.routeEnd
+            : segment.routeStart
+                + (segment.routeEnd - segment.routeStart) * phaseProgress;
+
+    return {
+        elapsedSeconds,
+        phase: segment.label,
+        routeProgress: clamp(routeProgress, 0, 1),
+    };
+}
+
+function formatElapsedTime(seconds: number): string {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+
+    if (days > 0) {
+        return `${days.toLocaleString()}d ${hours}h`;
+    }
+
+    return `${hours}h`;
+}
+
+function formatSpeed(speed: number): string {
+    if (speed >= 1440) {
+        return `${Math.round(speed / 1440).toLocaleString()}d/s`;
+    }
+
+    return `${speed.toLocaleString()}x`;
 }
 
 function scaleAu(au: number): number {
