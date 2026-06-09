@@ -19,11 +19,13 @@ interface NavProps {
  * - Primary links: Playground (/playground), Projects (/projects)
  *
  * Layout:
- * - Sticky at viewport top (sticky top-0 z-50) with translucent backdrop so
- *   page content scrolling beneath remains partially visible
+ * - Position-neutral chrome with translucent backdrop so page content
+ *   scrolling beneath remains partially visible; stickiness itself lives on
+ *   AppLayout's <header> wrapper (sticky top-0 z-50), pinned by
+ *   layouts/__tests__/AppLayout.test.tsx
  * - flex justify-between: brand on the start side, links on the end side
- * - At <md width, flex-wrap drops the link list onto its own row below the
- *   brand mark — v1's 2-link nav doesn't justify a hamburger toggle
+ * - At <md width, the link list collapses behind a hamburger toggle that
+ *   opens a portal-rendered modal menu
  *
  * Accessibility:
  * - <nav> + aria-label gives AT a distinct landmark name (one nav per page,

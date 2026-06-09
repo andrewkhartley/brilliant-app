@@ -71,10 +71,4 @@ describe('Nav', () => {
         // physical ml-/mr-/pl-/pr-/left-/right- when refactoring.
         expect(container.innerHTML).not.toMatch(/\b(ml|mr|pl|pr|left|right)-/);
     });
-
-    test('is sticky-positioned', () => {
-        const { container } = render(<Nav />);
-
-        expect(container.querySelector('.sticky')).not.toBeNull();
-    });
 });
