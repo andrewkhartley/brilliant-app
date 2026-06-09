@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Transparently wrap the API HorizonService with a persistent file
         // cache. Every consumer that typehints HorizonService (TripBuilderService,
-        // Cruise\HorizonService, HorizonController) receives the cache; the cache
+        // Cruise\HorizonService) receives the cache; the cache
         // itself takes a non-cache HorizonService as its upstream, resolved here
         // explicitly to break the recursive binding.
         $this->app->when(HorizonCache::class)
