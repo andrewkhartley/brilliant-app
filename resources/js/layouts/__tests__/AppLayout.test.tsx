@@ -62,7 +62,7 @@ describe('AppLayout', () => {
     test('keeps the nav chrome sticky at the viewport top', () => {
         const { container } = render(
             <AppLayout>
-                <p>page content</p>
+                <p>{'page content'}</p>
             </AppLayout>,
         );
 
