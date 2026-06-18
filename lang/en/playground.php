@@ -22,7 +22,7 @@ return [
             ],
             'habitat' => [
                 'title' => 'Habitat',
-                'description' => 'An O\'Neill Cylinder explored as a shadowbox window. Multi-plane camera moves through the cylinder interior with interactive cylinder math (radius, length, spin rate for 1g, surface area, population at density).',
+                'description' => 'An O\'Neill Cylinder explored as a shadowbox window. Move through the math of a cylinder with interactive cylinder math (radius, length, spin rate for 1g, surface area, population at density).',
             ],
         ],
     ],
