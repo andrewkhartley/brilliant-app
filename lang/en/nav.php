@@ -12,6 +12,7 @@ return [
     'home' => 'Home',
     'playground' => 'Playground',
     'projects' => 'Projects',
+    'resume' => 'Résumé (Honest Version)',
     'cv' => 'CV',
     'talk' => 'Let\'s Talk!',
     'openMenu' => 'Open navigation menu',

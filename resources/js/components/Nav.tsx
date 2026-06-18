@@ -142,6 +142,17 @@ export function Nav({ showActionLinks = false }: NavProps) {
                                       className="fa-solid fa-arrow-right text-xs text-cyan-200"
                                   />
                               </Link>
+                              <Link
+                                  href="/resume"
+                                  onClick={closeMenu}
+                                  className="inline-flex items-center justify-between rounded border border-cyan-100/16 bg-white/5 px-4 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                              >
+                                  {t('nav.resume')}
+                                  <i
+                                      aria-hidden="true"
+                                      className="fa-solid fa-arrow-right text-xs text-cyan-200"
+                                  />
+                              </Link>
                               {showActionLinks && (
                                   <>
                                       <ResumeLink
@@ -223,6 +234,14 @@ export function Nav({ showActionLinks = false }: NavProps) {
                             className="text-sm font-medium text-cyan-100/78 transition-colors hover:text-white"
                         >
                             {t('nav.projects')}
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            href="/resume"
+                            className="text-sm font-medium text-cyan-100/78 transition-colors hover:text-white"
+                        >
+                            {t('nav.resume')}
                         </Link>
                     </li>
                     {showActionLinks && (

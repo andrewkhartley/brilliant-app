@@ -21,6 +21,7 @@ vi.mock('@inertiajs/react', () => ({
                 nav: {
                     playground: 'Playground',
                     projects: 'Projects',
+                    resume: 'Résumé (Honest Version)',
                 },
             },
         },
@@ -62,6 +63,14 @@ describe('Nav', () => {
 
         expect(screen.queryByText('Playground')).not.toBeNull();
         expect(screen.queryByText('Projects')).not.toBeNull();
+    });
+
+    test('renders the resume link', () => {
+        const { container } = render(<Nav />);
+        const link = container.querySelector('a[href="/resume"]');
+
+        expect(link).not.toBeNull();
+        expect(link?.textContent).toContain('Résumé');
     });
 
     test('uses logical Tailwind classes (no physical left/right)', () => {
