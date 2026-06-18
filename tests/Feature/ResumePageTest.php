@@ -11,26 +11,48 @@ it('renders the resume page', function () {
     $response->assertInertia(fn ($page) => $page->component('resume'));
 });
 
-it('shares the resume translation namespace including the thesis', function () {
+it('shares the resume translation namespace chrome', function () {
+    // Assert the chrome keys exist, not their exact copy — the wording is
+    // authored content that changes freely and should not break tests.
     $response = get('/resume');
 
     $response->assertInertia(
         fn ($page) => $page
-            ->where('translations.resume.thesis.title', 'Everything here is true. The boring version was also true.')
+            ->has('translations.resume.thesis.title')
+            ->has('translations.resume.thesis.body')
             ->has('translations.resume.controls.handleLabel')
+            ->has('translations.resume.controls.valueText')
     );
 });
 
-it('ships the calibration-anchor honest lines', function () {
+it('ships a corporate and honest pair for every resume line', function () {
+    // Structural check: each line id under each group resolves to both a
+    // corporate and an honest string. Pins the data shape, not the prose.
+    $groups = [
+        'summary' => ['summary'],
+        'skills' => ['languages', 'systems', 'ai', 'integrations', 'additional'],
+        'alexandria' => ['intro', 'eav', 'llm', 'migration', 'capture'],
+        'signal' => ['intro', 'auth', 'zip', 'decoy', 'myco'],
+        'swingersLead' => ['intro', 'savings', 'architecture', 'releases', 'reconciliation', 'azure', 'multivenue'],
+        'swingersAnalyst' => ['intro', 'automate', 'toast', 'golfDiary', 'businessCase'],
+        'sodexo' => ['concierge'],
+        'jetblue' => ['safety'],
+        'disney' => ['helpDesk', 'pmSystem'],
+        'education' => ['degrees'],
+        'contact' => ['relocation'],
+    ];
+
     $response = get('/resume');
 
-    $response->assertInertia(
-        fn ($page) => $page
-            ->where(
-                'translations.resume.lines.swingersLead.reconciliation.honest',
-                'People spent half an hour every night chasing pennies in a spreadsheet. Now the computer finishes before they\'re done saying "reconciliation."',
-            )
-            ->has('translations.resume.lines.swingersLead.savings.corporate')
-            ->has('translations.resume.sections.disney.company')
-    );
+    $response->assertInertia(function ($page) use ($groups) {
+        foreach ($groups as $group => $lineIds) {
+            foreach ($lineIds as $lineId) {
+                $page
+                    ->has("translations.resume.lines.{$group}.{$lineId}.corporate")
+                    ->has("translations.resume.lines.{$group}.{$lineId}.honest");
+            }
+        }
+
+        return $page;
+    });
 });
