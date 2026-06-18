@@ -7,11 +7,14 @@ use App\Http\Controllers\Playground\HabitatController;
 use App\Http\Controllers\Playground\InterstellarController;
 use App\Http\Controllers\PlaygroundController;
 use App\Http\Controllers\ProjectsController;
+use App\Http\Controllers\ResumeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
 
 Route::get('/projects', ProjectsController::class)->name('projects.index');
+
+Route::get('/resume', ResumeController::class)->name('resume');
 
 Route::get('/api/interstellar/stars', [InterstellarTargetController::class, 'search'])
     ->middleware('throttle:30,1')
