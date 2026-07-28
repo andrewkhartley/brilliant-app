@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use FilesystemIterator;
 use GdImage;
 use Illuminate\Console\Command;
 use RecursiveDirectoryIterator;
@@ -39,9 +40,9 @@ class ImagesOptimize extends Command
     protected $description = 'Convert public/assets raster art to WebP, preserving alpha and originals';
 
     /** Path segments never converted. The OG card must stay PNG for link scrapers. */
-    private const EXCLUDED_SEGMENTS = ['meta'];
+    private const array EXCLUDED_SEGMENTS = ['meta'];
 
-    private const SOURCE_EXTENSIONS = ['png', 'jpg', 'jpeg'];
+    private const array SOURCE_EXTENSIONS = ['png', 'jpg', 'jpeg'];
 
     public function handle(): int
     {
@@ -54,7 +55,7 @@ class ImagesOptimize extends Command
         $root = $this->argument('path') ?? base_path('public/assets');
 
         if (! is_dir($root)) {
-            $this->error("Not a directory: {$root}");
+            $this->error("Not a directory: $root");
 
             return self::FAILURE;
         }
@@ -71,7 +72,7 @@ class ImagesOptimize extends Command
         $leftovers = [];
 
         foreach ($this->groupByStem($root) as $stemPath => $files) {
-            $destination = "{$stemPath}.webp";
+            $destination = "$stemPath.webp";
             $source = $this->selectSource($files);
 
             if ($source === null) {
@@ -112,7 +113,7 @@ class ImagesOptimize extends Command
                 continue;
             }
 
-            $tempDestination = "{$destination}.tmp";
+            $tempDestination = "$destination.tmp";
             $encodedSize = $this->encode($source, $tempDestination, $quality);
 
             if ($encodedSize === null) {
@@ -165,7 +166,7 @@ class ImagesOptimize extends Command
             $this->warn('Redundant intermediates (not deleted — review manually):');
 
             foreach ($leftovers as $leftover) {
-                $this->line("  {$leftover}");
+                $this->line("  $leftover");
             }
         }
 
@@ -181,7 +182,7 @@ class ImagesOptimize extends Command
     {
         $groups = [];
         $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($root, RecursiveDirectoryIterator::SKIP_DOTS),
+            new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS),
         );
 
         /** @var SplFileInfo $file */
@@ -293,7 +294,7 @@ class ImagesOptimize extends Command
 
         rename(
             $source->getPathname(),
-            $source->getPath().DIRECTORY_SEPARATOR."{$basename}-source.{$extension}",
+            $source->getPath().DIRECTORY_SEPARATOR."$basename-source.$extension",
         );
     }
 
@@ -301,13 +302,7 @@ class ImagesOptimize extends Command
     {
         $segments = explode('/', str_replace('\\', '/', $this->relative($root, $path)));
 
-        foreach (self::EXCLUDED_SEGMENTS as $excluded) {
-            if (in_array($excluded, $segments, true)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any(self::EXCLUDED_SEGMENTS, fn ($excluded) => in_array($excluded, $segments, true));
     }
 
     private function relative(string $root, string $path): string
