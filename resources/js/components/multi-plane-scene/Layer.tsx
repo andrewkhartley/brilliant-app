@@ -20,6 +20,8 @@ export function Layer(props: LayerProps) {
         edgeBleed = '0px',
         imageFit = 'cover',
         imagePosition = 'center center',
+        loading = 'lazy',
+        fetchPriority = 'auto',
         variant = 'solid',
         travel = variant === 'cutaway' ? 'viewportAnchored' : 'centered',
         aperture,
@@ -92,8 +94,9 @@ export function Layer(props: LayerProps) {
                         objectPosition: imagePosition,
                         display: 'block',
                     }}
-                    loading="lazy"
+                    loading={loading}
                     decoding="async"
+                    fetchPriority={fetchPriority}
                 />
             </div>
         );

@@ -78,6 +78,8 @@ export function Hero() {
                 position="full"
                 depth={0.95}
                 imagePosition="center top"
+                loading="eager"
+                fetchPriority="high"
             />
             <Layer
                 src="/assets/scenes/landing-hero/distant-nebula.webp"
@@ -86,6 +88,7 @@ export function Hero() {
                 depth={0.7}
                 opacity={{ from: 0.5 }}
                 imagePosition="center center"
+                loading="eager"
             />
             <Layer
                 src="/assets/scenes/landing-hero/near-veil.webp"
@@ -94,6 +97,7 @@ export function Hero() {
                 depth={0.45}
                 opacity={{ from: 0.42 }}
                 imagePosition="center center"
+                loading="eager"
             />
             {showHorizonLayer && (
                 <Layer
@@ -103,6 +107,7 @@ export function Hero() {
                     depth={0.2}
                     opacity={{ from: 0.72 }}
                     imagePosition="center bottom"
+                    loading="eager"
                 />
             )}
             {showRailLayer && (
@@ -116,6 +121,7 @@ export function Hero() {
                     size="30vh"
                     edgeBleed="1vh"
                     imagePosition="center bottom"
+                    loading="eager"
                 />
             )}
 
