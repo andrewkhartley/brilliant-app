@@ -1,15 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useTranslation } from '@/hooks/useTranslation';
 
+import { CustomDistanceInput } from './CustomDistanceInput';
 import { StarSearch } from './StarSearch';
 import type { InterstellarTarget } from './StarSearch';
+
+type PickerMode = 'search' | 'custom';
 
 interface DestinationPickerProps {
     activeDistanceLy: number;
     activeName: string;
     activeSource: string;
+    customDistanceLy: number | null;
+    onCustomDistanceChange: (distanceLy: number | null) => void;
     onTargetSelect: (target: InterstellarTarget) => void;
     selectedTarget: InterstellarTarget | null;
 }
@@ -18,28 +24,20 @@ export function DestinationPicker({
     activeDistanceLy,
     activeName,
     activeSource,
+    customDistanceLy,
+    onCustomDistanceChange,
     onTargetSelect,
     selectedTarget,
 }: DestinationPickerProps) {
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
+    // Opening straight into the mode the current selection came from means
+    // reopening the picker never silently discards what the user set.
+    const [mode, setMode] = useState<PickerMode>(
+        customDistanceLy === null ? 'search' : 'custom',
+    );
 
-    useEffect(() => {
-        if (!isOpen) {
-            return;
-        }
-
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                setIsOpen(false);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen]);
+    useEscapeKey(isOpen, () => setIsOpen(false));
 
     return (
         <>
@@ -78,7 +76,7 @@ export function DestinationPicker({
                         aria-label={t(
                             'interstellar.destinationPicker.modalTitle',
                         )}
-                        className="fixed inset-0 z-[240] flex items-center justify-center bg-slate-950/92 p-4 backdrop-blur-xl"
+                        className="fixed inset-0 z-240 flex items-center justify-center bg-slate-950/92 p-4 backdrop-blur-xl"
                     >
                         <button
                             type="button"
@@ -122,20 +120,81 @@ export function DestinationPicker({
                                 </button>
                             </div>
 
-                            <div className="mt-6">
-                                <StarSearch
-                                    selectedTarget={selectedTarget}
-                                    onSelect={(target) => {
-                                        onTargetSelect(target);
-                                        setIsOpen(false);
-                                    }}
-                                />
+                            <div className="mt-6 space-y-4">
+                                <div
+                                    role="radiogroup"
+                                    aria-label={t(
+                                        'interstellar.destinationPicker.modeLabel',
+                                    )}
+                                    className="flex gap-2 rounded-lg border border-cyan-100/12 bg-cyan-50/5 p-1"
+                                >
+                                    <ModeButton
+                                        isActive={mode === 'search'}
+                                        label={t(
+                                            'interstellar.destinationPicker.modeSearch',
+                                        )}
+                                        onSelect={() => setMode('search')}
+                                    />
+                                    <ModeButton
+                                        isActive={mode === 'custom'}
+                                        label={t(
+                                            'interstellar.destinationPicker.modeCustom',
+                                        )}
+                                        onSelect={() => setMode('custom')}
+                                    />
+                                </div>
+
+                                {/*
+                                 * The custom panel deliberately does not close
+                                 * the modal on change — typing "1", "12",
+                                 * "12.5" would slam it shut on the first
+                                 * keystroke. Escape, the close button, and the
+                                 * backdrop all still work.
+                                 */}
+                                {mode === 'search' ? (
+                                    <StarSearch
+                                        selectedTarget={selectedTarget}
+                                        onSelect={(target) => {
+                                            onTargetSelect(target);
+                                            setIsOpen(false);
+                                        }}
+                                    />
+                                ) : (
+                                    <CustomDistanceInput
+                                        distanceLy={customDistanceLy}
+                                        onChange={onCustomDistanceChange}
+                                    />
+                                )}
                             </div>
                         </div>
                     </div>,
                     document.body,
                 )}
         </>
+    );
+}
+
+interface ModeButtonProps {
+    isActive: boolean;
+    label: string;
+    onSelect: () => void;
+}
+
+function ModeButton({ isActive, label, onSelect }: ModeButtonProps) {
+    return (
+        <button
+            type="button"
+            role="radio"
+            aria-checked={isActive}
+            onClick={onSelect}
+            className={`flex-1 cursor-pointer rounded px-3 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
+                isActive
+                    ? 'bg-cyan-200 text-slate-950'
+                    : 'text-cyan-100 hover:bg-cyan-50/10'
+            }`}
+        >
+            {label}
+        </button>
     );
 }
 

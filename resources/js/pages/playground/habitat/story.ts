@@ -22,12 +22,12 @@ interface HabitatStoryOptions {
 
 const HABITAT_BACKGROUND = {
     imageAlt: 'Futuristic orbital habitat realtor office',
-    imageSrc: '/assets/img/bg/habitat-realtor-office.png',
+    imageSrc: '/assets/img/bg/habitat-realtor-office.webp',
 };
 
 const CYLINDER_INTERIOR_BACKGROUND = {
     imageAlt: "Interior view of a large O'Neill Cylinder habitat",
-    imageSrc: '/assets/img/bg/habitat-cylinder-rendered.png',
+    imageSrc: '/assets/img/bg/habitat-cylinder-rendered.webp',
 };
 
 const REALTOR_SPRITE = {

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { InterstellarFuel } from '@/lib/data/interstellar-fuels';
 
@@ -29,22 +30,7 @@ export function FuelPicker({
     const [isOpen, setIsOpen] = useState(false);
     const formattedMassRatio = formatMassRatio(t, massRatio);
 
-    useEffect(() => {
-        if (!isOpen) {
-            return;
-        }
-
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                setIsOpen(false);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen]);
+    useEscapeKey(isOpen, () => setIsOpen(false));
 
     return (
         <>

@@ -73,41 +73,46 @@ export function Hero() {
     return (
         <MultiPlaneScene height="100vh" parallaxStrength={0.6} atmosphere>
             <Layer
-                src="/assets/scenes/landing-hero/sky.png"
+                src="/assets/scenes/landing-hero/sky.webp"
                 label={t('landing.hero.layers.sky')}
                 position="full"
                 depth={0.95}
                 imagePosition="center top"
+                loading="eager"
+                fetchPriority="high"
             />
             <Layer
-                src="/assets/scenes/landing-hero/distant-nebula.png"
+                src="/assets/scenes/landing-hero/distant-nebula.webp"
                 label={t('landing.hero.layers.distantNebula')}
                 position="full"
                 depth={0.7}
                 opacity={{ from: 0.5 }}
                 imagePosition="center center"
+                loading="eager"
             />
             <Layer
-                src="/assets/scenes/landing-hero/near-veil.png"
+                src="/assets/scenes/landing-hero/near-veil.webp"
                 label={t('landing.hero.layers.nearNebula')}
                 position="full"
                 depth={0.45}
                 opacity={{ from: 0.42 }}
                 imagePosition="center center"
+                loading="eager"
             />
             {showHorizonLayer && (
                 <Layer
-                    src="/assets/scenes/landing-hero/horizon.png"
+                    src="/assets/scenes/landing-hero/horizon.webp"
                     label={t('landing.hero.layers.horizon')}
                     position="full"
                     depth={0.2}
                     opacity={{ from: 0.72 }}
                     imagePosition="center bottom"
+                    loading="eager"
                 />
             )}
             {showRailLayer && (
                 <Layer
-                    src="/assets/scenes/landing-hero/foreground-rail.png"
+                    src="/assets/scenes/landing-hero/foreground-rail.webp"
                     label={t('landing.hero.layers.rail')}
                     position="bottom"
                     depth={0.05}
@@ -116,6 +121,7 @@ export function Hero() {
                     size="30vh"
                     edgeBleed="1vh"
                     imagePosition="center bottom"
+                    loading="eager"
                 />
             )}
 

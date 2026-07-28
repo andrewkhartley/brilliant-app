@@ -45,7 +45,7 @@ export default function PlaygroundIndex() {
                             description={t(
                                 'playground.hub.cards.interstellar.description',
                             )}
-                            imageSrc="/assets/img/bg/color-nebula.jpg"
+                            imageSrc="/assets/img/bg/color-nebula.webp"
                             imageAlt=""
                         />
                         <ExperienceCard
@@ -54,7 +54,7 @@ export default function PlaygroundIndex() {
                             description={t(
                                 'playground.hub.cards.cruise.description',
                             )}
-                            imageSrc="/assets/img/bg/muted-nebula.png"
+                            imageSrc="/assets/img/bg/muted-nebula.webp"
                             imageAlt=""
                         />
                         <ExperienceCard
@@ -63,7 +63,7 @@ export default function PlaygroundIndex() {
                             description={t(
                                 'playground.hub.cards.habitat.description',
                             )}
-                            imageSrc="/assets/img/bg/cylinder.jpg"
+                            imageSrc="/assets/img/bg/cylinder.webp"
                             imageAlt=""
                         />
                     </div>

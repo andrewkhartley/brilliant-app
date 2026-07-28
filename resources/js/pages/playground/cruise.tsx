@@ -276,9 +276,12 @@ export default function CruisePage({
 
                 <section className="relative min-h-[74vh] overflow-hidden">
                     <img
-                        src="/assets/img/bg/stars.jpg"
+                        src="/assets/img/bg/stars.webp"
                         alt=""
                         className="absolute inset-0 h-full w-full object-cover opacity-48"
+                        loading="eager"
+                        decoding="async"
+                        fetchPriority="high"
                     />
                     <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,17,31,0.98),rgba(8,17,31,0.78)_42%,rgba(8,17,31,0.3)),linear-gradient(180deg,rgba(8,17,31,0.18),rgba(8,17,31,0.98)_92%),radial-gradient(circle_at_72%_42%,rgba(125,211,252,0.18),transparent_34%)]" />
                     <div className="relative mx-auto flex min-h-[74vh] max-w-6xl items-center px-4 py-20 sm:py-24">

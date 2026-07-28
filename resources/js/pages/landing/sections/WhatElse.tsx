@@ -44,7 +44,7 @@ export function WhatElse() {
                         description={t(
                             'landing.whatElse.cards.interstellar.description',
                         )}
-                        imageSrc="/assets/img/bg/color-nebula.jpg"
+                        imageSrc="/assets/img/bg/color-nebula.webp"
                         imageAlt=""
                     />
                     <ExperienceCard
@@ -53,7 +53,7 @@ export function WhatElse() {
                         description={t(
                             'landing.whatElse.cards.cruise.description',
                         )}
-                        imageSrc="/assets/img/bg/muted-nebula.png"
+                        imageSrc="/assets/img/bg/muted-nebula.webp"
                         imageAlt=""
                     />
                     <ExperienceCard
@@ -62,7 +62,7 @@ export function WhatElse() {
                         description={t(
                             'landing.whatElse.cards.habitat.description',
                         )}
-                        imageSrc="/assets/img/bg/cylinder.jpg"
+                        imageSrc="/assets/img/bg/cylinder.webp"
                         imageAlt=""
                     />
                 </div>

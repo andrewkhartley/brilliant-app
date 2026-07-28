@@ -51,6 +51,10 @@ export interface LayerProps {
     edgeBleed?: string;
     imageFit?: 'cover' | 'contain';
     imagePosition?: string;
+    /** Defaults to 'lazy'. Set 'eager' for layers above the fold. */
+    loading?: 'eager' | 'lazy';
+    /** Defaults to 'auto'. Set 'high' on the single LCP candidate only. */
+    fetchPriority?: 'high' | 'low' | 'auto';
     travel?: 'centered' | 'viewportAnchored';
     variant?: 'solid' | 'cutaway';
     aperture?: {
