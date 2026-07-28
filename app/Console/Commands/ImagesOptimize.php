@@ -80,19 +80,23 @@ class ImagesOptimize extends Command
                 continue;
             }
 
+            // Runs before the "already current" skip below: a redundant
+            // intermediate must be reported on every run it exists, not
+            // only on runs that happen to re-encode. Otherwise the steady
+            // state (webp already current) silently hides it forever.
+            foreach ($files as $file) {
+                if ($file->getPathname() !== $source->getPathname()
+                    && strtolower($file->getExtension()) !== 'webp') {
+                    $leftovers[] = $this->relative($root, $file->getPathname());
+                }
+            }
+
             if (! $isForced
                 && is_file($destination)
                 && filemtime($destination) >= $source->getMTime()) {
                 $skipped++;
 
                 continue;
-            }
-
-            foreach ($files as $file) {
-                if ($file->getPathname() !== $source->getPathname()
-                    && strtolower($file->getExtension()) !== 'webp') {
-                    $leftovers[] = $this->relative($root, $file->getPathname());
-                }
             }
 
             $originalSize = $source->getSize();
@@ -108,9 +112,11 @@ class ImagesOptimize extends Command
                 continue;
             }
 
-            $encodedSize = $this->encode($source, $destination, $quality);
+            $tempDestination = "{$destination}.tmp";
+            $encodedSize = $this->encode($source, $tempDestination, $quality);
 
             if ($encodedSize === null) {
+                @unlink($tempDestination);
                 $this->warn('  unreadable      '.$this->relative($root, $source->getPathname()));
                 $skipped++;
 
@@ -118,7 +124,7 @@ class ImagesOptimize extends Command
             }
 
             if ($encodedSize > $originalSize * (1 - $minimumSaving)) {
-                @unlink($destination);
+                @unlink($tempDestination);
                 $this->line(sprintf(
                     '  kept original  %s (WebP saved too little)',
                     $this->relative($root, $source->getPathname()),
@@ -128,6 +134,7 @@ class ImagesOptimize extends Command
                 continue;
             }
 
+            rename($tempDestination, $destination);
             $this->renameToSource($source);
 
             $bytesBefore += $originalSize;
@@ -232,12 +239,18 @@ class ImagesOptimize extends Command
     }
 
     /**
-     * Encodes to WebP, returning the written byte count or null if unreadable.
+     * Encodes to WebP at the given path, returning the written byte count
+     * or null if unreadable.
+     *
+     * Callers must pass a temp path, not the final destination: the guard
+     * that decides whether to keep the encode runs on the byte count
+     * *after* this returns, so writing straight to the final .webp would
+     * clobber a good pre-existing derivative before that decision is made.
      *
      * GD discards alpha unless blending is off and save-alpha is on. The
      * parallax layers depend on transparency, so this is load-bearing.
      */
-    private function encode(SplFileInfo $source, string $destination, int $quality): ?int
+    private function encode(SplFileInfo $source, string $tempDestination, int $quality): ?int
     {
         $image = $this->readImage($source);
 
@@ -249,12 +262,12 @@ class ImagesOptimize extends Command
         imagealphablending($image, false);
         imagesavealpha($image, true);
 
-        imagewebp($image, $destination, $quality);
+        imagewebp($image, $tempDestination, $quality);
         imagedestroy($image);
 
-        clearstatcache(true, $destination);
+        clearstatcache(true, $tempDestination);
 
-        return is_file($destination) ? filesize($destination) : null;
+        return is_file($tempDestination) ? filesize($tempDestination) : null;
     }
 
     private function readImage(SplFileInfo $source): ?GdImage

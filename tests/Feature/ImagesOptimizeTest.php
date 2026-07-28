@@ -103,13 +103,20 @@ it('re-encodes when --force is passed', function () {
     makeTestPng($this->fixtures.'/sky.png');
     $this->artisan('images:optimize', ['path' => $this->fixtures])->assertExitCode(0);
 
-    touch($this->fixtures.'/sky.webp', time() - 500);
-    $stale = filemtime($this->fixtures.'/sky.webp');
+    // Pushed forward, not back: touching backward would make the webp
+    // look stale relative to its source, so the ordinary (non-forced)
+    // guard would regenerate it on its own — the test would then pass
+    // whether or not --force did anything. Forward keeps the webp
+    // unambiguously current, so only --force can explain a rewrite.
+    touch($this->fixtures.'/sky.webp', time() + 500);
+    $current = filemtime($this->fixtures.'/sky.webp');
 
     $this->artisan('images:optimize', ['path' => $this->fixtures, '--force' => true])
         ->assertExitCode(0);
 
-    expect(filemtime($this->fixtures.'/sky.webp'))->toBeGreaterThan($stale);
+    // A genuine re-encode writes a fresh "now" mtime, which is certainly
+    // less than the artificially future value set above.
+    expect(filemtime($this->fixtures.'/sky.webp'))->toBeLessThan($current);
 });
 
 it('keeps the original and writes nothing when the saving guard is not met', function () {
@@ -125,6 +132,26 @@ it('keeps the original and writes nothing when the saving guard is not met', fun
         ->and(file_exists($this->fixtures.'/sky-source.png'))->toBeFalse();
 });
 
+it('does not clobber an existing webp when a forced re-encode is rejected by the savings guard', function () {
+    makeTestPng($this->fixtures.'/sky.png');
+    $this->artisan('images:optimize', ['path' => $this->fixtures])->assertExitCode(0);
+
+    expect($this->fixtures.'/sky.webp')->toBeFile();
+    $originalWebpContents = file_get_contents($this->fixtures.'/sky.webp');
+
+    // --force bypasses the "already current" skip, so this reaches the
+    // savings guard on a stem that already has a good, previously-built
+    // webp. Rejecting the re-encode must never destroy that prior output.
+    $this->artisan('images:optimize', [
+        'path' => $this->fixtures,
+        '--force' => true,
+        '--min-saving' => 99,
+    ])->assertExitCode(0);
+
+    expect($this->fixtures.'/sky.webp')->toBeFile()
+        ->and(file_get_contents($this->fixtures.'/sky.webp'))->toBe($originalWebpContents);
+});
+
 it('prefers a -source original over a plain-named intermediate', function () {
     makeTestPng($this->fixtures.'/near-top-source.png', 400, 300);
     makeTestPng($this->fixtures.'/near-top.png', 40, 30);
@@ -138,6 +165,22 @@ it('prefers a -source original over a plain-named intermediate', function () {
     // 400px proves the -source original was the encode input, not the 40px intermediate.
     expect($width)->toBe(400)
         ->and($this->fixtures.'/near-top.png')->toBeFile();
+});
+
+it('reports a redundant intermediate even when the stem is already current', function () {
+    makeTestPng($this->fixtures.'/near-top-source.png', 400, 300);
+    makeTestPng($this->fixtures.'/near-top.png', 40, 30);
+
+    // First run creates near-top.webp, so the stem is now current.
+    $this->artisan('images:optimize', ['path' => $this->fixtures])->assertExitCode(0);
+
+    // Second run: nothing changed, so this stem takes the "already
+    // current" skip path. The leftover 40px intermediate must still be
+    // surfaced — the class doc promises "redundant intermediates are
+    // reported for manual review" with no "unless already current" caveat.
+    $this->artisan('images:optimize', ['path' => $this->fixtures])
+        ->assertExitCode(0)
+        ->expectsOutputToContain('near-top.png');
 });
 
 it('writes nothing during a dry run', function () {
