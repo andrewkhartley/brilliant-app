@@ -98,10 +98,23 @@ return [
         'label' => 'Destination',
         'summary' => ':distance ly / :source',
         'presetSource' => 'Preset destination',
+        'customSource' => 'Manual entry',
         'modalEyebrow' => 'Target selection',
         'modalTitle' => 'Choose a destination',
-        'modalBody' => 'Pick one of the prepared destinations or search for a target. Gaia-backed results can update the trip distance using RA, Dec, and parallax.',
+        'modalBody' => 'Search the star catalog for a real target, or set a distance yourself. Gaia-backed results carry RA, Dec, and a parallax-based distance.',
+        'modeLabel' => 'How do you want to pick a destination?',
+        'modeSearch' => 'Search a star',
+        'modeCustom' => 'Set a distance',
         'close' => 'Close destination picker',
+    ],
+
+    'customDistance' => [
+        'label' => 'Custom distance',
+        'inputLabel' => 'Distance in light-years',
+        'placeholder' => '4.24',
+        'unit' => 'light-years',
+        'hint' => 'Skip the star catalog and just punch in a number. Handy when you care about the math, not the destination.',
+        'invalid' => 'Enter a number between :min and :max light-years.',
     ],
 
     'starSearch' => [

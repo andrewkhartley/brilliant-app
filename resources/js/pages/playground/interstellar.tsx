@@ -16,6 +16,10 @@ import { interstellarTripDuration } from '@/lib/equations/interstellar-trip-dura
 import { interstellarTripDurationDilation } from '@/lib/equations/interstellar-trip-duration-dilation';
 import { relativisticSpeed } from '@/lib/equations/relativistic-speed';
 
+import {
+    MAXIMUM_DISTANCE_LY,
+    MINIMUM_DISTANCE_LY,
+} from './interstellar/CustomDistanceInput';
 import { DestinationPicker } from './interstellar/DestinationPicker';
 import { FuelPicker } from './interstellar/FuelPicker';
 import { MaxSpeedSlider } from './interstellar/MaxSpeedSlider';
@@ -44,6 +48,7 @@ const INTERSTELLAR_STORAGE_KEY = 'interstellar:planner-settings';
 interface InterstellarPlannerSettings {
     acceleration: number;
     allowRelativisticLimit: boolean;
+    customDistanceLy: number | null;
     destinationId: string;
     efficiency: number;
     fuelId: string;
@@ -101,13 +106,23 @@ export default function InterstellarPage() {
     const [isStoryOpen, setIsStoryOpen] = useState(false);
     const [selectedTarget, setSelectedTarget] =
         useState<InterstellarTarget | null>(initialSettings.selectedTarget);
+    const [customDistanceLy, setCustomDistanceLy] = useState<number | null>(
+        initialSettings.customDistanceLy,
+    );
 
     const destination =
         destinations.find((d) => d.id === destinationId) ?? destinations[0];
-    const activeDestinationName = selectedTarget?.name ?? destination.name;
-    const activeDistanceLy = selectedTarget?.distanceLy ?? destination.distanceLy;
+    const activeDestinationName =
+        customDistanceLy !== null
+            ? t('interstellar.customDistance.label')
+            : (selectedTarget?.name ?? destination.name);
+    const activeDistanceLy =
+        customDistanceLy ?? selectedTarget?.distanceLy ?? destination.distanceLy;
     const activeDestinationSource =
-        selectedTarget?.source ?? t('interstellar.destinationPicker.presetSource');
+        customDistanceLy !== null
+            ? t('interstellar.destinationPicker.customSource')
+            : (selectedTarget?.source ??
+              t('interstellar.destinationPicker.presetSource'));
     const distanceMeters = activeDistanceLy * LIGHT_YEAR_METERS;
 
     const fuel =
@@ -117,6 +132,7 @@ export default function InterstellarPage() {
         saveInterstellarSettings({
             acceleration,
             allowRelativisticLimit,
+            customDistanceLy,
             destinationId,
             efficiency,
             fuelId,
@@ -127,6 +143,7 @@ export default function InterstellarPage() {
     }, [
         acceleration,
         allowRelativisticLimit,
+        customDistanceLy,
         destinationId,
         efficiency,
         fuelId,
@@ -237,6 +254,25 @@ export default function InterstellarPage() {
             t,
         ],
     );
+
+    // The two writers below are the only places the "custom XOR target"
+    // invariant lives. Setting either clears the other, so the precedence
+    // derivation above never has to arbitrate between two live values.
+    const chooseTarget = (target: InterstellarTarget) => {
+        setCustomDistanceLy(null);
+        setSelectedTarget(target);
+    };
+
+    // Clears the target only for a VALID distance — wiping a good star
+    // selection mid-edit, while the field is transiently empty, would be
+    // a nasty surprise.
+    const chooseDistance = (distanceLy: number | null) => {
+        if (distanceLy !== null) {
+            setSelectedTarget(null);
+        }
+
+        setCustomDistanceLy(distanceLy);
+    };
 
     const handleRelativisticLimitChange = (isEnabled: boolean) => {
         setMaxSpeed((currentMaxSpeed) =>
@@ -352,8 +388,10 @@ export default function InterstellarPage() {
                                         activeDistanceLy={activeDistanceLy}
                                         activeName={activeDestinationName}
                                         activeSource={activeDestinationSource}
+                                        customDistanceLy={customDistanceLy}
+                                        onCustomDistanceChange={chooseDistance}
                                         selectedTarget={selectedTarget}
-                                        onTargetSelect={setSelectedTarget}
+                                        onTargetSelect={chooseTarget}
                                     />
                                     <StopToggle
                                         stop={stop}
@@ -468,6 +506,7 @@ function defaultInterstellarSettings(): InterstellarPlannerSettings {
     return {
         acceleration: STANDARD_GRAVITY,
         allowRelativisticLimit: false,
+        customDistanceLy: null,
         destinationId: destinations[0].id,
         efficiency: 1.0,
         fuelId: interstellarFuels[0].id,
@@ -508,6 +547,15 @@ function loadInterstellarSettings(): InterstellarPlannerSettings {
                 typeof parsed.allowRelativisticLimit === 'boolean'
                     ? parsed.allowRelativisticLimit
                     : fallback.allowRelativisticLimit,
+            // Settings saved before custom distance existed simply lack the
+            // field and read as null — no migration needed.
+            customDistanceLy:
+                typeof parsed.customDistanceLy === 'number' &&
+                Number.isFinite(parsed.customDistanceLy) &&
+                parsed.customDistanceLy >= MINIMUM_DISTANCE_LY &&
+                parsed.customDistanceLy <= MAXIMUM_DISTANCE_LY
+                    ? parsed.customDistanceLy
+                    : null,
             destinationId: destination?.id ?? fallback.destinationId,
             efficiency: clampNumber(
                 parsed.efficiency,
