@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import { CustomDistanceInput } from './CustomDistanceInput';
@@ -36,22 +37,7 @@ export function DestinationPicker({
         customDistanceLy === null ? 'search' : 'custom',
     );
 
-    useEffect(() => {
-        if (!isOpen) {
-            return;
-        }
-
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                setIsOpen(false);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen]);
+    useEscapeKey(isOpen, () => setIsOpen(false));
 
     return (
         <>
@@ -90,7 +76,7 @@ export function DestinationPicker({
                         aria-label={t(
                             'interstellar.destinationPicker.modalTitle',
                         )}
-                        className="fixed inset-0 z-[240] flex items-center justify-center bg-slate-950/92 p-4 backdrop-blur-xl"
+                        className="fixed inset-0 z-240 flex items-center justify-center bg-slate-950/92 p-4 backdrop-blur-xl"
                     >
                         <button
                             type="button"

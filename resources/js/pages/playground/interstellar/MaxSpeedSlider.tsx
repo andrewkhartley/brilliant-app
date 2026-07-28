@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { SliderInput } from '@/components/equations/SliderInput';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useTranslation } from '@/hooks/useTranslation';
 import { SPEED_OF_LIGHT } from '@/lib/constants';
 
@@ -44,22 +45,7 @@ export function MaxSpeedSlider({
         }
     }, [maxSpeed, onChange, sliderMax]);
 
-    useEffect(() => {
-        if (!isEditOpen) {
-            return;
-        }
-
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                setIsEditOpen(false);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isEditOpen]);
+    useEscapeKey(isEditOpen, () => setIsEditOpen(false));
 
     const editValue = useMemo(
         () =>
