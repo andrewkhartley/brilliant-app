@@ -24,7 +24,7 @@ interface InterstellarStoryOptions {
 
 const INTERSTELLAR_BACKGROUND = {
     imageAlt: 'Deep star field and nebula background',
-    imageSrc: '/assets/img/bg/jwst-nebula.jpg',
+    imageSrc: '/assets/img/bg/jwst-nebula.webp',
 };
 
 const GUIDE_SPRITE = {

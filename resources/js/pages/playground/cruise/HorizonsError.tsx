@@ -74,7 +74,7 @@ export function HorizonsError({
                     className="cruise-error-drift inline-flex h-12 w-12 items-center justify-center"
                 >
                     <img
-                        src="/assets/img/destinations/sat.png"
+                        src="/assets/img/destinations/sat.webp"
                         alt=""
                         aria-hidden="true"
                         className="h-12 w-12 object-contain opacity-80"

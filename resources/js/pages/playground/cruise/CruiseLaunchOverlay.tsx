@@ -655,10 +655,10 @@ const DESTINATION_IMAGE_CODES = new Set([
 
 function destinationImageSrc(code: string): string {
     if (DESTINATION_IMAGE_CODES.has(code)) {
-        return `/assets/img/destinations/${code}.png`;
+        return `/assets/img/destinations/${code}.webp`;
     }
 
-    return '/assets/img/destinations/obs.png';
+    return '/assets/img/destinations/obs.webp';
 }
 
 function createShip() {

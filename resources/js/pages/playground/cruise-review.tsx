@@ -725,7 +725,7 @@ function ItineraryLegPanel({ legs }: ItineraryLegPanelProps) {
  * for. Disclosure stays collapsed by default so the scannable rhythm
  * of the primary row isn't compromised.
  *
- * Planet icons use `/assets/img/destinations/{code}.png` at 48×48
+ * Planet icons use `/assets/img/destinations/{code}.webp` at 48×48
  * with `object-contain` so circular planets (Saturn's rings, for
  * instance) don't get clipped by a rounded crop.
  *
@@ -966,7 +966,7 @@ function PlanetIcon({ code, name }: PlanetIconProps) {
             src={src}
             alt={name}
             className="h-12 w-12 object-contain"
-            onError={() => setSrc('/assets/img/destinations/obs.png')}
+            onError={() => setSrc('/assets/img/destinations/obs.webp')}
         />
     );
 }
@@ -987,10 +987,10 @@ const DESTINATION_IMAGE_CODES = new Set([
 
 function destinationImageSrc(code: string): string {
     if (DESTINATION_IMAGE_CODES.has(code)) {
-        return `/assets/img/destinations/${code}.png`;
+        return `/assets/img/destinations/${code}.webp`;
     }
 
-    return '/assets/img/destinations/obs.png';
+    return '/assets/img/destinations/obs.webp';
 }
 
 interface SummaryItemProps {

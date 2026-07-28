@@ -11,7 +11,7 @@ import { AppLayout } from '@/layouts/AppLayout';
 const bridgeMiddleLayers: LayerStackItem[] = [
     {
         id: 'bridge-background',
-        src: '/assets/scenes/starship-bridge-test/bridge-background.png',
+        src: '/assets/scenes/starship-bridge-test/bridge-background.webp',
         depth: 0.64,
         motion: 'track',
         size: '164vh',
@@ -25,7 +25,7 @@ const bridgeMiddleLayers: LayerStackItem[] = [
 const bridgeTopLayers: LayerStackItem[] = [
     {
         id: 'mid-top',
-        src: '/assets/scenes/starship-bridge-test/mid-top.png',
+        src: '/assets/scenes/starship-bridge-test/mid-top.webp',
         depth: 0.42,
         motion: 'track',
         size: '22vh',
@@ -37,7 +37,7 @@ const bridgeTopLayers: LayerStackItem[] = [
     },
     {
         id: 'near-top',
-        src: '/assets/scenes/starship-bridge-test/near-top.png',
+        src: '/assets/scenes/starship-bridge-test/near-top.webp',
         depth: 0,
         motion: 'track',
         size: '40vh',
@@ -52,7 +52,7 @@ const bridgeTopLayers: LayerStackItem[] = [
 const bridgeBottomLayers: LayerStackItem[] = [
     {
         id: 'mid-bottom',
-        src: '/assets/scenes/starship-bridge-test/mid-bottom.png',
+        src: '/assets/scenes/starship-bridge-test/mid-bottom.webp',
         depth: 0.42,
         motion: 'track',
         size: '24vh',
@@ -64,7 +64,7 @@ const bridgeBottomLayers: LayerStackItem[] = [
     },
     {
         id: 'near-bottom',
-        src: '/assets/scenes/starship-bridge-test/near-bottom.png',
+        src: '/assets/scenes/starship-bridge-test/near-bottom.webp',
         depth: 0,
         motion: 'track',
         size: '44vh',

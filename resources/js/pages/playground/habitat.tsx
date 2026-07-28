@@ -427,7 +427,7 @@ export default function HabitatPage() {
 
                 <section className="relative min-h-[74vh] overflow-hidden">
                     <img
-                        src="/assets/img/bg/cylinder.jpg"
+                        src="/assets/img/bg/cylinder.webp"
                         alt={t('habitat.hero.imageAlt')}
                         className="absolute inset-0 h-full w-full object-cover opacity-48"
                     />

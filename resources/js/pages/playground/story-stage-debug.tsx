@@ -13,7 +13,7 @@ export default function StoryStageDebugPage() {
             {
                 id: 'arrival',
                 background: {
-                    imageSrc: '/assets/img/bg/cylinder.jpg',
+                    imageSrc: '/assets/img/bg/cylinder.webp',
                     imageAlt: t('storyStage.demo.backgroundAlt'),
                 },
                 speaker: t('storyStage.demo.scenes.arrival.speaker'),
@@ -54,7 +54,7 @@ export default function StoryStageDebugPage() {
             {
                 id: 'ceiling',
                 background: {
-                    imageSrc: '/assets/img/bg/cylinder.jpg',
+                    imageSrc: '/assets/img/bg/cylinder.webp',
                     imageAlt: t('storyStage.demo.backgroundAlt'),
                 },
                 speaker: t('storyStage.demo.scenes.ceiling.speaker'),
@@ -93,7 +93,7 @@ export default function StoryStageDebugPage() {
             {
                 id: 'choice',
                 background: {
-                    imageSrc: '/assets/img/bg/cylinder.jpg',
+                    imageSrc: '/assets/img/bg/cylinder.webp',
                     imageAlt: t('storyStage.demo.backgroundAlt'),
                 },
                 speaker: t('storyStage.demo.scenes.choice.speaker'),

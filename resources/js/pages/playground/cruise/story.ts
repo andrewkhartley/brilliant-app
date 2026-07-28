@@ -15,7 +15,7 @@ interface CruiseStoryOptions {
 
 const CRUISE_BACKGROUND = {
     imageAlt: 'Star field background',
-    imageSrc: '/assets/img/bg/stars.jpg',
+    imageSrc: '/assets/img/bg/stars.webp',
 };
 
 const GUIDE_SPRITE = {

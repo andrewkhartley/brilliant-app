@@ -265,7 +265,7 @@ export default function InterstellarPage() {
 
                 <section className="relative min-h-[74vh] overflow-hidden">
                     <img
-                        src="/assets/img/bg/jwst-nebula.jpg"
+                        src="/assets/img/bg/jwst-nebula.webp"
                         alt=""
                         className="absolute inset-0 h-full w-full object-cover opacity-48"
                     />

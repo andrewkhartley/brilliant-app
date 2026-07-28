@@ -21,25 +21,25 @@ export function CovidOrigin() {
     );
     const galleryItems: GalleryItem[] = [
         {
-            src: '/assets/scenes/clubhouse/analytics-growth.png',
+            src: '/assets/scenes/clubhouse/analytics-growth.webp',
             title: t('landing.covidOrigin.gallery.analytics.title'),
             caption: t('landing.covidOrigin.gallery.analytics.caption'),
             alt: t('landing.covidOrigin.visual.analyticsAlt'),
         },
         {
-            src: '/assets/scenes/clubhouse/mars-room.png',
+            src: '/assets/scenes/clubhouse/mars-room.webp',
             title: t('landing.covidOrigin.gallery.mars.title'),
             caption: t('landing.covidOrigin.gallery.mars.caption'),
             alt: t('landing.covidOrigin.visual.marsAlt'),
         },
         {
-            src: '/assets/scenes/clubhouse/space-telescope-room.png',
+            src: '/assets/scenes/clubhouse/space-telescope-room.webp',
             title: t('landing.covidOrigin.gallery.jamesWebb.title'),
             caption: t('landing.covidOrigin.gallery.jamesWebb.caption'),
             alt: t('landing.covidOrigin.visual.jamesWebbAlt'),
         },
         {
-            src: '/assets/scenes/clubhouse/generation-ship-room.png',
+            src: '/assets/scenes/clubhouse/generation-ship-room.webp',
             title: t('landing.covidOrigin.gallery.generationShip.title'),
             caption: t('landing.covidOrigin.gallery.generationShip.caption'),
             alt: t('landing.covidOrigin.visual.generationShipAlt'),

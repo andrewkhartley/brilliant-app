@@ -276,7 +276,7 @@ export default function CruisePage({
 
                 <section className="relative min-h-[74vh] overflow-hidden">
                     <img
-                        src="/assets/img/bg/stars.jpg"
+                        src="/assets/img/bg/stars.webp"
                         alt=""
                         className="absolute inset-0 h-full w-full object-cover opacity-48"
                     />

@@ -381,10 +381,10 @@ function SortableItem({
 
 function destinationImageSrc(code: string): string {
     if (!DESTINATION_IMAGE_CODES.has(code)) {
-        return '/assets/img/destinations/obs.png';
+        return '/assets/img/destinations/obs.webp';
     }
 
-    return `/assets/img/destinations/${code}.png`;
+    return `/assets/img/destinations/${code}.webp`;
 }
 
 const DESTINATION_IMAGE_CODES = new Set([
@@ -416,7 +416,7 @@ function DestinationImage({
             alt=""
             className={className}
             loading="lazy"
-            onError={() => setSrc('/assets/img/destinations/obs.png')}
+            onError={() => setSrc('/assets/img/destinations/obs.webp')}
         />
     );
 }
