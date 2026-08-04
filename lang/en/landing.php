@@ -31,11 +31,11 @@ return [
     ],
 
     'orientation' => [
-        'kicker' => 'Built for Brilliant',
-        'heading' => 'An application, built as the application.',
-        'paragraph1' => 'You do some neat things, so I wanted to change things up for my application. Read the story, try the demos, then open the traditional CV. I built this to show how I think as an engineer, why interactive learning matters to me, and what I believe Brilliant is specifically well positioned to build next.',
-        'paragraph2Prefix' => 'I build interactive learning tools for curious communities.',
-        'paragraph2Emphasis' => 'With Brilliant, the scale grows.',
+        'kicker' => 'Built to think out loud',
+        'heading' => 'A portfolio you can poke',
+        'paragraph1' => 'Job applications are changing, so this is not a static page. Read my story, try the demos, or open the traditional CV. Or all of them: you\'re an adult, I can\'t tell you what to do. I built it to show how I think as an engineer, with interactive learning, and where I believe this kind of work should go next.',
+        'paragraph2Prefix' => 'Beyond the demos, I build whole production platforms solo, end to end: encrypted messaging networks, operations platforms teams run their day on, creative tools for writers, and playgrounds like this one.',
+        'paragraph2Emphasis' => 'One builder, a lot of range, and some well-placed AI to make it a reality.',
         'actions' => [
             'playgrounds' => 'Explore the demos',
             'projects' => 'View projects',
@@ -71,9 +71,9 @@ return [
         'capstone' => [
             'kicker' => 'The Inspiration that Remained',
             'heading' => 'Curiosity needs a place to go.',
-            'brilliantName' => 'Brilliant',
+            'glowPhrase' => 'curiosity needs a place to go',
             'paragraph1' => 'A good story has rules and constraints, and rooms built around the art of the possible have to embrace them: what would the city need, where would the material come from, what breaks first, and what has to be learned before any of it becomes possible? Week after week, hundreds (and sometimes thousands) would listen or take the leap to join us on stage.',
-            'paragraph2' => 'As the world adjusted and opened back up, the rooms on Clubhouse began to empty, but the inspiration did not. Teaching through those conversations is what led me down this path: curiosity needs a place to go, and people return when learning feels active, playful, and shared. That is where Brilliant feels so aligned to me.',
+            'paragraph2' => 'As the world adjusted and opened back up, the rooms on Clubhouse began to empty, but the inspiration did not. Teaching through those conversations is what led me down this path: curiosity needs a place to go, and people return when learning feels active, playful, and shared. That is the whole reason I keep building things like this.',
         ],
         'gallery' => [
             'analytics' => [
@@ -115,7 +115,7 @@ return [
         'paragraph2' => 'Curiosity is potential energy. It is why people keep reaching for the next thing, even as the brain changes pace with age. The right story can make a difficult path feel worth entering.',
         'potentialEnergyPhrase' => 'Curiosity is potential energy.',
         'paragraph3' => 'One day, someone may plan real travel itineraries through the solar system. To make that possible, people will need to solve fuel, radiation, biology, and materials problems that are currently a barrier. Some of the people critical to those answers are alive today, but may not yet know what they will contribute.',
-        'capstonePrefix' => 'That is why Brilliant feels like the right place to build. Near and distant future scenarios can connect imagination to the educational paths required to solve real problems.',
+        'capstonePrefix' => 'That is why I keep building. Near and distant future scenarios can connect imagination to the educational paths required to solve real problems.',
         'alexandriaLinkLabel' => 'Alexandria',
         'capstoneSuffix' => 'comes from the same instinct in another direction: use technology wisely, so creative human beings can think, organize, and build with more clarity, not less.',
         'demoKicker' => 'Scenario math',
@@ -169,7 +169,7 @@ return [
     'contactFooter' => [
         'kicker' => 'Next conversation',
         'heading' => 'Let\'s Talk!',
-        'pitch' => 'Inspiration changes what people feel capable of learning, building, and becoming. Brilliant already turns curiosity into capability. Let\'s build the next experiences that make that transformation feel possible, and the community of visionaries who carry it forward.',
+        'pitch' => 'Inspiration changes what people feel capable of learning, building, and becoming. The right experiences turn curiosity into capability. Let\'s build the ones that make that transformation feel possible, and the community of visionaries who carry it forward.',
         'links' => [
             'email' => 'Email',
             'emailHref' => 'mailto:ahartley@gmail.com',

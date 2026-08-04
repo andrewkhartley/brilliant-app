@@ -162,14 +162,14 @@ export function CovidOrigin() {
                     data-clubhouse-reveal
                     className="grid gap-8 text-left lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.618fr)] lg:items-center"
                 >
-                    <div className="max-w-5xl">
+                    <div className="max-w-2xl">
                         <p className="text-xs font-semibold tracking-[0.28em] text-cyan-200/75 uppercase">
                             {t('landing.covidOrigin.kicker')}
                         </p>
                         <h2 className="mt-4 text-3xl font-semibold tracking-normal text-white sm:text-5xl">
                             {t('landing.covidOrigin.heading')}
                         </h2>
-                        <p className="mt-5 max-w-2xl text-lg leading-8 text-cyan-50/72">
+                        <p className="mt-5 text-lg leading-8 text-cyan-50/72">
                             {t('landing.covidOrigin.intro')}
                         </p>
                     </div>
@@ -295,7 +295,7 @@ export function CovidOrigin() {
                                         'landing.covidOrigin.capstone.paragraph2',
                                     )}
                                     phrase={t(
-                                        'landing.covidOrigin.capstone.brilliantName',
+                                        'landing.covidOrigin.capstone.glowPhrase',
                                     )}
                                 />
                             </p>

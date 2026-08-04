@@ -150,9 +150,8 @@ export function SolarSystemMiniMap() {
     return (
         <div
             aria-hidden="true"
-            className="pointer-events-none relative aspect-video overflow-hidden rounded-lg border border-cyan-100/12 bg-slate-950/34 shadow-2xl shadow-black/24"
+            className="pointer-events-none relative aspect-video"
         >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,211,238,0.12),transparent_44%),linear-gradient(135deg,rgba(8,17,31,0.36),rgba(15,23,42,0.62))]" />
             <canvas
                 ref={canvasRef}
                 className="relative block h-full w-full"
