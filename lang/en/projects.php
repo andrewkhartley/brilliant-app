@@ -3,15 +3,103 @@
 /*
  * Projects page translations.
  *
- * This page is a supporting surface for Andrew's broader project ecosystem.
- * The landing page can link here without carrying the full Alexandria or
- * Undaunted story inside the cover letter.
+ * Ordering mirrors the page top-to-bottom: intro, the "Empower & protect"
+ * mission trio (Myco, SAM, Empowered Public), the flagship builds (Swingers,
+ * Alexandria), then Undaunted + references. Shared image-viewer nav labels
+ * live under `gallery`.
  */
 
 return [
     'pageTitle' => 'Projects',
     'heading' => 'What is on my radar?',
-    'intro' => 'I want to show a bit of what I\'m working on so that you can see where I intend to go. How do we use technology to help curious people think more clearly, organize what matters, and turn inspiration into something they can build with other people?',
+    'intro' => 'This is a mix of what I\'m building now and where I want to take it. Some of it helps curious people think more clearly. Some of it hands communities the keys to tools they\'d otherwise be renting from a company that could change its mind next quarter. All of it is production, not prototypes, and I built most of it alone (which is either the selling point or the warning, depending on who\'s reading).',
+    'introBio' => 'Before I wrote software full time, I spent two decades in frontline operations at Disney, JetBlue, Sodexo, and Swingers (Crazy Golf, not the other). That is where the operational empathy comes from: I have been the person doing the manual reconciliation support at 2 a.m., so when I build the tool that replaces it, I know what actually needs to work.',
+
+    'publicGood' => [
+        'kicker' => 'Empower & protect',
+        'heading' => 'Three builds for a safer, more empowered public.',
+        'intro' => 'Different problems, one instinct: give people tools that protect them and hand them the keys. Two keep a community\'s conversations its own; one helps the public walk into the room prepared. Where the work is security-sensitive, the details are more need-to-know. What to know? You know what to do...',
+        'cards' => [
+            'myco' => [
+                'badge' => 'Restricted · In development',
+                'title' => 'Myco Federation',
+                'tagline' => 'Discord\'s shape, without renting your community.',
+                'body' => 'End-to-end encrypted, federated chat that lets a community own its own space instead of renting it from a company that can read every message. You can run the server, and everything in transit remains encrypted. Built solo and in active development.',
+                'footer' => 'Case study available on request',
+            ],
+            'sam' => [
+                'badge' => 'Restricted · Piloted',
+                'title' => 'Signal Access Manager',
+                'tagline' => 'Secure coordination for rapid-response networks.',
+                'body' => 'A certificate-based secure communications platform built on Signal\'s infrastructure for community organizing networks. Concept to an active pilot in two months. SAM is where the Myco instinct started.',
+                'footer' => 'Case study available on request',
+            ],
+            'empoweredPublic' => [
+                'badge' => 'In active development',
+                'title' => 'The Empowered Public',
+                'tagline' => 'Help the public show up and be heard.',
+                'body' => 'A civic toolkit that helps residents show up prepared for local government meetings, starting with the data centers quietly moving into their towns: a reviewed question library, a Town Hall Mode that hands you one sharp question at a time, and public-records request templates.',
+                'footer' => 'Developed in a few days: building the careful part first, an editorial and evidence pipeline that ties every published claim to verified sources.',
+            ],
+        ],
+    ],
+
+    'swingers' => [
+        'kicker' => 'The Swingers Hub · 2025–2026',
+        'heading' => 'One platform to replace a pile of haunted spreadsheets.',
+        'intro' => 'A team-scale internal operations platform I shipped solo, replacing fragmented Excel workflows across multiple hospitality venues.',
+        'bodyA' => 'Operations across venues ran on disconnected spreadsheets, manual reconciliation, and siloed data from four external platforms. I made the case for one unified system, then designed and shipped it as the sole developer over eight months.',
+        'bodyB' => 'The Hub is a Laravel platform with 106 database tables, 211 routes, and live integrations across Toast, Easol, Embed, and Viator, running on Azure with a CI/CD pipeline I built alongside it. When a new venue came online, it onboarded with zero custom development.',
+        'bodyC' => 'What made it work was not just the architecture. I had spent three years inside the operation before I started building, so I knew the workflows because I had done them, and the people using it had real influence on how it took shape.',
+        'tech' => 'Laravel · Livewire · MySQL · Azure · Toast / Easol / Embed / Viator APIs · CI/CD',
+        'features' => [
+            'reconciliation' => [
+                'title' => 'Reconciliation, automated',
+                'body' => 'Nightly cash-up went from yellow-cell Excel entry to automated variance detection. Discrepancy research dropped from 30–60 minutes to under 5.',
+            ],
+            'multivenue' => [
+                'title' => 'Multi-venue from day one',
+                'body' => 'Designed multi-tenant from the start, so a brand-new location onboarded with zero custom development.',
+            ],
+            'realtime' => [
+                'title' => 'Live, not nightly',
+                'body' => 'Check-in, cash-up, and venue performance pull from Toast in real time. No nightly export, no stale numbers.',
+            ],
+        ],
+        'screenshots' => [
+            'excelCashup' => [
+                'title' => 'Before: the spreadsheet',
+                'alt' => 'The old Excel cash-up workflow with yellow-cell manual entry and a row of sheet tabs.',
+                'caption' => 'The old nightly cash-up: yellow-cell manual entry spread across a dozen fragile sheet tabs.',
+            ],
+            'reconciliation' => [
+                'title' => 'After: automated reconciliation',
+                'alt' => 'Hub Final Reconciliation Summary with variance detection and a cash-management panel.',
+                'caption' => 'What replaced it: automated variance detection. Discrepancy research went from 30–60 minutes to under 5.',
+            ],
+            'calendar' => [
+                'title' => 'Custom calendar',
+                'alt' => 'Hub calendar showing a month of time slots per day with a Day at a Glance panel.',
+                'caption' => 'Event tracking scoped per business unit, so each department sees only what is relevant to it.',
+            ],
+            'cashupEasol' => [
+                'title' => 'Auto-mapped integrations',
+                'alt' => 'Hub Cash Up page showing Upload Easol Data with bookings synced and a progress indicator.',
+                'caption' => 'New items in Easol map themselves into the Hub as they appear. No manual reconciliation step.',
+            ],
+            'staffBanks' => [
+                'title' => 'Live Toast integration',
+                'alt' => 'Close Staff Banks view with live Toast data: employee deposits, declared tips, and differences.',
+                'caption' => 'Closing staff banks against live Toast data: deposits, declared tips, and differences in one view.',
+            ],
+            'sop' => [
+                'title' => 'In-line SOPs',
+                'alt' => 'In-app SOP modal walking through variance investigation steps in context.',
+                'caption' => 'Context-specific instructions surface where the user is stuck, instead of a doc nobody reads in the moment.',
+            ],
+        ],
+    ],
+
     'alexandria' => [
         'kicker' => 'Alexandria',
         'heading' => 'Capture first. Organize later.',
@@ -55,12 +143,9 @@ return [
                 'alt' => 'Alexandria AI review modal with approval controls.',
                 'caption' => 'AI can propose structure, with an approval process. With more detail, the richer the worlds become.',
             ],
-            'close' => 'Close image viewer',
-            'previous' => 'Previous image',
-            'next' => 'Next image',
-            'position' => ':current of :total',
         ],
     ],
+
     'undaunted' => [
         'kicker' => 'Undaunted',
         'heading' => 'A community for dreamers who want the future to feel buildable.',
@@ -83,6 +168,7 @@ return [
             ],
         ],
     ],
+
     'references' => [
         'kicker' => 'Reference points',
         'heading' => 'Where this fits',
@@ -96,11 +182,19 @@ return [
                 'title' => 'Explorable explanations',
                 'body' => 'The best interactive demos do more than visualize an answer. They let someone change the model, constraints, and engage in the full range of possibilities of the model.',
             ],
-            'brilliant' => [
-                'title' => 'Brilliant\'s active learning',
-                'body' => 'Brilliant already understands that people learn by doing. This application is my way of showing how story, community, and engineering can push that instinct into bigger worlds.',
+            'activeLearning' => [
+                'title' => 'Active learning',
+                'body' => 'The best learning platforms already understand that people learn by doing. This application is my way of showing how story, community, and engineering can push that instinct into bigger worlds.',
             ],
         ],
     ],
-    'note' => 'For Brilliant, the connection is straightforward: I would love to contribute to something I believe in, and keeping curiosity alive together will make for a more meaningful tomorrow.',
+
+    'gallery' => [
+        'close' => 'Close image viewer',
+        'previous' => 'Previous image',
+        'next' => 'Next image',
+        'position' => ':current of :total',
+    ],
+
+    'note' => 'The connection is straightforward: I want to contribute to something I believe in, and keeping curiosity alive together will make for a more meaningful tomorrow.',
 ];

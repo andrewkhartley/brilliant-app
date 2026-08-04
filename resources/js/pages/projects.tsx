@@ -6,78 +6,100 @@ import type { ReactNode } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AppLayout } from '@/layouts/AppLayout';
 
+const SWINGERS_FEATURES = ['reconciliation', 'multivenue', 'realtime'] as const;
 const ALEXANDRIA_FEATURES = ['schema', 'capture', 'ai'] as const;
+const REFERENCE_CARDS = [
+    'futureSystems',
+    'explorableExplanations',
+    'activeLearning',
+] as const;
+const PUBLIC_GOOD_CARDS = [
+    { id: 'myco', locked: true },
+    { id: 'sam', locked: true },
+    { id: 'empoweredPublic', locked: false },
+] as const;
 
 const ALEXANDRIA_SCREENSHOTS = [
-    {
-        id: 'landing',
-        src: '/assets/projects/alexandria/alexandria-landing.webp',
-    },
+    { id: 'landing', src: '/assets/projects/alexandria/alexandria-landing.webp' },
     {
         id: 'blueprints',
         src: '/assets/projects/alexandria/alexandria-blueprints.webp',
     },
-    {
-        id: 'notes',
-        src: '/assets/projects/alexandria/alexandria-notes.webp',
-    },
+    { id: 'notes', src: '/assets/projects/alexandria/alexandria-notes.webp' },
     {
         id: 'aiReview',
         src: '/assets/projects/alexandria/alexandria-ai-review.webp',
     },
 ] as const;
 
-const UNDAUNTED_LINKS = [
+const SWINGERS_SCREENSHOTS = [
+    { id: 'excelCashup', src: '/assets/projects/swingers/hub-excel-cashup.webp' },
     {
-        id: 'habitat',
-        href: '/playground/habitat',
-        icon: 'fa-solid fa-dharmachakra',
+        id: 'reconciliation',
+        src: '/assets/projects/swingers/hub-reconciliation.webp',
     },
-    {
-        id: 'cruise',
-        href: '/playground/cruise',
-        icon: 'fa-solid fa-route',
-    },
-    {
-        id: 'interstellar',
-        href: '/playground/interstellar',
-        icon: 'fa-solid fa-rocket',
-    },
+    { id: 'calendar', src: '/assets/projects/swingers/hub-calendar.webp' },
+    { id: 'cashupEasol', src: '/assets/projects/swingers/hub-cashup-easol.webp' },
+    { id: 'staffBanks', src: '/assets/projects/swingers/hub-staff-banks.webp' },
+    { id: 'sop', src: '/assets/projects/swingers/hub-sop.webp' },
 ] as const;
 
-const REFERENCE_CARDS = [
-    'futureSystems',
-    'explorableExplanations',
-    'brilliant',
+/**
+ * Every clickable screenshot gallery on the page, keyed by id. The lightbox
+ * tracks { gallery, index } so one viewer serves all of them; captions/alt/
+ * titles come from each gallery's i18n prefix + the shot id.
+ */
+const GALLERIES = {
+    alexandria: {
+        i18n: 'projects.alexandria.screenshots',
+        shots: ALEXANDRIA_SCREENSHOTS,
+    },
+    swingers: {
+        i18n: 'projects.swingers.screenshots',
+        shots: SWINGERS_SCREENSHOTS,
+    },
+} as const;
+type GalleryId = keyof typeof GALLERIES;
+
+const UNDAUNTED_LINKS = [
+    { id: 'habitat', href: '/playground/habitat', icon: 'fa-solid fa-dharmachakra' },
+    { id: 'cruise', href: '/playground/cruise', icon: 'fa-solid fa-route' },
+    { id: 'interstellar', href: '/playground/interstellar', icon: 'fa-solid fa-rocket' },
 ] as const;
 
 export default function ProjectsPage() {
     const { t } = useTranslation();
-    const [activeScreenshotIndex, setActiveScreenshotIndex] = useState<
-        number | null
-    >(null);
-    const activeScreenshot =
-        activeScreenshotIndex === null
-            ? null
-            : ALEXANDRIA_SCREENSHOTS[activeScreenshotIndex];
+    const [active, setActive] = useState<{
+        gallery: GalleryId;
+        index: number;
+    } | null>(null);
+    const activeShot = active ? GALLERIES[active.gallery].shots[active.index] : null;
+
     const showPreviousScreenshot = useCallback(() => {
-        setActiveScreenshotIndex((index) =>
-            index === null
-                ? null
-                : (index - 1 + ALEXANDRIA_SCREENSHOTS.length) %
-                  ALEXANDRIA_SCREENSHOTS.length,
-        );
+        setActive((current) => {
+            if (current === null) {
+                return null;
+            }
+
+            const total = GALLERIES[current.gallery].shots.length;
+
+            return { ...current, index: (current.index - 1 + total) % total };
+        });
     }, []);
     const showNextScreenshot = useCallback(() => {
-        setActiveScreenshotIndex((index) =>
-            index === null
-                ? null
-                : (index + 1) % ALEXANDRIA_SCREENSHOTS.length,
-        );
+        setActive((current) => {
+            if (current === null) {
+                return null;
+            }
+
+            const total = GALLERIES[current.gallery].shots.length;
+
+            return { ...current, index: (current.index + 1) % total };
+        });
     }, []);
 
     useEffect(() => {
-        if (activeScreenshotIndex === null) {
+        if (active === null) {
             return;
         }
 
@@ -94,18 +116,14 @@ export default function ProjectsPage() {
 
             if (event.key === 'Escape') {
                 event.preventDefault();
-                setActiveScreenshotIndex(null);
+                setActive(null);
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
 
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [
-        activeScreenshotIndex,
-        showNextScreenshot,
-        showPreviousScreenshot,
-    ]);
+    }, [active, showNextScreenshot, showPreviousScreenshot]);
 
     return (
         <AppLayout pageTitle={t('projects.pageTitle')}>
@@ -127,75 +145,109 @@ export default function ProjectsPage() {
                         <p className="mt-5 max-w-3xl text-lg leading-8 text-cyan-50/76">
                             {t('projects.intro')}
                         </p>
+                        <p className="mt-4 max-w-3xl text-base leading-8 text-cyan-50/64">
+                            {t('projects.introBio')}
+                        </p>
                     </div>
                 </div>
             </section>
 
-            <section className="relative overflow-hidden border-t border-cyan-100/14 bg-[#08111f] text-white">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-cyan-200/74 to-transparent" />
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_20%,rgba(34,211,238,0.12),transparent_28%),linear-gradient(180deg,rgba(8,17,31,0.98),rgba(15,23,42,0.98))]" />
+            <ProjectSection accent="cyan">
+                <div className="max-w-3xl">
+                    <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
+                        {t('projects.publicGood.kicker')}
+                    </p>
+                    <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
+                        {t('projects.publicGood.heading')}
+                    </h2>
+                    <p className="mt-5 text-base leading-8 text-cyan-50/76">
+                        {t('projects.publicGood.intro')}
+                    </p>
+                </div>
+                <div className="mt-8 grid gap-4 lg:grid-cols-3">
+                    {PUBLIC_GOOD_CARDS.map((card) => (
+                        <PublicGoodCard
+                            key={card.id}
+                            locked={card.locked}
+                            badge={t(
+                                `projects.publicGood.cards.${card.id}.badge`,
+                            )}
+                            title={t(
+                                `projects.publicGood.cards.${card.id}.title`,
+                            )}
+                            tagline={t(
+                                `projects.publicGood.cards.${card.id}.tagline`,
+                            )}
+                            body={t(`projects.publicGood.cards.${card.id}.body`)}
+                            footer={t(
+                                `projects.publicGood.cards.${card.id}.footer`,
+                            )}
+                        />
+                    ))}
+                </div>
+            </ProjectSection>
 
-                <div className="relative mx-auto max-w-6xl px-4 py-16 sm:py-20">
-                    <div className="grid gap-10 lg:grid-cols-[minmax(0,0.382fr)_minmax(0,0.618fr)] lg:items-start">
-                        <ProjectIntro
-                            body={[
-                                t('projects.alexandria.bodyA'),
-                                t('projects.alexandria.bodyB'),
-                                t('projects.alexandria.bodyC'),
-                            ]}
-                            kicker={t('projects.alexandria.kicker')}
-                            title={t('projects.alexandria.heading')}
-                            intro={
-                                <ItalicPhrase
-                                    text={t('projects.alexandria.intro')}
-                                    phrase={t('projects.alexandria.bookTitle')}
-                                />
+            <ProjectSection accent="amber" background="#0a111d">
+                <div className="grid gap-10 lg:grid-cols-[minmax(0,0.382fr)_minmax(0,0.618fr)] lg:items-start">
+                    <ProjectIntro
+                        kicker={t('projects.swingers.kicker')}
+                        title={t('projects.swingers.heading')}
+                        intro={t('projects.swingers.intro')}
+                        body={[
+                            t('projects.swingers.bodyA'),
+                            t('projects.swingers.bodyB'),
+                            t('projects.swingers.bodyC'),
+                        ]}
+                    />
+                    <div className="space-y-5">
+                        <TechLine>{t('projects.swingers.tech')}</TechLine>
+                        <FeatureRow
+                            ids={SWINGERS_FEATURES}
+                            i18nPrefix="projects.swingers.features"
+                        />
+                        <ScreenshotGrid
+                            shots={SWINGERS_SCREENSHOTS}
+                            i18nPrefix="projects.swingers.screenshots"
+                            onOpen={(index) =>
+                                setActive({ gallery: 'swingers', index })
                             }
                         />
-
-                        <div className="space-y-5">
-                            <div className="grid gap-3 sm:grid-cols-3">
-                                {ALEXANDRIA_FEATURES.map((feature) => (
-                                    <FeatureCard
-                                        key={feature}
-                                        title={t(
-                                            `projects.alexandria.features.${feature}.title`,
-                                        )}
-                                        body={t(
-                                            `projects.alexandria.features.${feature}.body`,
-                                        )}
-                                    />
-                                ))}
-                            </div>
-
-                            <div className="grid gap-3 sm:grid-cols-2">
-                                {ALEXANDRIA_SCREENSHOTS.map(
-                                    (screenshot, index) => (
-                                        <button
-                                            key={screenshot.id}
-                                            type="button"
-                                            onClick={() =>
-                                                setActiveScreenshotIndex(index)
-                                            }
-                                            className="group block w-full cursor-pointer overflow-hidden rounded-lg border border-cyan-100/14 bg-slate-950/72 text-start shadow-xl shadow-black/24 transition hover:-translate-y-0.5 hover:border-cyan-200/40 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none"
-                                        >
-                                            <img
-                                                src={screenshot.src}
-                                                alt={t(
-                                                    `projects.alexandria.screenshots.${screenshot.id}.alt`,
-                                                )}
-                                                loading="lazy"
-                                                decoding="async"
-                                                className="aspect-[16/9] w-full object-cover object-top opacity-90 saturate-110 transition duration-200 group-hover:scale-[1.015] group-hover:opacity-100"
-                                            />
-                                        </button>
-                                    ),
-                                )}
-                            </div>
-                        </div>
                     </div>
                 </div>
-            </section>
+            </ProjectSection>
+
+            <ProjectSection accent="cyan">
+                <div className="grid gap-10 lg:grid-cols-[minmax(0,0.382fr)_minmax(0,0.618fr)] lg:items-start">
+                    <ProjectIntro
+                        kicker={t('projects.alexandria.kicker')}
+                        title={t('projects.alexandria.heading')}
+                        intro={
+                            <ItalicPhrase
+                                text={t('projects.alexandria.intro')}
+                                phrase={t('projects.alexandria.bookTitle')}
+                            />
+                        }
+                        body={[
+                            t('projects.alexandria.bodyA'),
+                            t('projects.alexandria.bodyB'),
+                            t('projects.alexandria.bodyC'),
+                        ]}
+                    />
+                    <div className="space-y-5">
+                        <FeatureRow
+                            ids={ALEXANDRIA_FEATURES}
+                            i18nPrefix="projects.alexandria.features"
+                        />
+                        <ScreenshotGrid
+                            shots={ALEXANDRIA_SCREENSHOTS}
+                            i18nPrefix="projects.alexandria.screenshots"
+                            onOpen={(index) =>
+                                setActive({ gallery: 'alexandria', index })
+                            }
+                        />
+                    </div>
+                </div>
+            </ProjectSection>
 
             <section className="relative overflow-hidden border-t border-cyan-100/14 bg-[#0a111d] text-white">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-amber-200/70 to-transparent" />
@@ -256,64 +308,48 @@ export default function ProjectsPage() {
                 </div>
             </section>
 
-            <section className="relative overflow-hidden border-t border-cyan-100/14 bg-[#08111f] text-white">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-cyan-200/70 to-transparent" />
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_74%_22%,rgba(34,211,238,0.14),transparent_30%),radial-gradient(circle_at_22%_78%,rgba(251,191,36,0.1),transparent_28%),linear-gradient(180deg,rgba(8,17,31,0.98),rgba(10,17,29,0.98))]" />
-
-                <div className="relative mx-auto max-w-6xl px-4 py-16 sm:py-20">
-                    <div className="grid gap-10 lg:grid-cols-[minmax(0,0.382fr)_minmax(0,0.618fr)] lg:items-start">
-                        <div>
-                            <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
-                                {t('projects.references.kicker')}
-                            </p>
-                            <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
-                                {t('projects.references.heading')}
-                            </h2>
-                            <p className="mt-5 text-base leading-8 font-semibold text-cyan-50/82">
-                                {t('projects.references.intro')}
-                            </p>
-                        </div>
-
-                        <div className="grid gap-3 sm:grid-cols-3">
-                            {REFERENCE_CARDS.map((card) => (
-                                <FeatureCard
-                                    key={card}
-                                    title={t(
-                                        `projects.references.cards.${card}.title`,
-                                    )}
-                                    body={t(
-                                        `projects.references.cards.${card}.body`,
-                                    )}
-                                />
-                            ))}
-                        </div>
+            <ProjectSection accent="cyan">
+                <div className="grid gap-10 lg:grid-cols-[minmax(0,0.382fr)_minmax(0,0.618fr)] lg:items-start">
+                    <div>
+                        <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
+                            {t('projects.references.kicker')}
+                        </p>
+                        <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
+                            {t('projects.references.heading')}
+                        </h2>
+                        <p className="mt-5 text-base leading-8 font-semibold text-cyan-50/82">
+                            {t('projects.references.intro')}
+                        </p>
                     </div>
-                </div>
-            </section>
 
-            {activeScreenshot && (
+                    <FeatureRow
+                        ids={REFERENCE_CARDS}
+                        i18nPrefix="projects.references.cards"
+                    />
+                </div>
+            </ProjectSection>
+
+            {active && activeShot && (
                 <ImageViewer
                     alt={t(
-                        `projects.alexandria.screenshots.${activeScreenshot.id}.alt`,
+                        `${GALLERIES[active.gallery].i18n}.${activeShot.id}.alt`,
                     )}
                     caption={t(
-                        `projects.alexandria.screenshots.${activeScreenshot.id}.caption`,
+                        `${GALLERIES[active.gallery].i18n}.${activeShot.id}.caption`,
                     )}
-                    closeLabel={t('projects.alexandria.screenshots.close')}
-                    nextLabel={t('projects.alexandria.screenshots.next')}
-                    onClose={() => setActiveScreenshotIndex(null)}
+                    closeLabel={t('projects.gallery.close')}
+                    nextLabel={t('projects.gallery.next')}
+                    onClose={() => setActive(null)}
                     onNext={showNextScreenshot}
                     onPrevious={showPreviousScreenshot}
-                    position={t('projects.alexandria.screenshots.position', {
-                        current: (activeScreenshotIndex ?? 0) + 1,
-                        total: ALEXANDRIA_SCREENSHOTS.length,
+                    position={t('projects.gallery.position', {
+                        current: active.index + 1,
+                        total: GALLERIES[active.gallery].shots.length,
                     })}
-                    previousLabel={t(
-                        'projects.alexandria.screenshots.previous',
-                    )}
-                    src={activeScreenshot.src}
+                    previousLabel={t('projects.gallery.previous')}
+                    src={activeShot.src}
                     title={t(
-                        `projects.alexandria.screenshots.${activeScreenshot.id}.title`,
+                        `${GALLERIES[active.gallery].i18n}.${activeShot.id}.title`,
                     )}
                 />
             )}
@@ -321,21 +357,59 @@ export default function ProjectsPage() {
     );
 }
 
+/**
+ * Shared section shell for a project block: border, background, top hairline,
+ * and a soft accent glow. `accent` only picks the hairline/glow hue.
+ */
+function ProjectSection({
+    accent,
+    background = '#08111f',
+    children,
+}: {
+    accent: 'cyan' | 'amber';
+    background?: string;
+    children: ReactNode;
+}) {
+    const hairline =
+        accent === 'amber' ? 'via-amber-200/60' : 'via-cyan-200/74';
+    const glow =
+        accent === 'amber'
+            ? 'radial-gradient(circle_at_18%_20%,rgba(251,191,36,0.1),transparent_28%),radial-gradient(circle_at_80%_78%,rgba(34,211,238,0.1),transparent_30%)'
+            : 'radial-gradient(circle_at_82%_20%,rgba(34,211,238,0.12),transparent_28%)';
+
+    return (
+        <section
+            className="relative overflow-hidden border-t border-cyan-100/14 text-white"
+            style={{ backgroundColor: background }}
+        >
+            <div
+                className={`pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent to-transparent ${hairline}`}
+            />
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0"
+                style={{ backgroundImage: glow.replace(/_/g, ' ') }}
+            />
+            <div className="relative mx-auto max-w-6xl px-4 py-16 sm:py-20">
+                {children}
+            </div>
+        </section>
+    );
+}
+
 function ProjectIntro({
-    align = 'left',
     body,
     intro,
     kicker,
     title,
 }: {
-    align?: 'left' | 'right';
     body: string[];
     intro: ReactNode;
     kicker: string;
     title: string;
 }) {
     return (
-        <div className={align === 'right' ? 'lg:text-right' : undefined}>
+        <div>
             <p className="text-xs font-semibold tracking-[0.26em] text-cyan-200/76 uppercase">
                 {kicker}
             </p>
@@ -352,6 +426,69 @@ function ProjectIntro({
                     ))}
                 </div>
             )}
+        </div>
+    );
+}
+
+function TechLine({ children }: { children: ReactNode }) {
+    return (
+        <p className="text-xs font-medium tracking-wide text-cyan-200/60">
+            {children}
+        </p>
+    );
+}
+
+function FeatureRow({
+    ids,
+    i18nPrefix,
+}: {
+    ids: readonly string[];
+    i18nPrefix: string;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <div className="grid gap-3 sm:grid-cols-3">
+            {ids.map((id) => (
+                <FeatureCard
+                    key={id}
+                    title={t(`${i18nPrefix}.${id}.title`)}
+                    body={t(`${i18nPrefix}.${id}.body`)}
+                />
+            ))}
+        </div>
+    );
+}
+
+function ScreenshotGrid({
+    i18nPrefix,
+    onOpen,
+    shots,
+}: {
+    i18nPrefix: string;
+    onOpen: (index: number) => void;
+    shots: ReadonlyArray<{ id: string; src: string }>;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <div className="grid gap-3 sm:grid-cols-2">
+            {shots.map((shot, index) => (
+                <button
+                    key={shot.id}
+                    type="button"
+                    onClick={() => onOpen(index)}
+                    className="group block w-full cursor-pointer overflow-hidden rounded-lg border border-cyan-100/14 bg-slate-950/72 text-start shadow-xl shadow-black/24 transition hover:-translate-y-0.5 hover:border-cyan-200/40 focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:outline-none"
+                >
+                    <img
+                        src={shot.src}
+                        alt={t(`${i18nPrefix}.${shot.id}.alt`)}
+                        loading="lazy"
+                        decoding="async"
+                        className="aspect-[16/9] w-full object-cover object-top opacity-90 saturate-110 transition duration-200 group-hover:scale-[1.015] group-hover:opacity-100"
+                    />
+                </button>
+            ))}
         </div>
     );
 }
@@ -377,6 +514,49 @@ function FeatureCard({ body, title }: { body: string; title: string }) {
         <article className="rounded-lg border border-cyan-100/14 bg-slate-950/68 p-4 shadow-xl shadow-black/22">
             <h3 className="text-sm font-semibold text-white">{title}</h3>
             <p className="mt-2 text-sm leading-6 text-cyan-50/68">{body}</p>
+        </article>
+    );
+}
+
+function PublicGoodCard({
+    badge,
+    body,
+    footer,
+    locked,
+    tagline,
+    title,
+}: {
+    badge: string;
+    body: string;
+    footer: string;
+    locked: boolean;
+    tagline: string;
+    title: string;
+}) {
+    const footerClass = locked
+        ? 'mt-auto pt-4 text-xs font-semibold tracking-wide text-amber-200/80'
+        : 'mt-auto pt-4 text-xs leading-6 text-cyan-100/55';
+    const badgeClass = locked
+        ? 'inline-flex w-fit items-center gap-2 rounded-full border border-amber-200/30 bg-amber-300/12 px-2.5 py-0.5 text-[0.65rem] font-semibold tracking-[0.16em] text-amber-100/90 uppercase'
+        : 'inline-flex w-fit items-center gap-2 rounded-full border border-cyan-100/18 bg-cyan-200/10 px-2.5 py-0.5 text-[0.65rem] font-semibold tracking-[0.16em] text-cyan-100/80 uppercase';
+
+    return (
+        <article className="flex flex-col rounded-xl border border-cyan-100/16 bg-slate-950/62 p-6 shadow-xl shadow-black/24">
+            <span className={badgeClass}>
+                {locked ? (
+                    <i
+                        aria-hidden="true"
+                        className="fa-solid fa-lock text-[0.6rem]"
+                    />
+                ) : null}
+                {badge}
+            </span>
+            <h3 className="mt-4 text-xl font-semibold text-white">{title}</h3>
+            <p className="mt-1 text-sm font-semibold text-cyan-100/80">
+                {tagline}
+            </p>
+            <p className="mt-3 text-sm leading-7 text-cyan-50/72">{body}</p>
+            <p className={footerClass}>{footer}</p>
         </article>
     );
 }
@@ -456,10 +636,7 @@ function ImageViewer({
                             onClick={onClose}
                             className="inline-flex size-9 cursor-pointer items-center justify-center rounded border border-cyan-100/12 bg-cyan-50/5 text-cyan-100 transition-colors hover:bg-cyan-50/12 hover:text-white"
                         >
-                            <i
-                                aria-hidden="true"
-                                className="fa-solid fa-xmark"
-                            />
+                            <i aria-hidden="true" className="fa-solid fa-xmark" />
                         </button>
                     </div>
                     <h3 className="mt-8 text-2xl font-semibold text-white">
@@ -473,10 +650,7 @@ function ImageViewer({
                             onClick={onPrevious}
                             className="inline-flex size-10 cursor-pointer items-center justify-center rounded border border-cyan-100/12 bg-cyan-50/5 text-cyan-100 transition-colors hover:bg-cyan-50/12 hover:text-white"
                         >
-                            <i
-                                aria-hidden="true"
-                                className="fa-solid fa-arrow-left"
-                            />
+                            <i aria-hidden="true" className="fa-solid fa-arrow-left" />
                         </button>
                         <button
                             type="button"
@@ -484,10 +658,7 @@ function ImageViewer({
                             onClick={onNext}
                             className="inline-flex size-10 cursor-pointer items-center justify-center rounded border border-cyan-100/12 bg-cyan-50/5 text-cyan-100 transition-colors hover:bg-cyan-50/12 hover:text-white"
                         >
-                            <i
-                                aria-hidden="true"
-                                className="fa-solid fa-arrow-right"
-                            />
+                            <i aria-hidden="true" className="fa-solid fa-arrow-right" />
                         </button>
                     </div>
                 </aside>
