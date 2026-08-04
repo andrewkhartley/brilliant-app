@@ -14,6 +14,8 @@ interface ResumeSectionProps {
     role?: string;
     dates?: string;
     location?: string;
+    /** Optional tech-stack line under the role (projects only). */
+    tech?: string;
     lines: ResumeSectionLine[];
     /** Accessible label for this section's wipe handle. */
     handleLabel: string;
@@ -35,6 +37,7 @@ export function ResumeSection({
     role,
     dates,
     location,
+    tech,
     lines,
     handleLabel,
     valueText,
@@ -60,6 +63,11 @@ export function ResumeSection({
                                 <span className="text-cyan-50/50"> · {location}</span>
                             ) : null}
                         </p>
+                        {tech ? (
+                            <p className="w-full text-xs font-medium tracking-wide text-cyan-200/60">
+                                {tech}
+                            </p>
+                        ) : null}
                     </div>
                 )}
             </header>

@@ -4,33 +4,50 @@ import { AppLayout } from '@/layouts/AppLayout';
 
 /**
  * Résumé structure: ordering + which line IDs belong to each group. Strings
- * live in lang/en/resume.php (key-based authoring). `kind` decides whether the
- * header renders as a plain section title or a job header. Mirrors the
- * structure-as-typed-const pattern used by projects.tsx.
+ * live in lang/en/resume.php (key-based authoring). `kind` decides how each
+ * entry renders: `group` is a neutral divider (no wipe), `section` a plain
+ * section title, `job` a company/role/dates header. `tech: true` / `location:
+ * true` opt a job into the stack line / location suffix
+ * (resume.sections.<id>.tech|location). Mirrors the structure-as-typed-const
+ * pattern used by projects.tsx.
  */
 const RESUME = [
     { id: 'summary', kind: 'section', lineIds: ['summary'] },
     {
         id: 'skills',
         kind: 'section',
-        lineIds: ['languages', 'systems', 'ai', 'integrations', 'additional'],
+        lineIds: ['languages', 'security', 'platform', 'integrations', 'ai'],
+    },
+    { id: 'projects', kind: 'group' },
+    {
+        id: 'myco',
+        kind: 'job',
+        tech: true,
+        lineIds: [
+            'intro',
+            'protocol',
+            'integrity',
+            'server',
+            'hardening',
+            'proof',
+            'audit',
+        ],
     },
     {
         id: 'alexandria',
         kind: 'job',
-        lineIds: ['intro', 'eav', 'llm', 'migration', 'capture'],
+        tech: true,
+        lineIds: ['intro', 'eav', 'llm', 'migration'],
     },
-    {
-        id: 'signal',
-        kind: 'job',
-        lineIds: ['intro', 'auth', 'zip', 'decoy', 'myco'],
-    },
+    { id: 'signal', kind: 'job', tech: true, lineIds: ['intro'] },
+    { id: 'empoweredPublic', kind: 'job', lineIds: ['intro'] },
+    { id: 'experience', kind: 'group' },
     {
         id: 'swingersLead',
         kind: 'job',
+        location: true,
         lineIds: [
             'intro',
-            'savings',
             'architecture',
             'releases',
             'reconciliation',
@@ -41,11 +58,13 @@ const RESUME = [
     {
         id: 'swingersAnalyst',
         kind: 'job',
-        lineIds: ['intro', 'automate', 'toast', 'golfDiary', 'businessCase'],
+        location: true,
+        lineIds: ['automate', 'toast', 'businessCase'],
     },
+    { id: 'earlier', kind: 'group' },
     { id: 'sodexo', kind: 'job', lineIds: ['concierge'] },
     { id: 'jetblue', kind: 'job', lineIds: ['safety'] },
-    { id: 'disney', kind: 'job', lineIds: ['helpDesk', 'pmSystem'] },
+    { id: 'disney', kind: 'job', lineIds: ['helpDesk'] },
     { id: 'education', kind: 'section', lineIds: ['degrees'] },
     { id: 'contact', kind: 'section', lineIds: ['relocation'] },
 ] as const;
@@ -92,6 +111,17 @@ export default function ResumePage() {
                     </div>
 
                     {RESUME.map((group) => {
+                        if (group.kind === 'group') {
+                            return (
+                                <h2
+                                    key={group.id}
+                                    className="mt-16 border-t border-cyan-100/12 px-10 pt-10 text-xs font-semibold tracking-[0.28em] text-cyan-200/70 uppercase"
+                                >
+                                    {t(`resume.groups.${group.id}`)}
+                                </h2>
+                            );
+                        }
+
                         const sectionName =
                             group.kind === 'section'
                                 ? t(`resume.sections.${group.id}.heading`)
@@ -121,10 +151,15 @@ export default function ResumePage() {
                                         : undefined
                                 }
                                 location={
-                                    group.kind === 'job'
+                                    group.kind === 'job' && 'location' in group
                                         ? t(
                                               `resume.sections.${group.id}.location`,
                                           )
+                                        : undefined
+                                }
+                                tech={
+                                    group.kind === 'job' && 'tech' in group
+                                        ? t(`resume.sections.${group.id}.tech`)
                                         : undefined
                                 }
                                 handleLabel={t('resume.controls.handleLabel', {
@@ -170,6 +205,9 @@ function FooterWink() {
                 />
                 {t('resume.footer.cvLinkText')}
             </a>
+            <p className="mt-5 border-t border-cyan-100/10 pt-4 text-xs leading-6 text-cyan-100/55">
+                {t('resume.footer.privateRepos')}
+            </p>
         </div>
     );
 }

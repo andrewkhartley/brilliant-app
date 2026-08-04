@@ -22,6 +22,11 @@ it('shares the resume translation namespace chrome', function () {
             ->has('translations.resume.thesis.body')
             ->has('translations.resume.controls.handleLabel')
             ->has('translations.resume.controls.valueText')
+            ->has('translations.resume.groups.projects')
+            ->has('translations.resume.groups.experience')
+            ->has('translations.resume.groups.earlier')
+            ->has('translations.resume.sections.myco.tech')
+            ->has('translations.resume.footer.privateRepos')
     );
 });
 
@@ -30,14 +35,16 @@ it('ships a corporate and honest pair for every resume line', function () {
     // corporate and an honest string. Pins the data shape, not the prose.
     $groups = [
         'summary' => ['summary'],
-        'skills' => ['languages', 'systems', 'ai', 'integrations', 'additional'],
-        'alexandria' => ['intro', 'eav', 'llm', 'migration', 'capture'],
-        'signal' => ['intro', 'auth', 'zip', 'decoy', 'myco'],
-        'swingersLead' => ['intro', 'savings', 'architecture', 'releases', 'reconciliation', 'azure', 'multivenue'],
-        'swingersAnalyst' => ['intro', 'automate', 'toast', 'golfDiary', 'businessCase'],
+        'skills' => ['languages', 'security', 'platform', 'integrations', 'ai'],
+        'myco' => ['intro', 'protocol', 'integrity', 'server', 'hardening', 'proof', 'audit'],
+        'alexandria' => ['intro', 'eav', 'llm', 'migration'],
+        'signal' => ['intro'],
+        'empoweredPublic' => ['intro'],
+        'swingersLead' => ['intro', 'architecture', 'releases', 'reconciliation', 'azure', 'multivenue'],
+        'swingersAnalyst' => ['automate', 'toast', 'businessCase'],
         'sodexo' => ['concierge'],
         'jetblue' => ['safety'],
-        'disney' => ['helpDesk', 'pmSystem'],
+        'disney' => ['helpDesk'],
         'education' => ['degrees'],
         'contact' => ['relocation'],
     ];
