@@ -23,7 +23,7 @@ vi.mock('@inertiajs/react', () => ({
                 common: {
                     copyright: 'Copyright',
                     footerLabel: 'Footer',
-                    siteName: 'Brilliant',
+                    siteName: "Andrew's App-App",
                     primaryNav: 'Primary navigation',
                 },
                 nav: {

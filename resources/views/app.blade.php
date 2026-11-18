@@ -2,9 +2,9 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ locale_dir() }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
         @php
-            $shareTitle = 'Andrew Hartley :.: Brilliant Application';
-            $shareDescription = 'An interactive cover letter for Brilliant: story-driven learning experiences, physics playgrounds, and the engineering behind them.';
-            $shareImage = url('/assets/meta/brilliant-application-card.png');
+            $shareTitle = 'Andrew Hartley :.: App-App';
+            $shareDescription = 'Story-driven learning experiences, physics playgrounds, and the engineering behind them.';
+            $shareImage = url('/assets/meta/share-card.png');
         @endphp
 
         <meta charset="utf-8">
@@ -23,13 +23,13 @@
         <meta property="og:image:type" content="image/png">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
-        <meta property="og:image:alt" content="Andrew Hartley Brilliant Application preview card">
+        <meta property="og:image:alt" content="Andrew Hartley portfolio preview card">
 
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{{ $shareTitle }}">
         <meta name="twitter:description" content="{{ $shareDescription }}">
         <meta name="twitter:image" content="{{ $shareImage }}">
-        <meta name="twitter:image:alt" content="Andrew Hartley Brilliant Application preview card">
+        <meta name="twitter:image:alt" content="Andrew Hartley portfolio preview card">
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">

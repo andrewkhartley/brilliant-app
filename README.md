@@ -1,6 +1,6 @@
-# Brilliant Application Site
+# Andrew Hartley's Portfolio Site
 
-A small, story-driven multi-page site built as part of my application to [Brilliant](https://brilliant.org). It tells the story of my pandemic-era science communication work and lets visitors play with three interactive experiences I've built: an Interstellar Travel Agency (relativity), a Planet Cruise (orbital trips with live NASA Horizons data), and an O'Neill Cylinder Habitat. The signature visual technique is a from-scratch implementation of Disney's 1937 multi-plane camera, expressed as a React component that anchors layers at the top and bottom of a section to form a shadowbox we look INTO.
+A small, story-driven multi-page site that serves as my personal portfolio. It tells the story of my pandemic-era science communication work and lets visitors play with three interactive experiences I've built: an Interstellar Travel Agency (relativity), a Planet Cruise (orbital trips with live NASA Horizons data), and an O'Neill Cylinder Habitat. The signature visual technique is a from-scratch implementation of Disney's 1937 multi-plane camera, expressed as a React component that anchors layers at the top and bottom of a section to form a shadowbox we look INTO.
 
 ## What's lifted, what's new
 
